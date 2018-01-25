@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "1471d559f0238e9e33997afc133f4c9a",
+    "content-hash": "d925b2c9ac4a7257d0c8d81eb85b7537",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -2799,6 +2799,45 @@
             "description": "Library that helps with managing the version number of Git-hosted PHP projects",
             "homepage": "https://github.com/sebastianbergmann/version",
             "time": "2016-10-03T07:35:21+00:00"
+        },
+        {
+            "name": "slayer911/yii2-dbcast",
+            "version": "1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Slayer911/yii2-dbcast.git",
+                "reference": "bfdab66b7736651746ed2bc051f7235211f90da7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Slayer911/yii2-dbcast/zipball/bfdab66b7736651746ed2bc051f7235211f90da7",
+                "reference": "bfdab66b7736651746ed2bc051f7235211f90da7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0",
+                "yiisoft/yii2": ">=2.0.6"
+            },
+            "type": "yii2-extension",
+            "extra": {
+                "bootstrap": "DBCast\\Bootstrap"
+            },
+            "autoload": {
+                "psr-4": {
+                    "DBCast\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Auto migration",
+            "keywords": [
+                "migrate",
+                "migration",
+                "yii2"
+            ],
+            "time": "2017-08-30T18:18:04+00:00"
         },
         {
             "name": "symfony/browser-kit",
