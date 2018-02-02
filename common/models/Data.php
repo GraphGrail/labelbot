@@ -64,4 +64,22 @@ class Data extends \yii\db\ActiveRecord
         $assignedLabel->moderator_id = $moderator_id;
         return $assignedLabel->save();
     }
+
+    public static function getForLabelAssignment()
+    {
+        // TODO: Business logic for getData
+        // At first tryin' to find unlabeled data
+        $unlabeled_data_id = Yii::$app->db->createCommand("
+                SELECT `data`.id FROM `data` 
+                LEFT JOIN `assigned_label` on `data`.id = `assigned_label`.data_id 
+                WHERE `assigned_label`.id IS NULL
+            ")->queryOne();
+
+        if (!$unlabeled_data_id) {
+            // TODO:
+            // then tryin' to less labeled data that moderator don't assign label            
+        }
+
+        return Data::findOne($unlabeled_data_id);
+    }
 }
