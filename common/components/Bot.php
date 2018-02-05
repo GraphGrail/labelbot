@@ -15,52 +15,58 @@ use common\models\LabelGroup;
 use common\models\Label;
 use common\models\AssignedLabel;
 use common\models\Moderator;
+use common\components\CallbackData;
 
 
 class Bot extends yii\base\BaseObject
 {
     public $cmd;
+    public $chat;
     public $chat_id;
-    public $moderator_id;
+    public $message;
+    public $message_id;
+    public $callback_query;
+    public $callback_query_id;
+    public $callback_query_data;
     public $moderator;
 
     public function __construct($cmd, $config = [])
     {
-        $this->cmd = $cmd;
-        $this->chat_id = $cmd->getCallbackQuery()
-                       ? $cmd->getCallbackQuery()->getMessage()->getChat()->getId()
-                       : $cmd->getMessage()->getChat()->getId();
+        $this->cmd               = $cmd;
+        $this->callback_query    = $cmd->getCallbackQuery();
 
-        $this->moderator = Moderator::findOne(['tg_id'=>$this->chat_id]);
+        if ($this->callback_query) {
+            $this->callback_query_id   = $this->callback_query->getId();
+            $this->callback_query_data = $this->callback_query->getData();
+            $this->message             = $this->callback_query->getMessage();
+        } else {
+            $this->message             = $cmd->getMessage();            
+        }
+        $this->message_id        = $this->message->getMessageId();
+        $this->chat              = $this->message->getChat();
+        $this->chat_id           = $this->chat->getId();
+        $this->moderator         = Moderator::findOne(['tg_id'=>$this->chat_id]);
 
-        if ($this->moderator == null) {
+        if ($this->moderator === null) {
             // TODO: need auth!!
         }
 
         parent::__construct($config);
     }
 
-    public function init()
-    {
-        parent::init();
-        // ... initialization after configuration is applied
-
-    }
 
     public function sendData(int $edit_message_id=0)
     {
-
         $data = Data::getForLabelAssignment();
         // TODO: We need to delete data with empty texts on Dataset upload,
         // because Telegram don't send/edit message with empty text!!
         if (!trim($data->data)) {
             $data->data = 'no data';
         }
-
         // For now, we just get the first labelGroup for dataset
         $labelGroup = $data->dataset->labelGroups[0];
 
-        $inline_keyboard = self::generateKeyboard($labelGroup, $data->id);
+        $inline_keyboard = $this->generateLabelsKeyboard($labelGroup, $data->id);
 
         $req_data = [
             'chat_id'                  => $this->chat_id,
@@ -79,39 +85,28 @@ class Bot extends yii\base\BaseObject
 
     public function assignLabel()
     {
-        // TODO: Refactoring !!
-        $callback_query    = $this->cmd->getCallbackQuery();
-
-        $callback_query_id = $callback_query->getId();
-        $message_id        = $callback_query->getMessage()->getMessageId();
-
-        $callback_data = new class{};
-        list($callback_data->type, $callback_data->data_id, $callback_data->label_id, $callback_data->sign) = explode(':', $callback_query->getData());
-
-
-        if (!hash_equals($callback_data->sign, crypt($callback_data->data_id . $callback_data->label_id, Yii::$app->params['telegram_bot_callback_secret_key']))) {
-            //    return;
-        }
+        $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
+        list($data_id, $label_id) = explode(':', $callback_data->data);
 
         $earlyAssignedLabel = AssignedLabel::findOne([
-            'data_id'      => $callback_data->data_id,
+            'data_id'      => $data_id,
             'moderator_id' => $this->moderator->id,                    
         ]);
 
         if ($earlyAssignedLabel) {
-            $data = [
-                        'callback_query_id' => $callback_query_id,
-                        'text'              => 'This data was labeled already',
-                        'show_alert'        => false,
-                        'cache_time'        => 0,
-                    ];
-            Request::answerCallbackQuery($data);
-            return $this->sendData($message_id);
+            $req_data = [
+                'callback_query_id' => $this->callback_query_id,
+                'text'              => 'This data was labeled already',
+                'show_alert'        => false,
+                'cache_time'        => 0,
+            ];
+            Request::answerCallbackQuery($req_data);
+            return $this->sendData($this->message_id);
         }
 
         $assignedLabel = new AssignedLabel;
-        $assignedLabel->data_id      = $callback_data->data_id;
-        $assignedLabel->label_id     = $callback_data->label_id;
+        $assignedLabel->data_id      = $data_id;
+        $assignedLabel->label_id     = $label_id;
         $assignedLabel->moderator_id = $this->moderator->id;
         $assignedLabel->created_at   = time();
 
@@ -119,30 +114,21 @@ class Bot extends yii\base\BaseObject
             // TODO: log error
         }
 
-        return $this->sendData($message_id);
+        return $this->sendData($this->message_id);
     }
 
     public function nextLabelGroup()
     {
-        // TODO: Refactoring !!
-        $callback_query    = $this->cmd->getCallbackQuery();
+        $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
+        list($data_id, $label_group_id) = explode(':', $callback_data->data);
 
-        $callback_query_id = $callback_query->getId();
-        $chat_id           = $callback_query->getMessage()->getChat()->getId();
-        $message_id        = $callback_query->getMessage()->getMessageId();
-        $text              = $callback_query->getMessage()->getText();
-        $tg_id             = $callback_query->getFrom()->getId();
-
-        $callback_data = new class{};
-        list($callback_data->type, $callback_data->label_group_id, $callback_data->data_id) = explode(':', $callback_query->getData());
-
-        $nextLabelGroup = LabelGroup::findOne($callback_data->label_group_id);
-        $inline_keyboard = self::generateKeyboard($nextLabelGroup, $callback_data->data_id);
+        $nextLabelGroup = LabelGroup::findOne($label_group_id);
+        $inline_keyboard = $this->generateLabelsKeyboard($nextLabelGroup, $data_id);
 
         $req_data = [
-            'chat_id'      => $chat_id,
-            'message_id'   => $message_id,
-            'text'         => $text,
+            'chat_id'      => $this->chat_id,
+            'message_id'   => $this->message_id,
+            'text'         => $this->message->getText(),
             'reply_markup' => $inline_keyboard,
         ];
 
@@ -150,50 +136,32 @@ class Bot extends yii\base\BaseObject
     }
 
 
-    public function getCallbackType() : string
-    {
-        $callback_query    = $this->cmd->getCallbackQuery();
-        $callback_data     = explode(':', $callback_query->getData());
-        $callback_type     = $callback_data[0];
-        return $callback_type;
-    }
-
-
-    private static function generateKeyboard(LabelGroup $labelGroup, int $data_id) : InlineKeyboard
+    private function generateLabelsKeyboard(LabelGroup $labelGroup, int $data_id) : InlineKeyboard
     {
         $keyboard = [];
         foreach ($labelGroup->getLabels()->all() as $label) {
-            array_push($keyboard, self::generateKeyboardLabel($label, $data_id));
+            array_push($keyboard, $this->generateLabelKey($label, $data_id));
         }
         return new InlineKeyboard($keyboard);
     }
 
 
-    private static function generateKeyboardLabel(Label $label, int $data_id) : array
+    private function generateLabelKey(Label $label, int $data_id) : array
     {
+        $callback_data = new CallbackData($this->moderator);
+
         if ($label->next_label_group_id === null) {
-            $sign = crypt($data_id . $label->id, Yii::$app->params['telegram_bot_callback_secret_key']);
-            $callback_data = [
-                    'type'     => 'label_assign',
-                    'data_id'  => $data_id,
-                    'label_id' => $label->id,
-                    'sign'     => $sign
-                ];
-            return [
-                'text' => $label->text,
-                'callback_data' => implode($callback_data, ':')
-            ];            
+            $callback_data->type = CallbackData::LABEL_ASSIGN;
+            $callback_data->data = $data_id .':'. $label->id;    
         } else {
-            $callback_data = [
-                    'type'           => 'next_label_group',
-                    'label_group_id' => $label->next_label_group_id,
-                    'data_id'        => $data_id
-                ];
-            return [
-                'text' => $label->text,
-                'callback_data' => implode($callback_data, ':')
-            ];             
+            $callback_data->type = CallbackData::NEXT_LABEL_GROUP;
+            $callback_data->data = $data_id .':'. $label->next_label_group_id;   
         }
+
+        return [
+            'text' => $label->text,
+            'callback_data' => $callback_data->toString()
+        ];
     }
 
 }

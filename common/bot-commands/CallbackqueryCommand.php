@@ -12,7 +12,10 @@ namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
 use Longman\TelegramBot\Request;
+use Longman\TelegramBot\Exception\TelegramException;
 use common\components\Bot;
+use common\components\CallbackData;
+use yii\web\HttpException;
 
 /**
  * Callback query command
@@ -47,19 +50,21 @@ class CallbackqueryCommand extends SystemCommand
     public function execute()
     {
         $bot = new Bot($this);
+        $callback_data = new CallbackData($bot->moderator, $bot->callback_query_data);
 
-        // TODO: validate callback query sign
+        if (!$callback_data->checkSign()) {
+            throw new HttpException(400, 'Error checking callback_data sign');
+        }
 
-        switch ($bot->callbackType) {
-            case "label_assign":
+        switch ($callback_data->type) {
+            case CallbackData::LABEL_ASSIGN:
                 $bot->assignLabel();
                 break;
-            case "next_label_group":
+            case CallbackData::NEXT_LABEL_GROUP:
                 $bot->nextLabelGroup();
                 break;
             default:
-                // raise error
-                return;
+                throw new HttpException(400, 'Error checking callback_data type');
         }
 
     }
