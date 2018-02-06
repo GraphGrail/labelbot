@@ -57,7 +57,7 @@ class CallbackqueryCommand extends SystemCommand
         }
 
         switch ($callback_data->type) {
-            case CallbackData::LABEL_ASSIGN_BUTTON:
+            case CallbackData::LABEL_BUTTON:
                 $bot->assignLabel();
                 break;
             default:

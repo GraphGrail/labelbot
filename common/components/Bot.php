@@ -158,7 +158,7 @@ class Bot extends yii\base\BaseObject
     private function generateLabelKey(Label $label, int $data_id) : array
     {
         $callback_data = new CallbackData($this->moderator);
-        $callback_data->type = CallbackData::LABEL_ASSIGN;
+        $callback_data->type = CallbackData::LABEL_BUTTON;
         $callback_data->data = $data_id .':'. $label->id;    
 
         return [
