@@ -3,10 +3,12 @@
 namespace common\components;
 
 use Yii;
+use yii\web\HttpException;
 
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\Command;
 use Longman\TelegramBot\Entities\Update;
+use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Entities\InlineKeyboard;
 use Longman\TelegramBot\Entities\Message;
 
@@ -48,14 +50,14 @@ class Bot extends yii\base\BaseObject
         $this->moderator         = Moderator::findOne(['tg_id'=>$this->chat_id]);
 
         if ($this->moderator === null) {
-            // TODO: need auth!!
+            $this->showAuthInfo();
         }
 
         parent::__construct($config);
     }
 
 
-    public function sendData(int $edit_message_id=0)
+    public function sendData(int $edit_message_with_id=0)
     {
         $data = Data::getForLabelAssignment();
         // TODO: We need to delete data with empty texts on Dataset upload,
@@ -75,8 +77,8 @@ class Bot extends yii\base\BaseObject
             'reply_markup'             => $inline_keyboard,
         ];
 
-        if ($edit_message_id) {
-            $req_data['message_id'] = $edit_message_id;
+        if ($edit_message_with_id) {
+            $req_data['message_id'] = $edit_message_with_id;
             return Request::editMessageText($req_data);
         } else {
             return Request::sendMessage($req_data);
@@ -145,7 +147,6 @@ class Bot extends yii\base\BaseObject
         return new InlineKeyboard($keyboard);
     }
 
-
     private function generateLabelKey(Label $label, int $data_id) : array
     {
         $callback_data = new CallbackData($this->moderator);
@@ -162,6 +163,36 @@ class Bot extends yii\base\BaseObject
             'text' => $label->text,
             'callback_data' => $callback_data->toString()
         ];
+    }
+
+    public function showAuthInfo()
+    {
+        $text = 'You need to enter your token on start command:' . PHP_EOL 
+            . '/start <token>';
+
+        $data = [
+            'chat_id' => $this->chat_id,
+            'text'    => $text,
+        ];
+
+        Request::sendMessage($data);
+        Yii::$app->end();
+    }
+
+    public static function authenticate(string $token, int $tg_id) : bool
+    {
+        $moderator = Moderator::findOne(['auth_token' => $token]);
+
+        if ($moderator === null) {
+            return false;
+        }
+
+        $moderator->tg_id = $tg_id;
+        if ($moderator->save()) {
+            return true;
+        }
+
+        return false;
     }
 
 }

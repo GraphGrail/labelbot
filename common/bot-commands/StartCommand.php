@@ -12,6 +12,7 @@ namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
 use Longman\TelegramBot\Request;
+use common\components\Bot;
 
 /**
  * Start command
@@ -33,7 +34,7 @@ class StartCommand extends SystemCommand
     /**
      * @var string
      */
-    protected $usage = '/start';
+    protected $usage = '/start or /start <token>';
 
     /**
      * @var string
@@ -54,6 +55,14 @@ class StartCommand extends SystemCommand
     public function execute()
     {
         $message = $this->getMessage();
+        $token  = trim($message->getText(true));
+
+        if ($token) {
+            $tg_id = $message->getFrom()->getId();
+            Bot::authenticate($token, $tg_id);
+        }
+
+        $bot = new Bot($this);
 
         $chat_id = $message->getChat()->getId();
         $text    = 'Hi, man!' . PHP_EOL . 'Type /help to see all commands!';
