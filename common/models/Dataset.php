@@ -66,7 +66,7 @@ class Dataset extends \yii\db\ActiveRecord
 
     public function getLabelGroups()
     {
-        return $this->hasMany(LabelGroup::className(), ['id' => 'dataset_id'])
-            ->viaTable('label_group_to_dataset', ['label_group_id' => 'id']);    
+        return $this->hasMany(LabelGroup::className(), ['id' => 'label_group_id'])
+            ->viaTable('label_group_to_dataset', ['dataset_id' => 'id']);    
     }
 }

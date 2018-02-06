@@ -14,8 +14,7 @@ class CallbackData extends yii\base\BaseObject
 	public $data;
 	public $moderator;
 
-	const LABEL_ASSIGN 		= 1;
-	const NEXT_LABEL_GROUP  = 2;
+	const LABEL_ASSIGN_BUTTON = 1;
 
 	public function __construct(Moderator $modertor, string $callback_data=null)
 	{

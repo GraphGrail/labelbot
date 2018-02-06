@@ -31,7 +31,7 @@ class Label extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['label_group_id', 'next_label_group_id', 'ordering', 'created_at', 'updated_at'], 'integer'],
+            [['parent_label_id', 'label_group_id', 'ordering', 'created_at', 'updated_at'], 'integer'],
             [['text'], 'string', 'max' => 300],
         ];
     }
@@ -43,9 +43,9 @@ class Label extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'label_group_id' => 'Label Group ID',
+            'parent_label_id' => 'Parent Label ID',
             'text' => 'Text',
-            'next_label_group_id' => 'Next Label Group ID',
+            'label_group_id' => 'Label Group ID',
             'ordering' => 'Ordering',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',

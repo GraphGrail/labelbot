@@ -68,7 +68,12 @@ class Bot extends yii\base\BaseObject
         // For now, we just get the first labelGroup for dataset
         $labelGroup = $data->dataset->labelGroups[0];
 
-        $inline_keyboard = $this->generateLabelsKeyboard($labelGroup, $data->id);
+        $rootLabel = Label::findOne([
+            'label_group_id'  => $labelGroup->id,
+            'parent_label_id' => 0
+        ]);
+
+        $inline_keyboard = $this->generateLabelsKeyboard($rootLabel, $data->id);
 
         $req_data = [
             'chat_id'                  => $this->chat_id,
@@ -89,6 +94,22 @@ class Bot extends yii\base\BaseObject
     {
         $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
         list($data_id, $label_id) = explode(':', $callback_data->data);
+
+        $next_labels = Label::findAll(['parent_label_id' => $label_id]);
+        if ($next_labels) {
+            $nextLabelGroup = Label::findOne($label_id);
+
+            $inline_keyboard = $this->generateLabelsKeyboard($nextLabelGroup, $data_id);
+
+            $req_data = [
+                'chat_id'      => $this->chat_id,
+                'message_id'   => $this->message_id,
+                'text'         => $this->message->getText(),
+                'reply_markup' => $inline_keyboard,
+            ];
+
+            return Request::editMessageText($req_data);
+        }
 
         $earlyAssignedLabel = AssignedLabel::findOne([
             'data_id'      => $data_id,
@@ -119,45 +140,26 @@ class Bot extends yii\base\BaseObject
         return $this->sendData($this->message_id);
     }
 
-    public function nextLabelGroup()
-    {
-        $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
-        list($data_id, $label_group_id) = explode(':', $callback_data->data);
 
-        $nextLabelGroup = LabelGroup::findOne($label_group_id);
-        $inline_keyboard = $this->generateLabelsKeyboard($nextLabelGroup, $data_id);
-
-        $req_data = [
-            'chat_id'      => $this->chat_id,
-            'message_id'   => $this->message_id,
-            'text'         => $this->message->getText(),
-            'reply_markup' => $inline_keyboard,
-        ];
-
-        return Request::editMessageText($req_data);
-    }
-
-
-    private function generateLabelsKeyboard(LabelGroup $labelGroup, int $data_id) : InlineKeyboard
+    private function generateLabelsKeyboard(Label $labelGroup, int $data_id) : InlineKeyboard
     {
         $keyboard = [];
-        foreach ($labelGroup->getLabels()->all() as $label) {
-            array_push($keyboard, $this->generateLabelKey($label, $data_id));
+        $labels = [];
+
+        $labels = Label::findAll(['parent_label_id' => $labelGroup->id]);
+
+        foreach ($labels as $label) {
+            array_push($keyboard, [$this->generateLabelKey($label, $data_id)]);
         }
-        return new InlineKeyboard($keyboard);
+        return new InlineKeyboard(...$keyboard);
     }
+
 
     private function generateLabelKey(Label $label, int $data_id) : array
     {
         $callback_data = new CallbackData($this->moderator);
-
-        if ($label->next_label_group_id === null) {
-            $callback_data->type = CallbackData::LABEL_ASSIGN;
-            $callback_data->data = $data_id .':'. $label->id;    
-        } else {
-            $callback_data->type = CallbackData::NEXT_LABEL_GROUP;
-            $callback_data->data = $data_id .':'. $label->next_label_group_id;   
-        }
+        $callback_data->type = CallbackData::LABEL_ASSIGN;
+        $callback_data->data = $data_id .':'. $label->id;    
 
         return [
             'text' => $label->text,
@@ -194,5 +196,6 @@ class Bot extends yii\base\BaseObject
 
         return false;
     }
+
 
 }

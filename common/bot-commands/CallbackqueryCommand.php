@@ -57,11 +57,8 @@ class CallbackqueryCommand extends SystemCommand
         }
 
         switch ($callback_data->type) {
-            case CallbackData::LABEL_ASSIGN:
+            case CallbackData::LABEL_ASSIGN_BUTTON:
                 $bot->assignLabel();
-                break;
-            case CallbackData::NEXT_LABEL_GROUP:
-                $bot->nextLabelGroup();
                 break;
             default:
                 throw new HttpException(400, 'Error checking callback_data type');
