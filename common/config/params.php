@@ -8,6 +8,7 @@ return [
     'telegram_bot_username' 			=> '',
     'telegram_bot_webhook_token'		=> '',
     'telegram_bot_callback_secret_key'  => '',
+    'telegram_bot_appmetrica_key'       => '',
     // IDs of admin users (leave as empty array if not used)
     'telegram_bot_admin_users' => [],
     // MySQL database credentials
