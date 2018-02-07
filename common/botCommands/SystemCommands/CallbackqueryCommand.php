@@ -39,7 +39,7 @@ class CallbackqueryCommand extends SystemCommand
     /**
      * @var string
      */
-    protected $version = '1.1.1';
+    protected $version = '0.1.0';
 
     /**
      * Command execute method

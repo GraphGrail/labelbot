@@ -12,34 +12,33 @@ namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
 use Longman\TelegramBot\Request;
-use common\components\Bot;
 
 /**
  * Start command
  *
  * Gets executed when a user first starts using the bot.
  */
-class StartCommand extends SystemCommand
+class ShowAuthInfoCommand extends SystemCommand
 {
     /**
      * @var string
      */
-    protected $name = 'start';
+    protected $name = 'showauthinfo';
 
     /**
      * @var string
      */
-    protected $description = 'Start command';
+    protected $description = 'Show authentification info command';
 
     /**
      * @var string
      */
-    protected $usage = '/start or /start <token>';
+    protected $usage = '/showauthinfo';
 
     /**
      * @var string
      */
-    protected $version = '1.1.0';
+    protected $version = '0.1.0';
 
     /**
      * @var bool
@@ -54,24 +53,15 @@ class StartCommand extends SystemCommand
      */
     public function execute()
     {
-        $message = $this->getMessage();
-        $token  = trim($message->getText(true));
-
-        if ($token) {
-            $tg_id = $message->getFrom()->getId();
-            Bot::authenticate($token, $tg_id);
-        }
-
-        $bot = new Bot($this);
-
-        $chat_id = $message->getChat()->getId();
-        $text    = 'Hi, man!' . PHP_EOL . 'Type /help to see all commands!';
+        $text = 'Before you get started, please enter your auth_token with /start command:' . PHP_EOL 
+            . '/start <token>';
 
         $data = [
-            'chat_id' => $chat_id,
+            'chat_id' => $this->getMessage()->getChat()->getId(),
             'text'    => $text,
         ];
 
-        return Request::sendMessage($data);
+        Request::sendMessage($data);
+        die();
     }
 }

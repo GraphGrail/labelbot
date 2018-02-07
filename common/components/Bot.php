@@ -57,7 +57,7 @@ class Bot extends yii\base\BaseObject
     }
 
 
-    public function sendData(int $edit_message_with_id=0)
+/*    public function sendData()
     {
         $data = Data::getForLabelAssignment();
         // TODO: We need to delete data with empty texts on Dataset upload,
@@ -82,14 +82,15 @@ class Bot extends yii\base\BaseObject
             'reply_markup'             => $inline_keyboard,
         ];
 
-        if ($edit_message_with_id) {
-            $req_data['message_id'] = $edit_message_with_id;
+        if ($this->callback_query) {
+            $req_data['message_id'] = $this->message_id;
             return Request::editMessageText($req_data);
         } else {
             return Request::sendMessage($req_data);
         }
-    }
+    }*/
 
+    // TODO: refactor that!!
     public function assignLabel()
     {
         $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
@@ -99,7 +100,7 @@ class Bot extends yii\base\BaseObject
         if ($next_labels) {
             $nextLabelGroup = Label::findOne($label_id);
 
-            $inline_keyboard = $this->generateLabelsKeyboard($nextLabelGroup, $data_id);
+            $inline_keyboard = self::generateLabelsKeyboard($nextLabelGroup, $data_id, $this->moderator);
 
             $req_data = [
                 'chat_id'      => $this->chat_id,
@@ -124,7 +125,7 @@ class Bot extends yii\base\BaseObject
                 'cache_time'        => 0,
             ];
             Request::answerCallbackQuery($req_data);
-            return $this->sendData($this->message_id);
+            return $this->sendData();
         }
 
         $assignedLabel = new AssignedLabel;
@@ -137,11 +138,11 @@ class Bot extends yii\base\BaseObject
             // TODO: log error
         }
 
-        return $this->sendData($this->message_id);
+        return $this->sendData();
     }
 
 
-    private function generateLabelsKeyboard(Label $labelGroup, int $data_id) : InlineKeyboard
+    public static function generateLabelsKeyboard(Label $labelGroup, int $data_id, Moderator $moderator) : InlineKeyboard
     {
         $keyboard = [];
         $labels = [];
@@ -149,15 +150,15 @@ class Bot extends yii\base\BaseObject
         $labels = Label::findAll(['parent_label_id' => $labelGroup->id]);
 
         foreach ($labels as $label) {
-            array_push($keyboard, [$this->generateLabelKey($label, $data_id)]);
+            array_push($keyboard, [self::generateLabelKey($label, $data_id, $moderator)]);
         }
         return new InlineKeyboard(...$keyboard);
     }
 
 
-    private function generateLabelKey(Label $label, int $data_id) : array
+    private static function generateLabelKey(Label $label, int $data_id, Moderator $moderator) : array
     {
-        $callback_data = new CallbackData($this->moderator);
+        $callback_data = new CallbackData($moderator);
         $callback_data->type = CallbackData::LABEL_BUTTON;
         $callback_data->data = $data_id .':'. $label->id;    
 
@@ -167,7 +168,7 @@ class Bot extends yii\base\BaseObject
         ];
     }
 
-    public function showAuthInfo()
+/*    public function showAuthInfo()
     {
         $text = 'You need to enter your token on start command:' . PHP_EOL 
             . '/start <token>';
@@ -179,9 +180,9 @@ class Bot extends yii\base\BaseObject
 
         Request::sendMessage($data);
         Yii::$app->end();
-    }
+    }*/
 
-    public static function authenticate(string $token, int $tg_id) : bool
+/*    public static function authenticate(string $token, int $tg_id) : bool
     {
         $moderator = Moderator::findOne(['auth_token' => $token]);
 
@@ -196,6 +197,6 @@ class Bot extends yii\base\BaseObject
 
         return false;
     }
-
+*/
 
 }
