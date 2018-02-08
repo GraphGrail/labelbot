@@ -56,7 +56,7 @@ class WebhookController extends \yii\web\Controller
         try {
             $telegram = new Telegram($bot_api_key, $bot_username);
             $telegram->addCommandsPaths($commands_paths);
-            $telegram->enableAdmins($admin_users);
+            // $telegram->enableAdmins($admin_users);
 
             // Enable MySQL
             // $telegram->enableMySql($mysql_credentials);

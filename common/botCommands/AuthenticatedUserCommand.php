@@ -16,14 +16,21 @@ use Longman\TelegramBot\Request;
 
 abstract class AuthenticatedUserCommand extends UserCommand
 {
-    public $chat;
-    public $chat_id;
-    public $message;
-    public $message_id;
-    public $callback_query;
-    public $callback_query_id;
-    public $callback_query_data;
-	public $moderator;
+    /*
+    * Make sure this command not visible in /help command.
+    *
+    * @var bool
+    */
+    public $hidden = false;
+
+    protected $chat;
+    protected $chat_id;
+    protected $message;
+    protected $message_id;
+    protected $callback_query;
+    protected $callback_query_id;
+    protected $callback_query_data;
+	protected $moderator;
 
 	public function __construct(...$params)
     {

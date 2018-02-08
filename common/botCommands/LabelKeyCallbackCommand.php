@@ -61,6 +61,11 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
     protected $label_id;
 
     /**
+     * @var bool
+     */
+    public $hidden = true;
+
+    /**
      * Command execute method
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse

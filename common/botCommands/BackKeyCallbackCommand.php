@@ -50,6 +50,11 @@ class BackKeyCallbackCommand extends AuthenticatedUserCommand
     protected $private_only = true;
 
     /**
+     * @var bool
+     */
+    public $hidden = true;
+
+    /**
      * Command execute method
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse

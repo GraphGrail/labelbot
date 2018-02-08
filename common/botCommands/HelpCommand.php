@@ -39,7 +39,7 @@ class HelpCommand extends UserCommand
     /**
      * @var string
      */
-    protected $version = '1.3.0';
+    protected $version = '0.1.0';
 
     /**
      * @inheritdoc
@@ -64,6 +64,8 @@ class HelpCommand extends UserCommand
         if ($command_str === '') {
             $data['text'] = '*Commands List*:' . PHP_EOL;
             foreach ($user_commands as $user_command) {
+                if ($user_command->hidden) continue;
+                
                 $data['text'] .= '/' . $user_command->getName() . ' - ' . $user_command->getDescription() . PHP_EOL;
             }
 
