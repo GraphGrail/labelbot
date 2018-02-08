@@ -14,7 +14,8 @@ class CallbackData extends yii\base\BaseObject
 	public $data;
 	public $moderator;
 
-	const LABEL_BUTTON = 1;
+	// Callback Data Types:
+	const LABEL_KEY_PRESSED = 1;
 
 	public function __construct(Moderator $modertor, string $callback_data=null)
 	{
@@ -29,6 +30,14 @@ class CallbackData extends yii\base\BaseObject
 		}
 	}
 
+	public function getVerifiedData()
+	{
+	    if (!$this->checkSign()) {
+            throw new HttpException(400, 'Error verifing callback_data sign');
+        }
+        return $this->data;	
+	}
+
 	public function toString() : string
 	{
 		return $this->type .':'. $this->sign() .':'. $this->data;
@@ -37,7 +46,7 @@ class CallbackData extends yii\base\BaseObject
 	public function checkSign() : bool
 	{
 		if ($this->sign === null) {
-			throw new HttpException(500, 'Need sign property to be not null to check sign');
+			throw new HttpException(500, 'Sign property must not be null for sign checking');
 		}
 
 		if ( hash_equals($this->sign, $this->sign()) ) {
@@ -49,10 +58,16 @@ class CallbackData extends yii\base\BaseObject
 	private function sign() : string
 	{
 		if ($this->type === null || $this->data === null) {
-			throw new HttpException(500, 'Need type and data properties to be not null to make sign');
+			throw new HttpException(500, 'Type and data properties must not be null to make sign');
 		}
 
 		return crypt($this->type . $this->data . $this->moderator->id, Yii::$app->params['telegram_bot_callback_secret_key']);
+	}
+
+	public static function getType(string $callback_data) : int
+	{
+		list($type, $rest) = explode(':', $callback_data, 2);
+		return $type;
 	}
 
 }
