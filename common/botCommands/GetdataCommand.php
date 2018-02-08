@@ -12,7 +12,7 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
-use common\components\KeyboardGenerator;
+use common\components\labelsKeyboard;
 use common\models\Data;
 use common\models\Label;
 
@@ -68,13 +68,13 @@ class GetdataCommand extends AuthenticatedUserCommand
             'parent_label_id' => 0
         ]);
 
-        $inline_keyboard = KeyboardGenerator::labelsKeyboard($rootLabel, $data->id, $this->moderator);
+        $inline_keyboard = new labelsKeyboard($rootLabel, $data->id, $this->moderator);
 
         $req_data = [
             'chat_id'                  => $this->chat_id,
             'text'                     => $data->data,
             'disable_web_page_preview' => true,
-            'reply_markup'             => $inline_keyboard,
+            'reply_markup'             => $inline_keyboard->generate(),
         ];
 
         if ($this->callback_query) {
