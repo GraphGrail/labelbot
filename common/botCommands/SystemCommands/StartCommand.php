@@ -74,19 +74,22 @@ class StartCommand extends SystemCommand
 
     private function deepLink(string $token) : bool
     {
-        $tg_id = $this->getMessage()->getFrom()->getId();
-        $moderator = Moderator::findOne(['auth_token' => $token]);
+        $from = $this->getMessage()->getFrom();
 
+        $moderator = Moderator::findOne(['auth_token' => $token]);
         if ($moderator === null) {
             $data = [
-                'chat_id' => $tg_id,
+                'chat_id' => $from->getId(),
                 'text'    => 'Error: not valid auth_token',
             ];
             Request::sendMessage($data);
             return true;
         }
 
-        $moderator->tg_id = $tg_id;
+        $moderator->tg_id         = $from->getId();
+        $moderator->tg_username   = $from->getUsername();
+        $moderator->tg_first_name = $from->getFirstName();
+        $moderator->tg_last_name  = $from->getLastName();
         if ($moderator->save()) {
             return true;
         }

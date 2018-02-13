@@ -46,7 +46,7 @@ class WebhookController extends \yii\web\Controller
         // Bot's configuration
         $bot_api_key  = Yii::$app->params['telegram_bot_api_key'];
         $bot_username = Yii::$app->params['telegram_bot_username'];
-        $admin_users = Yii::$app->params['telegram_bot_admin_users'];
+        $admin_users  = Yii::$app->params['telegram_bot_admin_users'];
         // Paths for bot's commands
         $commands_paths = [
             Yii::getAlias('@common') . '/botCommands/',
