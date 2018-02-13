@@ -79,11 +79,19 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
 
         if ($this->labelHasChildrenLabels() || $this->labelWasAssignedEalier()) return;
 
-        $assignedLabel = new AssignedLabel;
-        $assignedLabel->data_id      = $this->data_id;
-        $assignedLabel->label_id     = $this->label_id;
-        $assignedLabel->moderator_id = $this->moderator->id;
-        $assignedLabel->created_at   = time();
+        $assignedLabel = AssignedLabel::findOne([
+            'data_id'       => $this->data_id,
+            'moderator_id'  => $this->moderator->id,
+            'label_id'      => null
+        ]);
+
+        if ($assignedLabel === null) {
+            $assignedLabel = new AssignedLabel;
+            $assignedLabel->data_id      = $this->data_id;
+            $assignedLabel->moderator_id = $this->moderator->id;            
+        }
+
+        $assignedLabel->label_id = $this->label_id;
 
         if (!$assignedLabel->save()) {
             // TODO: log error
@@ -112,10 +120,13 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
 
     private function labelWasAssignedEalier()
     {
-        $earlierAssignedLabel = AssignedLabel::findOne([
-            'data_id'      => $this->data_id,
-            'moderator_id' => $this->moderator->id,                    
-        ]);
+        $earlierAssignedLabel = AssignedLabel::find()
+            ->where([
+                'data_id'      => $this->data_id,
+                'moderator_id' => $this->moderator->id            
+            ])
+            ->andWhere(new \yii\db\Expression('label_id IS NOT NULL'))
+            ->one();
 
         if ($earlierAssignedLabel) {
             $req_data = [

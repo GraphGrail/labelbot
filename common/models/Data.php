@@ -56,30 +56,62 @@ class Data extends \yii\db\ActiveRecord
         return $this->hasMany(AssignedLabel::className(), ['label_id' => 'id']);
     }
 
-    public function assignLabel(Label $label, $moderator_id) : bool
+    public static function getForLabelAssignment($dataset_id, $moderator_id)
     {
-        $assignedLabel = new AssignedLabel();
-        $assignedLabel->data_id = $this->id;
-        $assignedLabel->label_id = $label->id;
-        $assignedLabel->moderator_id = $moderator_id;
-        return $assignedLabel->save();
+        // At first tryin' to find unlabeled data.
+        // Then tryin' to least labeled data that moderator don't assign label.
+        $data = self::getUnlabeledData($dataset_id) 
+             ?: self::getLeastLabeledData($dataset_id, $moderator_id);
+
+        if ($data === null) return null;
+
+        // We create AssignedLabel instance with label_id=NULL 
+        // to prevent moderators getting same data at one moment.
+        $assigned_label = new AssignedLabel;
+        $assigned_label->data_id = $data->id;
+        $assigned_label->moderator_id = $moderator_id;
+        $assigned_label->save();
+        // TODO: If moderators don't assign label at some time after they 
+        // get data, we can delete this AssignedLabel records.
+
+        return $data;
     }
 
-    public static function getForLabelAssignment()
+    /*private static function getUnassignedLabel(int $dataset_id, int $moderator_id)
     {
-        // TODO: Business logic for getData
-        // At first tryin' to find unlabeled data
+        $unassigned_label = AssignedLabel::findOne([
+            'moderator_id' => $moderator_id,
+            'label_id' => null
+        ]);
+        return self::findOne($unassigned_label->data_id);
+    }*/
+
+    private static function getUnlabeledData(int $dataset_id)
+    {
         $unlabeled_data_id = Yii::$app->db->createCommand("
                 SELECT `data`.id FROM `data` 
                 LEFT JOIN `assigned_label` on `data`.id = `assigned_label`.data_id 
-                WHERE `assigned_label`.id IS NULL
+                WHERE `data`.dataset_id = $dataset_id AND `assigned_label`.id IS NULL
             ")->queryOne();
 
-        if (!$unlabeled_data_id) {
-            // TODO:
-            // then tryin' to less labeled data that moderator don't assign label            
-        }
+        return self::findOne($unlabeled_data_id);
+    }
 
-        return Data::findOne($unlabeled_data_id);
+    private static function getLeastLabeledData(int $dataset_id, int $moderator_id)
+    {
+        $data = Yii::$app->db->createCommand("
+                SELECT data_id, COUNT(data_id) as assigns_count 
+                FROM `assigned_label` 
+                JOIN `data` on `data`.id = `assigned_label`.data_id
+                WHERE `data`.dataset_id = $dataset_id AND data_id NOT IN (
+                    SELECT data_id FROM `assigned_label`
+                    JOIN `data` on `data`.id = `assigned_label`.data_id
+                    WHERE `data`.dataset_id = $dataset_id AND `assigned_label`.moderator_id = $moderator_id
+                )
+                GROUP BY data_id
+                ORDER BY assigns_count ASC
+            ")->queryOne();
+
+        return self::findOne($data['data_id']);
     }
 }

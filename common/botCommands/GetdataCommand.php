@@ -51,10 +51,15 @@ class GetdataCommand extends AuthenticatedUserCommand
      */
     public function execute()
     {
-/*        $bot = new Bot($this);
-        return $bot->sendData();*/
+        $data = Data::getForLabelAssignment(1, $this->moderator->id);
+        if ($data === null) {
+            $req_data = [
+                    'chat_id' => $this->chat_id,
+                    'text'    => 'Сurrently, there is no data to markup',
+                ];
+            return Request::sendMessage($req_data);
+        }
 
-        $data = Data::getForLabelAssignment();
         // TODO: We need to delete data with empty texts on Dataset upload,
         // because Telegram don't send/edit message with empty text!!
         if (!trim($data->data)) {

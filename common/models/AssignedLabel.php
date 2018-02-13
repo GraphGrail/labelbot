@@ -3,6 +3,8 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "assigned_label".
@@ -29,8 +31,21 @@ class AssignedLabel extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['data_id', 'label_id', 'moderator_id', 'created_at'], 'required'],
-            [['data_id', 'label_id', 'moderator_id', 'created_at'], 'integer'],
+            [['data_id', 'moderator_id'], 'required'],
+            [['data_id', 'label_id', 'moderator_id', 'created_at', 'updated_at'], 'integer'],
+        ];
+    }
+
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at', 'updated_at'],
+                    ActiveRecord::EVENT_BEFORE_UPDATE => ['updated_at'],
+                ],
+            ],
         ];
     }
 
@@ -45,6 +60,7 @@ class AssignedLabel extends \yii\db\ActiveRecord
             'label_id' => 'Label ID',
             'moderator_id' => 'Moderator ID',
             'created_at' => 'Created At',
+            'updated_at' => 'Updated At'
         ];
     }
 
