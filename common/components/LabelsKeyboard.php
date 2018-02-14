@@ -45,7 +45,11 @@ class LabelsKeyboard extends yii\base\BaseObject
     {
         $callback_data = new CallbackData($this->moderator);
         $callback_data->type = CallbackData::LABEL_KEY_PRESSED;
-        $callback_data->data = $this->data_id .':'. $label->id;    
+        $callback_data->data = $this->data_id .':'. $label->id;
+
+        if (!$label->children) {
+            $label->text = '✅ ' . $label->text;
+        }
 
         return [
             'text' => $label->text,

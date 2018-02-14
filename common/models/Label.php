@@ -56,5 +56,9 @@ class Label extends \yii\db\ActiveRecord
     {
         return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id']);
     }
+
+    public function getChildren() {
+        return self::findAll(['parent_label_id' => $this->id]);
+    }
     
 }

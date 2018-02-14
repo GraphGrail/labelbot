@@ -102,9 +102,9 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
 
     private function labelHasChildrenLabels()
     {
-        $children_labels = Label::findAll(['parent_label_id' => $this->label_id]);
-        if ($children_labels) {
-            $root_label = Label::findOne($this->label_id);
+        $root_label = Label::findOne($this->label_id);
+
+        if ($root_label->children) {
             $inline_keyboard = new LabelsKeyboard($root_label, $this->data_id, $this->moderator);
             $req_data = [
                 'chat_id'      => $this->chat_id,
@@ -112,6 +112,7 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
                 'text'         => $this->message->getText(),
                 'reply_markup' => $inline_keyboard->generate(),
             ];
+
             Request::editMessageText($req_data);
             return true;
         }
