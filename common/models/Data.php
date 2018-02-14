@@ -58,6 +58,7 @@ class Data extends \yii\db\ActiveRecord
 
     public static function getForLabelAssignment($dataset_id, $moderator_id)
     {
+        self::deleteUnassignedLabels();
         // At first tryin' to find unlabeled data.
         // Then tryin' to least labeled data that moderator don't assign label.
         $data = self::getUnlabeledData($dataset_id) 
@@ -85,6 +86,17 @@ class Data extends \yii\db\ActiveRecord
         ]);
         return self::findOne($unassigned_label->data_id);
     }*/
+
+
+    // Delete labels that weren't assigned in 5 min
+    private static function deleteUnassignedLabels()
+    {
+        $expired_time = time() - 5 * 60;
+        AssignedLabel::deleteAll(
+            'label_id IS NULL AND created_at < :expired_at',
+            [':expired_at' => $expired_time]
+        );
+    }
 
     private static function getUnlabeledData(int $dataset_id)
     {
