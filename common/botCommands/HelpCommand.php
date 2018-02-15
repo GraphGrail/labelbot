@@ -41,6 +41,8 @@ class HelpCommand extends UserCommand
      */
     protected $version = '0.1.0';
 
+    public $hidden = false;
+
     /**
      * @inheritdoc
      */

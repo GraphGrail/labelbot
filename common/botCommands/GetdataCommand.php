@@ -12,7 +12,7 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
-use common\components\labelsKeyboard;
+use common\components\LabelsKeyboard;
 use common\models\Data;
 use common\models\Label;
 
@@ -89,5 +89,4 @@ class GetdataCommand extends AuthenticatedUserCommand
             return Request::sendMessage($req_data);
         }
     }
-
 }

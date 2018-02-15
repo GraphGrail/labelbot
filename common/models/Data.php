@@ -87,7 +87,6 @@ class Data extends \yii\db\ActiveRecord
         return self::findOne($unassigned_label->data_id);
     }*/
 
-
     // Delete labels that weren't assigned in 5 min
     private static function deleteUnassignedLabels()
     {

@@ -18,7 +18,7 @@ class CallbackData extends yii\base\BaseObject
 	const LABEL_KEY_PRESSED = 1;
 	const BACK_KEY_PRESSED  = 2;
 
-	public function __construct(Moderator $modertor, string $callback_data=null)
+	public function __construct(Moderator $moderator, string $callback_data=null)
 	{
 		$this->moderator = $moderator;
 
