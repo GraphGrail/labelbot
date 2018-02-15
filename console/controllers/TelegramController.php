@@ -13,7 +13,17 @@ use Longman\TelegramBot\Exception\TelegramException;
 
 class TelegramController extends \yii\console\Controller
 {
-    public function actionSetWebhook($domain = null)
+    protected $telegram_api_url;
+
+    public function __construct(...$params)
+    {
+        $this->telegram_api_url = 'https://api.telegram.org/bot' 
+                          . Yii::$app->params['telegram_bot_api_key'] . '/';
+
+        parent::__construct(...$params);
+    }
+
+    public function actionSetWebhook($domain = null, $certificate = null)
     {
         if ($domain === null) {
             echo $this->ansiFormat('Error: ', Console::FG_RED) 
@@ -24,6 +34,11 @@ class TelegramController extends \yii\console\Controller
         }
 
         $url = $domain . '/webhook/' . Yii::$app->params['telegram_bot_webhook_token'];
+        $params = [];
+
+        if ($certificate) {
+            $params['certificate'] = $certificate;
+        }
 
         try {
             $telegram = new Telegram(
@@ -31,7 +46,7 @@ class TelegramController extends \yii\console\Controller
                     Yii::$app->params['telegram_bot_username']
                 );
 
-            $result = $telegram->setWebhook($url);
+            $result = $telegram->setWebhook($url, $params);
             if ($result->isOk()) {
                 echo $result->getDescription();
             }
@@ -57,6 +72,12 @@ class TelegramController extends \yii\console\Controller
             echo $e->getMessage();
         }
 
+        return Controller::EXIT_CODE_NORMAL;
+    }
+
+    public function actionGetWebhookInfo()
+    {
+        echo file_get_contents($this->telegram_api_url . 'getWebhookInfo');
         return Controller::EXIT_CODE_NORMAL;
     }
 }
