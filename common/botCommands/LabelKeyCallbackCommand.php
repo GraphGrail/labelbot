@@ -100,7 +100,7 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
     {
         $root_label = Label::findOne($this->label_id);
 
-        if ($root_label->children) {
+        if ($root_label && $root_label->children) {
             $inline_keyboard = new LabelsKeyboard($root_label, $this->data_id, $this->moderator);
             $req_data = [
                 'chat_id'      => $this->chat_id,
