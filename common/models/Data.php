@@ -10,6 +10,7 @@ use Yii;
  * @property int $id
  * @property int $dataset_id
  * @property string $data
+ * @property string $data_raw
  */
 class Data extends \yii\db\ActiveRecord
 {
@@ -29,7 +30,7 @@ class Data extends \yii\db\ActiveRecord
         return [
             [['id', 'dataset_id'], 'required'],
             [['id', 'dataset_id'], 'integer'],
-            [['data'], 'string'],
+            [['data', 'data_raw'], 'string'],
             [['id'], 'unique'],
         ];
     }
@@ -46,22 +47,39 @@ class Data extends \yii\db\ActiveRecord
         ];
     }
 
+    /**
+     * Returns Dataset for this Data
+     * 
+     * @return  yii\db\ActiveQueryInterface
+     */
     public function getDataset()
     {
         return $this->hasOne(Dataset::className(), ['id' => 'dataset_id']);
     }
 
+    /**
+     * Returns AssignedLabels for this Data
+     * 
+     * @return  yii\db\ActiveQueryInterface
+     */
     public function getAssignedLabels()
     {
         return $this->hasMany(AssignedLabel::className(), ['label_id' => 'id']);
     }
 
+    /**
+     * Gets Data from specified dataset for label Assignment by specified moderator
+     * 
+     * @param type $dataset_id 
+     * @param type $moderator_id 
+     * @return Data
+     */
     public static function getForLabelAssignment($dataset_id, $moderator_id)
     {
         self::deleteUnassignedLabels();
-        // At first tryin' to find unlabeled data.
-        // Then tryin' to least labeled data that moderator don't assign label.
+
         $data = self::getUnlabeledData($dataset_id) 
+             ?: self::getSkippedData($dataset_id, $moderator_id)
              ?: self::getLeastLabeledData($dataset_id, $moderator_id);
 
         if ($data === null) return null;
@@ -72,53 +90,90 @@ class Data extends \yii\db\ActiveRecord
         $assigned_label->data_id = $data->id;
         $assigned_label->moderator_id = $moderator_id;
         $assigned_label->save();
-        // TODO: If moderators don't assign label at some time after they 
-        // get data, we can delete this AssignedLabel records.
 
         return $data;
     }
 
-    /*private static function getUnassignedLabel(int $dataset_id, int $moderator_id)
-    {
-        $unassigned_label = AssignedLabel::findOne([
-            'moderator_id' => $moderator_id,
-            'label_id' => null
-        ]);
-        return self::findOne($unassigned_label->data_id);
-    }*/
-
-    // Delete labels that weren't assigned in 5 min
+    /**
+     * Deletes AssignedLabels that weren't assigned in 5 min
+     * 
+     * @return int
+     */
     private static function deleteUnassignedLabels()
     {
         $expired_time = time() - 5 * 60;
-        AssignedLabel::deleteAll(
+        return AssignedLabel::deleteAll(
             'label_id IS NULL AND created_at < :expired_at',
             [':expired_at' => $expired_time]
         );
     }
 
+    /**
+     * Returns first unlabeled Data from data from specified dataset
+     * 
+     * @param int $dataset_id 
+     * @return Data
+     */
     private static function getUnlabeledData(int $dataset_id)
     {
         $unlabeled_data_id = Yii::$app->db->createCommand("
-                SELECT `data`.id FROM `data` 
+                SELECT `data`.id 
+                FROM `data` 
                 LEFT JOIN `assigned_label` on `data`.id = `assigned_label`.data_id 
-                WHERE `data`.dataset_id = $dataset_id AND `assigned_label`.id IS NULL
+                WHERE `data`.dataset_id = $dataset_id 
+                    AND `assigned_label`.id IS NULL
             ")->queryOne();
 
         return self::findOne($unlabeled_data_id);
     }
 
+    /**
+     * Returns first Data that was skipped by any moderator except specified
+     * 
+     * @param int $dataset_id 
+     * @param int $moderator_id 
+     * @return Data
+     */
+    private static function getSkippedData(int $dataset_id,  int $moderator_id)
+    {
+        $skipped_data_id = Yii::$app->db->createCommand("
+                SELECT data_id 
+                FROM `assigned_label`
+                JOIN `data` on `data`.id = `assigned_label`.data_id
+                WHERE `data`.dataset_id = $dataset_id 
+                    AND `assigned_label`.label_id = 0
+                    AND data_id NOT IN (
+                        SELECT data_id FROM `assigned_label`
+                        JOIN `data` on `data`.id = `assigned_label`.data_id
+                        WHERE `data`.dataset_id = $dataset_id 
+                            AND `assigned_label`.label_id = 0
+                            AND `assigned_label`.moderator_id = $moderator_id
+                    )
+            ")->queryOne();
+
+        return self::findOne($skipped_data_id['data_id']);
+    }
+
+    /**
+     * Returns first least labeled Data that was labeled by any moderator except specified
+     * 
+     * @param int $dataset_id 
+     * @param int $moderator_id 
+     * @return Data
+     */
     private static function getLeastLabeledData(int $dataset_id, int $moderator_id)
     {
         $data = Yii::$app->db->createCommand("
                 SELECT data_id, COUNT(data_id) as assigns_count 
                 FROM `assigned_label` 
                 JOIN `data` on `data`.id = `assigned_label`.data_id
-                WHERE `data`.dataset_id = $dataset_id AND data_id NOT IN (
-                    SELECT data_id FROM `assigned_label`
-                    JOIN `data` on `data`.id = `assigned_label`.data_id
-                    WHERE `data`.dataset_id = $dataset_id AND `assigned_label`.moderator_id = $moderator_id
-                )
+                WHERE `data`.dataset_id = $dataset_id 
+                    AND data_id NOT IN (
+                        SELECT data_id FROM `assigned_label`
+                        JOIN `data` on `data`.id = `assigned_label`.data_id
+                        WHERE `data`.dataset_id = $dataset_id 
+                            AND `assigned_label`.moderator_id = $moderator_id
+                    )
                 GROUP BY data_id
                 ORDER BY assigns_count ASC
             ")->queryOne();

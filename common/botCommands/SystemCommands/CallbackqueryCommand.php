@@ -1,12 +1,4 @@
 <?php
-/**
- * This file is part of the TelegramBot package.
- *
- * (c) Avtandil Kikabidze aka LONGMAN <akalongman@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
@@ -56,6 +48,9 @@ class CallbackqueryCommand extends SystemCommand
                 break;
             case CallbackData::BACK_KEY_PRESSED:
                 $this->telegram->executeCommand('backkeycallback');
+                break;
+            case CallbackData::NEXT_KEY_PRESSED:
+                $this->telegram->executeCommand('labelkeycallback');
                 break;
             default:
                 throw new HttpException(400, 'Error checking callback_data type');

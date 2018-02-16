@@ -38,6 +38,7 @@ class CallbackData extends yii\base\BaseObject
 	 */
 	const LABEL_KEY_PRESSED = 1;
 	const BACK_KEY_PRESSED  = 2;
+	const NEXT_KEY_PRESSED  = 3;
 
 	/**
 	 * Class constructor
