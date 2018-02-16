@@ -1,12 +1,4 @@
 <?php
-/**
- * This file is part of the TelegramBot package.
- *
- * (c) Avtandil Kikabidze aka LONGMAN <akalongman@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
@@ -16,7 +8,6 @@ use common\components\CallbackData;
 use common\models\Label;
 use common\models\AssignedLabel;
 use common\components\LabelsKeyboard;
-
 
 /**
  * Start command
@@ -100,7 +91,12 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
         return $this->telegram->executeCommand('getdata');
     }
 
-    private function labelHasChildrenLabels()
+    /**
+     * Handle if chosen label has children labels
+     * 
+     * @return bool
+     */
+    private function labelHasChildrenLabels() : bool
     {
         $root_label = Label::findOne($this->label_id);
 
@@ -119,6 +115,11 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
         return false;
     }
 
+    /**
+     * Handle if chosen label already was assigned by this moderator
+     * 
+     * @return bool
+     */
     private function labelWasAssignedEalier()
     {
         $earlierAssignedLabel = AssignedLabel::find()

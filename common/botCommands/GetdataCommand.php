@@ -1,12 +1,4 @@
 <?php
-/**
- * This file is part of the TelegramBot package.
- *
- * (c) Avtandil Kikabidze aka LONGMAN <akalongman@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
@@ -19,7 +11,7 @@ use common\models\Label;
 /**
  * User "/getdata" command
  *
- * Display an inline keyboard with a few buttons.
+ * Display message with Data and inline keyboard with a Labels buttons.
  */
 class GetdataCommand extends AuthenticatedUserCommand
 {
@@ -51,6 +43,12 @@ class GetdataCommand extends AuthenticatedUserCommand
      */
     public function execute()
     {
+        // TODO: We can delete previous message from bot to clear screen.
+        /*Request::deleteMessage([
+            'chat_id'    => $this->chat_id,
+            'message_id' => $this->message_id - 1
+        ]);*/
+
         $data = Data::getForLabelAssignment(1, $this->moderator->id);
         if ($data === null) {
             $req_data = [
@@ -65,7 +63,8 @@ class GetdataCommand extends AuthenticatedUserCommand
         if (!trim($data->data)) {
             $data->data = 'no data';
         }
-        // For now, we just get the first labelGroup for dataset
+        // TODO: For now, we just get the first labelGroup for dataset.
+        // This should be changed in the future.
         $labelGroup = $data->dataset->labelGroups[0];
 
         $rootLabel = Label::findOne([
@@ -85,8 +84,8 @@ class GetdataCommand extends AuthenticatedUserCommand
         if ($this->callback_query) {
             $req_data['message_id'] = $this->message_id;
             return Request::editMessageText($req_data);
-        } else {
-            return Request::sendMessage($req_data);
         }
+
+        return Request::sendMessage($req_data);
     }
 }

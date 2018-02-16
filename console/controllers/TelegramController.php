@@ -27,7 +27,7 @@ class TelegramController extends \yii\console\Controller
     {
         if ($domain === null) {
             echo $this->ansiFormat('Error: ', Console::FG_RED) 
-                . 'You need to specify <domain:port> param' . PHP_EOL
+                . 'You need to specify <domain> param' . PHP_EOL
                 . 'You can use ngrok (https://ngrok.com) as SSL proxy:' . PHP_EOL
                 . 'ngrok http -host-header=<local_domain> 80';
             return Controller::EXIT_CODE_ERROR;

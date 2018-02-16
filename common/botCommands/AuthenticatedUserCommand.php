@@ -1,19 +1,13 @@
 <?php
-/**
- * This file is part of the TelegramBot package.
- *
- * (c) Avtandil Kikabidze aka LONGMAN <akalongman@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Longman\TelegramBot\Commands;
 
 use common\models\Moderator;
 use Longman\TelegramBot\Request;
 
-
+/**
+ * Authenticated User Command
+ */
 abstract class AuthenticatedUserCommand extends UserCommand
 {
     /*
@@ -22,7 +16,7 @@ abstract class AuthenticatedUserCommand extends UserCommand
     * @var bool
     */
     public $hidden = false;
-
+    
     protected $chat;
     protected $chat_id;
     protected $message;
@@ -30,8 +24,17 @@ abstract class AuthenticatedUserCommand extends UserCommand
     protected $callback_query;
     protected $callback_query_id;
     protected $callback_query_data;
+
+    /**
+     * @var common\models\Moderator;
+     */
 	protected $moderator;
 
+    /**
+     * Class constructor
+     * 
+     * @param mixed ...$params
+     */
 	public function __construct(...$params)
     {
         parent::__construct(...$params);
@@ -43,7 +46,7 @@ abstract class AuthenticatedUserCommand extends UserCommand
             $this->callback_query_data = $this->callback_query->getData();
             $this->message             = $this->callback_query->getMessage();
         } else {
-            $this->message             = $this->getMessage();            
+            $this->message             = $this->getMessage() ?: $this->getEditedMessage();
         }
         $this->message_id        = $this->message->getMessageId();
         $this->chat              = $this->message->getChat();

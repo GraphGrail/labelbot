@@ -1,12 +1,4 @@
 <?php
-/**
- * This file is part of the TelegramBot package.
- *
- * (c) Avtandil Kikabidze aka LONGMAN <akalongman@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
@@ -18,9 +10,11 @@ use common\components\LabelsKeyboard;
 
 
 /**
- * Start command
+ * BackKey callback command
  *
- * Gets executed when a user first starts using the bot.
+ * This command handles callback queries with BACK_KEY_PRESSED type.
+ *
+ * @see CallbackqueryCommand.php
  */
 class BackKeyCallbackCommand extends AuthenticatedUserCommand
 {

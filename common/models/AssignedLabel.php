@@ -14,6 +14,7 @@ use yii\behaviors\TimestampBehavior;
  * @property int $label_id
  * @property int $moderator_id
  * @property int $created_at
+ * @property int $updated_at
  */
 class AssignedLabel extends \yii\db\ActiveRecord
 {
@@ -36,6 +37,9 @@ class AssignedLabel extends \yii\db\ActiveRecord
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function behaviors()
     {
         return [
@@ -64,16 +68,28 @@ class AssignedLabel extends \yii\db\ActiveRecord
         ];
     }
 
+    /**
+     * Returns related Data model
+     * @return common\models\Data
+     */
     public function getData()
     {
         return $this->hasOne(Data::className(), ['id' => 'data_id']);
     }
 
+    /**
+     * Returns related Label model
+     * @return common\models\Label
+     */
     public function getLabel()
     {
         return $this->hasOne(Label::className(), ['id' => 'label_id']);
     }
 
+    /**
+     * Returns related Modertor model
+     * @return common\models\Moderator
+     */
     public function getModerator()
     {
         return $this->hasOne(Moderator::className(), ['id' => 'moderator_id']);

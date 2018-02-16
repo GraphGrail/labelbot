@@ -1,12 +1,4 @@
 <?php
-/**
- * This file is part of the TelegramBot package.
- *
- * (c) Avtandil Kikabidze aka LONGMAN <akalongman@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
@@ -18,6 +10,7 @@ use common\models\Moderator;
  * Start command
  *
  * Gets executed when a user first starts using the bot.
+ * Bind Moderators via Telegrm deep linking feature.
  */
 class StartCommand extends SystemCommand
 {
@@ -71,12 +64,18 @@ class StartCommand extends SystemCommand
         return Request::sendMessage($data);
     }
 
-
-    private function deepLink(string $token) : bool
+    /**
+     * Binds Moderator and Telegram user via 
+     * Telegram Bot Api deep linking mechanism.
+     * 
+     * @param string $auth_token 
+     * @return bool
+     */
+    private function deepLink(string $auth_token) : bool
     {
         $from = $this->getMessage()->getFrom();
 
-        $moderator = Moderator::findOne(['auth_token' => $token]);
+        $moderator = Moderator::findOne(['auth_token' => $auth_token]);
         if ($moderator === null) {
             $data = [
                 'chat_id' => $from->getId(),
@@ -90,6 +89,7 @@ class StartCommand extends SystemCommand
         $moderator->tg_username   = $from->getUsername();
         $moderator->tg_first_name = $from->getFirstName();
         $moderator->tg_last_name  = $from->getLastName();
+        
         if ($moderator->save()) {
             return true;
         }
