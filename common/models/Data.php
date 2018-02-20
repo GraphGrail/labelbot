@@ -122,7 +122,8 @@ class Data extends \yii\db\ActiveRecord
                 LEFT JOIN `assigned_label` on `data`.id = `assigned_label`.data_id 
                 WHERE `data`.dataset_id = $dataset_id 
                     AND `assigned_label`.id IS NULL
-            ")->queryOne();
+                LIMIT 1
+            ")->query();
 
         return self::findOne($unlabeled_data_id);
     }
@@ -149,9 +150,10 @@ class Data extends \yii\db\ActiveRecord
                             AND `assigned_label`.label_id = 0
                             AND `assigned_label`.moderator_id = $moderator_id
                     )
-            ")->queryOne();
+                LIMIT 1
+            ")->query();
 
-        return self::findOne($skipped_data_id['data_id']);
+        return self::findOne($skipped_data_id);
     }
 
     /**
@@ -176,6 +178,7 @@ class Data extends \yii\db\ActiveRecord
                     )
                 GROUP BY data_id
                 ORDER BY assigns_count ASC
+                LIMIT 1
             ")->queryOne();
 
         return self::findOne($data['data_id']);
