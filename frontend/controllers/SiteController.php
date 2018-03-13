@@ -18,6 +18,8 @@ use frontend\models\ContactForm;
  */
 class SiteController extends Controller
 {
+    public $layout = 'main-yii';
+
     /**
      * @inheritdoc
      */
@@ -72,7 +74,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        return $this->redirect('datasets');
     }
 
     /**
@@ -113,7 +115,7 @@ class SiteController extends Controller
      *
      * @return mixed
      */
-    public function actionContact()
+/*    public function actionContact()
     {
         $model = new ContactForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
@@ -129,7 +131,7 @@ class SiteController extends Controller
                 'model' => $model,
             ]);
         }
-    }
+    }*/
 
     /**
      * Displays about page.
