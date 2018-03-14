@@ -18,6 +18,17 @@ use Yii;
 class Dataset extends \yii\db\ActiveRecord
 {
     /**
+     * Dataset statuses
+     */
+    const READY           = 1;
+    const UPLOADING       = 2;
+    const UPLOADING_ERROR = 3;
+    const UPLOADED        = 4;
+    const PARSING         = 5;
+    const PARSING_ERROR   = 6;
+
+
+    /**
      * @inheritdoc
      */
     public static function tableName()
@@ -31,7 +42,7 @@ class Dataset extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'name', 'description', 'created_at', 'updated_at'], 'required'],
+            [['user_id', 'name'], 'required'],
             [['user_id', 'status', 'created_at', 'updated_at'], 'integer'],
             [['description'], 'string'],
             [['name'], 'string', 'max' => 200],
@@ -78,5 +89,11 @@ class Dataset extends \yii\db\ActiveRecord
     {
         return $this->hasMany(LabelGroup::className(), ['id' => 'label_group_id'])
             ->viaTable('label_group_to_dataset', ['dataset_id' => 'id']);    
+    }
+
+    public function updateStatus(int $status) : bool
+    {
+        $this->status = $status;
+        return $this->save();
     }
 }

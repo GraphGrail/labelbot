@@ -4,6 +4,7 @@
 /* @var $content string */
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\Breadcrumbs;
 use frontend\assets\AppAsset;
 
@@ -13,7 +14,6 @@ AppAsset::register($this);
 <!DOCTYPE html>
 <html lang="<?= Yii::$app->language ?>">
 <head>
-    <?php $this->head() ?>
     <meta charset="<?= Yii::$app->charset ?>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -28,9 +28,10 @@ AppAsset::register($this);
       });
     </script>
     <!--end::Web font -->
+    <?php $this->head() ?>
     <!--begin::Base Styles -->  
     <!--begin::Page Vendors -->
-    <link href="/assets/vendors/custom/fullcalendar/fullcalendar.bundle.css" rel="stylesheet" type="text/css" />
+    <!--link href="/assets/vendors/custom/fullcalendar/fullcalendar.bundle.css" rel="stylesheet" type="text/css" /-->
     <!--end::Page Vendors -->
     <link href="/assets/vendors/base/vendors.bundle.css" rel="stylesheet" type="text/css" />
     <link href="/assets/demo/default/base/style.bundle.css" rel="stylesheet" type="text/css" />
@@ -38,7 +39,6 @@ AppAsset::register($this);
     <link rel="shortcut icon" href="/assets/img/logo/favicon.ico" />
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
-
 </head>
 <body class="m-page--fluid m--skin- m-content--skin-light2 m-header--fixed m-header--fixed-mobile m-aside-left--enabled m-aside-left--skin-dark m-aside-left--offcanvas m-footer--push m-aside--offcanvas-default">
 <?php $this->beginBody() ?>
@@ -102,15 +102,15 @@ AppAsset::register($this);
                                         <span class="m-menu__arrow m-menu__arrow--adjust"></span>
                                         <ul class="m-menu__subnav">
                                             <li class="m-menu__item "  aria-haspopup="true">
-                                                <a  href="/" class="m-menu__link ">
+                                                <a  href="<?=Url::to(['datasets/new']) ?>" class="m-menu__link ">
                                                     <i class="m-menu__link-icon flaticon-file"></i>
                                                     <span class="m-menu__link-text">
-                                                        <?= \Yii::t('app', 'Upload New Dataset') ?>
+                                                        <?= \Yii::t('app', 'Add New Dataset') ?>
                                                     </span>
                                                 </a>
                                             </li>
                                             <li class="m-menu__item "  data-redirect="true" aria-haspopup="true">
-                                                <a  href="/" class="m-menu__link ">
+                                                <a  href="<?=Url::to(['tasks/new']) ?>" class="m-menu__link ">
                                                     <i class="m-menu__link-icon flaticon-diagram"></i>
                                                     <span class="m-menu__link-title">
                                                         <span class="m-menu__link-wrap">
@@ -134,7 +134,7 @@ AppAsset::register($this);
                                     <li class="m-nav__item m-topbar__user-profile m-topbar__user-profile--img  m-dropdown m-dropdown--medium m-dropdown--arrow m-dropdown--header-bg-fill m-dropdown--align-right m-dropdown--mobile-full-width m-dropdown--skin-light" data-dropdown-toggle="click">
                                         <a href="#" class="m-nav__link m-dropdown__toggle">
                                             <span class="m-topbar__userpic">
-                                                <img src="assets/app/media/img/users/user4.jpg" class="m--img-rounded m--marginless m--img-centered" alt=""/>
+                                                <img src="/assets/app/media/img/users/user4.jpg" class="m--img-rounded m--marginless m--img-centered" alt=""/>
                                             </span>
                                             <span class="m-topbar__username m--hide">
                                                 Nick
