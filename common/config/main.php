@@ -5,6 +5,9 @@ return [
         '@npm'   => '@vendor/npm-asset',
     ],
     'vendorPath' => dirname(dirname(__DIR__)) . '/vendor',
+    'bootstrap' => [
+        'queue', // The component registers own console commands
+    ],
     'components' => [
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -41,6 +44,10 @@ return [
                     ],
                 ],
             ],
+        ],
+        'queue' => [
+            'class' => \yii\queue\file\Queue::class,
+            'path' => '@runtime/queue',
         ],
     ],
 ];
