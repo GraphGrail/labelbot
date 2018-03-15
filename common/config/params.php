@@ -19,6 +19,7 @@ return [
         'database' => '',
     ],
 
+    'datasetsUploadDir'     => '@frontend/runtime/uploads/datasets/',
     'datasetFileMaxSize'    => 40*1024*1024,
     'datasetFileMaxRecords' => 2000,
     'datasetDataMaxSize'    => 50*1024,

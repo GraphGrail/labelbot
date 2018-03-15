@@ -49,7 +49,7 @@ class UploadDatasetForm extends Model
                 return false;
             }
 
-            $datasetsDir = Yii::getAlias("@runtime/uploads/datasets/");
+            $datasetsDir = Yii::getAlias(Yii::$app->params['datasetsUploadDir']);
 
             if (!file_exists($datasetsDir)) {
                 mkdir($datasetsDir, 0777, true);
