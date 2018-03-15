@@ -18,4 +18,8 @@ return [
         'password' => '',
         'database' => '',
     ],
+
+    'datasetFileMaxSize'    => 40*1024*1024,
+    'datasetFileMaxRecords' => 2000,
+    'datasetDataMaxSize'    => 50*1024,
 ];

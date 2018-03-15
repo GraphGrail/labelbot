@@ -20,12 +20,12 @@ class Dataset extends \yii\db\ActiveRecord
     /**
      * Dataset statuses
      */
-    const READY           = 1;
-    const UPLOADING       = 2;
-    const UPLOADING_ERROR = 3;
-    const UPLOADED        = 4;
-    const PARSING         = 5;
-    const PARSING_ERROR   = 6;
+    const STATUS_READY           = 1;
+    const STATUS_UPLOADING       = 2;
+    const STATUS_UPLOADING_ERROR = 3;
+    const STATUS_UPLOADED        = 4;
+    const STATUS_PARSING         = 5;
+    const STATUS_PARSING_ERROR   = 6;
 
 
     /**

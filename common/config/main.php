@@ -47,7 +47,7 @@ return [
         ],
         'queue' => [
             'class' => \yii\queue\file\Queue::class,
-            'path' => '@runtime/queue',
+            'path' => '@console/runtime/queue',
         ],
     ],
 ];

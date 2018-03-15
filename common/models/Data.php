@@ -28,10 +28,9 @@ class Data extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id', 'dataset_id'], 'required'],
-            [['id', 'dataset_id'], 'integer'],
+            [['dataset_id', 'data_raw'], 'required'],
+            [['dataset_id'], 'integer'],
             [['data', 'data_raw'], 'string'],
-            [['id'], 'unique'],
         ];
     }
 
