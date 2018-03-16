@@ -47,8 +47,7 @@ class DatasetsController extends Controller
         $model = new UploadDatasetForm();
 
         if (Yii::$app->request->isPost) {
-            $modelName = StringHelper::basename(get_class($model));
-            $model->setAttributes(Yii::$app->request->post($modelName));
+            $model->load(Yii::$app->request->post());
             $model->datasetFile = UploadedFile::getInstance($model, 'datasetFile');
 
             if ($model->upload()) {
@@ -63,7 +62,7 @@ class DatasetsController extends Controller
 
     public function actionDelete()
     {
-        return $this->render('delete');
+        return true;
     }
 
 }

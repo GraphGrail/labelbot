@@ -42,8 +42,8 @@ class Dataset extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'name'], 'required'],
-            [['user_id', 'status', 'created_at', 'updated_at'], 'integer'],
+            [['name'], 'required'],
+            [['status', 'created_at', 'updated_at'], 'integer'],
             [['description'], 'string'],
             [['name'], 'string', 'max' => 200],
         ];
@@ -56,6 +56,11 @@ class Dataset extends \yii\db\ActiveRecord
     {
         return [
             \yii\behaviors\TimestampBehavior::className(),
+            [
+                'class' => \yii\behaviors\BlameableBehavior::className(),
+                'createdByAttribute' => 'user_id',
+                'updatedByAttribute' => null,
+            ],
         ];
     }
 
