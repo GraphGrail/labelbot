@@ -31,7 +31,7 @@ class Label extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['parent_label_id', 'label_group_id', 'ordering', 'created_at', 'updated_at'], 'integer'],
+            [['parent_label_id', 'label_group_id', 'ordering'], 'integer'],
             [['text'], 'string', 'max' => 300],
         ];
     }
@@ -70,5 +70,5 @@ class Label extends \yii\db\ActiveRecord
     public function getChildren() {
         return self::findAll(['parent_label_id' => $this->id]);
     }
-    
+
 }

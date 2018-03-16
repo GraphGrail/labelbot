@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use \common\models\Label;
 use Yii;
 
 /**
@@ -17,6 +18,10 @@ use Yii;
  */
 class LabelGroup extends \yii\db\ActiveRecord
 {
+    const STATUS_OK = 1;
+    const STATUS_NO_LABELS_TREE = 2;
+    const STATUS_LABELS_TREE_ERROR = 3;
+
     /**
      * @inheritdoc
      */
@@ -31,10 +36,11 @@ class LabelGroup extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'name', 'description', 'status', 'created_at', 'updated_at'], 'required'],
-            [['user_id', 'status', 'created_at', 'updated_at'], 'integer'],
-            [['description'], 'string'],
+            [['name'], 'required'],
             [['name'], 'string', 'max' => 300],
+            [['status', 'created_at', 'updated_at'], 'integer'],
+            [['description'], 'string', 'max' => 6000],
+            [['labels_tree'], 'string', 'max' => 60000],
         ];
     }
 
@@ -45,6 +51,11 @@ class LabelGroup extends \yii\db\ActiveRecord
     {
         return [
             \yii\behaviors\TimestampBehavior::className(),
+            [
+                'class' => \yii\behaviors\BlameableBehavior::className(),
+                'createdByAttribute' => 'user_id',
+                'updatedByAttribute' => null,
+            ],
         ];
     }
 
@@ -55,12 +66,13 @@ class LabelGroup extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'user_id' => 'User ID',
-            'name' => 'Name',
+            'user_id'     => 'User ID',
+            'name'        => 'Name',
             'description' => 'Description',
-            'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'labels_tree' => 'Labels Tree',
+            'status'      => 'Status',
+            'created_at'  => 'Created At',
+            'updated_at'  => 'Updated At',
         ];
     }
 

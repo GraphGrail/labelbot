@@ -31,7 +31,7 @@ AppAsset::register($this);
     <?php $this->head() ?>
     <!--begin::Base Styles -->  
     <!--begin::Page Vendors -->
-    <!--link href="/assets/vendors/custom/fullcalendar/fullcalendar.bundle.css" rel="stylesheet" type="text/css" /-->
+    <link href="/assets/vendors/custom/fullcalendar/fullcalendar.bundle.css" rel="stylesheet" type="text/css" />
     <!--end::Page Vendors -->
     <link href="/assets/vendors/base/vendors.bundle.css" rel="stylesheet" type="text/css" />
     <link href="/assets/demo/default/base/style.bundle.css" rel="stylesheet" type="text/css" />
@@ -110,12 +110,12 @@ AppAsset::register($this);
                                                 </a>
                                             </li>
                                             <li class="m-menu__item "  data-redirect="true" aria-haspopup="true">
-                                                <a  href="<?=Url::to(['tasks/new']) ?>" class="m-menu__link ">
+                                                <a  href="<?=Url::to(['labels/new']) ?>" class="m-menu__link ">
                                                     <i class="m-menu__link-icon flaticon-diagram"></i>
                                                     <span class="m-menu__link-title">
                                                         <span class="m-menu__link-wrap">
                                                             <span class="m-menu__link-text">
-                                                                <?= \Yii::t('app', 'Create Task') ?>
+                                                                <?= \Yii::t('app', 'Create New Labeling') ?>
                                                             </span>
                                                         </span>
                                                     </span>
@@ -231,25 +231,37 @@ AppAsset::register($this);
                      data-menu-scrollable="false" data-menu-dropdown-timeout="500"  
                     >
                     <ul class="m-menu__nav  m-menu__nav--dropdown-submenu-arrow ">
-                        <li class="m-menu__item  m-menu__item--active" aria-haspopup="true" >
-                            <a  href="/" class="m-menu__link ">
-                                <i class="m-menu__link-icon flaticon-line-graph"></i>
+                        <li class="m-menu__item " aria-haspopup="true" >
+                            <a  href="/tasks" class="m-menu__link ">
+                                <i class="m-menu__link-icon flaticon-suitcase"></i>
                                 <span class="m-menu__link-title">
                                     <span class="m-menu__link-wrap">
                                         <span class="m-menu__link-text">
-                                            Dashboard
+                                            Tasks
+                                        </span>
+                                    </span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="m-menu__item  m-menu__item--active" aria-haspopup="true" >
+                            <a  href="/datasets" class="m-menu__link ">
+                                <i class="m-menu__link-icon flaticon-tabs"></i>
+                                <span class="m-menu__link-title">
+                                    <span class="m-menu__link-wrap">
+                                        <span class="m-menu__link-text">
+                                            Datasets
                                         </span>
                                     </span>
                                 </span>
                             </a>
                         </li>
                         <li class="m-menu__item " aria-haspopup="true" >
-                            <a  href="/" class="m-menu__link ">
-                                <i class="m-menu__link-icon flaticon-line-graph"></i>
+                            <a  href="/labels" class="m-menu__link ">
+                                <i class="m-menu__link-icon flaticon-network"></i>
                                 <span class="m-menu__link-title">
                                     <span class="m-menu__link-wrap">
                                         <span class="m-menu__link-text">
-                                            Datasets
+                                            Labels
                                         </span>
                                     </span>
                                 </span>
@@ -421,8 +433,7 @@ AppAsset::register($this);
         </li>
     </ul-->
     <!-- begin::Quick Nav --> 
-
-<?php $this->endBody() ?> 
+<?php $this->endBody() ?>
     <!--begin::Base Scripts -->
     <script src="/assets/vendors/base/vendors.bundle.js" type="text/javascript"></script>
     <script src="/assets/demo/default/base/scripts.bundle.js" type="text/javascript"></script>
@@ -433,6 +444,7 @@ AppAsset::register($this);
     <!--begin::Page Snippets -->
     <script src="/assets/app/js/dashboard.js" type="text/javascript"></script>
     <!--end::Page Snippets -->
+
 </body>
 </html>
 <?php $this->endPage() ?>
