@@ -5,6 +5,13 @@ use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
 $this->title = Yii::t('app', 'Add New Dataset');
+
+$this->registerJs("
+$('#uploaddatasetform-datasetfile').on('change',function(){
+  var fileName = $(this).val();
+  $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+});
+", yii\web\View::POS_READY);
 ?>
 
 <div class="row">
