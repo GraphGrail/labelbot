@@ -2,6 +2,7 @@
 
 namespace frontend\controllers;
 
+use common\models\Dataset;
 use frontend\models\UploadDatasetForm;
 use yii\filters\AccessControl;
 use yii\helpers\StringHelper;
@@ -35,7 +36,13 @@ class DatasetsController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $datasets = Dataset::find()
+            ->where(['user_id' => Yii::$app->user->identity->id])
+            ->orderBy(['id' => SORT_DESC])
+            ->all();
+        return $this->render('index', [
+            'datasets' => $datasets
+        ]);
     }
 
     /**

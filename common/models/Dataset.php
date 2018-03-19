@@ -101,4 +101,46 @@ class Dataset extends \yii\db\ActiveRecord
         $this->status = $status;
         return $this->save();
     }
+
+    public function status(): object {
+        $status = [];
+        switch ($this->status) {
+            case self::STATUS_READY:
+                $status = [
+                    'text' => Yii::t('app', 'Ready'),
+                    'tip' => '',
+                    'color' => 'success'
+                ];
+                break;
+            case self::STATUS_UPLOADING:
+                $status = [
+                    'text' => Yii::t('app', 'Uploading'),
+                    'tip' => '',
+                    'color' => 'info'
+                ];
+                break;
+            case self::STATUS_UPLOADING_ERROR:
+                $status = [
+                    'text' => Yii::t('app', 'Uploading error'),
+                    'tip' => '',
+                    'color' => 'danger'
+                ];
+                break;
+            case self::STATUS_UPLOADED || self::STATUS_PARSING:
+                $status = [
+                    'text' => Yii::t('app', 'Processing'),
+                    'tip' => '',
+                    'color' => 'info'
+                ];
+                break;
+            case self::STATUS_PARSING_ERROR:
+                $status = [
+                    'text' => Yii::t('app', 'Processing error'),
+                    'tip' => '',
+                    'color' => 'danger'
+                ];
+                break;
+        }
+        return (object) $status;
+    }
 }
