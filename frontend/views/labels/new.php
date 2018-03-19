@@ -38,8 +38,8 @@ $('.js-save').on('click', function(e) {
   e.preventDefault();
   const labelsTree = createLabelTreeRecursievly($('.label-0').children('.child-labels'));
   $('#labelgroup-labels_tree').val(labelsTree.lenght < 1 ? '' : JSON.stringify(labelsTree));
-  alert(JSON.stringify(labelsTree));
-  //$(this).submit();
+  //alert(JSON.stringify(labelsTree));
+  $(this).submit();
 });
 
 function createLabelTreeRecursievly(childLabels) {
