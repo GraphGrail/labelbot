@@ -29,6 +29,21 @@ class LabelsController extends \yii\web\Controller
         ];
     }
 
+    /**
+     * Show Labels list
+     * @return type
+     */
+    public function actionIndex()
+    {
+        $labelGroups = LabelGroup::find()
+            ->where(['user_id' => Yii::$app->user->identity->id])
+            ->orderBy(['id' => SORT_DESC])
+            ->all();
+        return $this->render('index', [
+            'labelGroups' => $labelGroups
+        ]);
+    }
+
     public function actionNew()
     {
         $model = new LabelGroup();
@@ -71,9 +86,5 @@ class LabelsController extends \yii\web\Controller
         return $this->render('delete');
     }
 
-    public function actionIndex()
-    {
-        return $this->render('index');
-    }
 
 }

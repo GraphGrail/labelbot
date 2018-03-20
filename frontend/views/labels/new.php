@@ -7,12 +7,13 @@ use yii\widgets\ActiveForm;
 $this->title = Yii::t('app', 'Create New Label Group');
 
 $this->registerCss("
+#labels-tree { margin: -15px 0 15px -50px; }
 #labels-tree .label { margin: 10px 0 0 20px; }
 #labels-tree .label-0 > .input-group { display: none; }
 ");
 
 $this->registerJs("
-$('.js-add-label').on('click', function(e) {
+$('.js-add-child').on('click', function(e) {
   const parent = $(this).closest('.label');
   const label  = parent.clone(true);
   const level  = $(parent).data('level') + 1;
@@ -26,7 +27,7 @@ $('.js-add-label').on('click', function(e) {
 });
 
 $('.js-add').on('click', function(e) {
-  $('#labels-tree').find('.label :first').find('.js-add-label :first').trigger('click');
+  $('#labels-tree').find('.label :first').find('.js-add-child :first').trigger('click');
 });
 
 $('.js-del-label').on('click', function(e) {
@@ -101,7 +102,7 @@ $('.js-add')
                     <div data-level="0" class="label label-0">
                       <div class="input-group">
                         <div class="input-group-prepend">
-                          <button class="btn btn-warning js-add-label" type="button">
+                          <button class="btn btn-warning js-add-child" type="button">
                             <span>
                               <i class="la la-plus"></i>
                               <span>
