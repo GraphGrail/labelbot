@@ -63,8 +63,14 @@ $this->title = 'Datasets';
 						echo $this->render('_dataset', [
 							'dataset' => $dataset
 						]);
-					} 
+					}
+
+					if (empty($datasets)): 
 				?>
+					<div class="lead">
+						<?=Yii::t('app', 'There is no uploaded Datasets. Please upload the new one.'); ?>
+					</div>
+				<?php endif; ?>
 				</div>
 			</div>
 		</div>
