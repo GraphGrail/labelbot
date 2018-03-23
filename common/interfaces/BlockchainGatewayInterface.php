@@ -10,10 +10,9 @@ interface BlockchainGatewayInterface
 {
     public function walletAddress() : Address;
     public function checkBalances(Address $address): object;
+    public function creditAccount(array $payload) : string;
     public function deployContract(Contract $contract) : string;
     public function contractStatus(Address $contractAddress): object;
-
     public function updateCompletedWork(Address $contractAddress, array $payload) : string;
     public function forceFinalize(Address $contractAddress) : string;
-    public function creditAccount(array $payload) : string;
 }
