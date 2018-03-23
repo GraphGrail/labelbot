@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "bf4288184dc201c016ce0a6d3c843073",
+    "content-hash": "841d301cd6f4dda7532a061b71dfa5c2",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -1144,6 +1144,53 @@
                 "yii2"
             ],
             "time": "2018-02-19T20:27:10+00:00"
+        },
+        {
+            "name": "yiisoft/yii2-httpclient",
+            "version": "2.0.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yiisoft/yii2-httpclient.git",
+                "reference": "95fc8a943e8abb86e3d0f4eace6f6d1f4ba4f028"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yiisoft/yii2-httpclient/zipball/95fc8a943e8abb86e3d0f4eace6f6d1f4ba4f028",
+                "reference": "95fc8a943e8abb86e3d0f4eace6f6d1f4ba4f028",
+                "shasum": ""
+            },
+            "require": {
+                "yiisoft/yii2": "~2.0.13"
+            },
+            "type": "yii2-extension",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "yii\\httpclient\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Paul Klimov",
+                    "email": "klimov.paul@gmail.com"
+                }
+            ],
+            "description": "HTTP client extension for the Yii framework",
+            "keywords": [
+                "curl",
+                "http",
+                "httpclient",
+                "yii2"
+            ],
+            "time": "2018-02-13T15:11:30+00:00"
         },
         {
             "name": "yiisoft/yii2-queue",
