@@ -3,7 +3,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 
 /* @var $this yii\web\View */
-$this->title = 'Labels';
+$this->title = 'Datasets';
 ?>
 <div class="row">
 	<div class="col-xl-8">
@@ -13,18 +13,18 @@ $this->title = 'Labels';
 				<div class="m-portlet__head-caption">
 					<div class="m-portlet__head-title">
 						<h3 class="m-portlet__head-text">
-							<?=Yii::t('app', 'Created Labelings') ?>
+							<?=Yii::t('app', 'Uploaded Datasets') ?>
 						</h3>
 					</div>
 				</div>
 				<div class="m-portlet__head-tools">
 					<ul class="m-portlet__nav">
 						<li class="m-portlet__nav-item">
-							<a href="<?=Url::to(['labels/new']) ?>" class="btn btn-info m-btn m-btn--icon">
+							<a href="<?=Url::to(['dataset/new']) ?>" class="btn btn-info m-btn m-btn--icon">
           						<span>
           							<i class="la la-plus"></i>
           							<span>
-          								<?=Yii::t('app', 'Create New Label Group') ?>      							
+          								<?=Yii::t('app', 'Add New Dataset') ?>      							
           							</span>
           						</span>
           					</a>
@@ -59,16 +59,16 @@ $this->title = 'Labels';
 			<div class="m-portlet__body">
 				<div class="m-widget3">
 				<?php 
-					foreach ($labelGroups as $labelGroup) {
-						echo $this->render('_labelGroup', [
-							'labelGroup' => $labelGroup
+					foreach ($datasets as $dataset) {
+						echo $this->render('_dataset', [
+							'dataset' => $dataset
 						]);
 					}
 
-					if (empty($labelGroups)): 
+					if (empty($datasets)): 
 				?>
 					<div class="lead">
-						<?=Yii::t('app', 'There is no created Labelings. Please create the new one.'); ?>
+						<?=Yii::t('app', 'There is no uploaded Datasets. Please upload the new one.'); ?>
 					</div>
 				<?php endif; ?>
 				</div>

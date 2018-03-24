@@ -102,7 +102,7 @@ AppAsset::register($this);
                                         <span class="m-menu__arrow m-menu__arrow--adjust"></span>
                                         <ul class="m-menu__subnav">
                                             <li class="m-menu__item "  aria-haspopup="true">
-                                                <a  href="<?=Url::to(['datasets/new']) ?>" class="m-menu__link ">
+                                                <a  href="<?=Url::to(['dataset/new']) ?>" class="m-menu__link ">
                                                     <i class="m-menu__link-icon flaticon-file"></i>
                                                     <span class="m-menu__link-text">
                                                         <?= \Yii::t('app', 'Add New Dataset') ?>
@@ -110,7 +110,7 @@ AppAsset::register($this);
                                                 </a>
                                             </li>
                                             <li class="m-menu__item "  data-redirect="true" aria-haspopup="true">
-                                                <a  href="<?=Url::to(['labels/new']) ?>" class="m-menu__link ">
+                                                <a  href="<?=Url::to(['label/new']) ?>" class="m-menu__link ">
                                                     <i class="m-menu__link-icon flaticon-diagram"></i>
                                                     <span class="m-menu__link-title">
                                                         <span class="m-menu__link-wrap">

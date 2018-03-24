@@ -9,7 +9,7 @@ use yii\helpers\StringHelper;
 use yii\filters\AccessControl;
 use Yii;
 
-class LabelsController extends \yii\web\Controller
+class LabelController extends \yii\web\Controller
 {
     /**
      * @inheritdoc

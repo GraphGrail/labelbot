@@ -10,7 +10,7 @@ use yii\web\Controller;
 use yii\web\UploadedFile;
 use Yii;
 
-class DatasetsController extends Controller
+class DatasetController extends Controller
 {
     /**
      * @inheritdoc
