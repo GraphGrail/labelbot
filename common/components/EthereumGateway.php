@@ -92,11 +92,11 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
      * Helper method for post requests with callback to eth gateway
      * 
      * @param string $api_method 
-     * @param Address $contractAddress 
-     * @param array|null $payload 
+     * @param Address|null $contractAddress 
+     * @param array|object $payload 
      * @return string
      */
-    private function post(string $api_method, Address $contractAddress, array $payload=null) : string
+    private function post(string $api_method, $contractAddress, $payload=null) : string
     {
         $params = [];
         $params['callback'] = $this->callbackUrl . $api_method;

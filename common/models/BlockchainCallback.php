@@ -21,10 +21,10 @@ class BlockchainCallback extends \yii\db\ActiveRecord
     /**
      * Callback Types
      */
-    const DEPLOY_CONTRACT       = 1;    
-    const UPDATE_COMPLETED_WORK = 2;    
-    const FORCE_FINALIZE        = 3;    
-    const CREDIT_ACCOUNT        = 4;    
+    const DEPLOY_CONTRACT       = 1;
+    const UPDATE_COMPLETED_WORK = 2;
+    const FORCE_FINALIZE        = 3;
+    const CREDIT_ACCOUNT        = 4;
 
     /**
      * @inheritdoc

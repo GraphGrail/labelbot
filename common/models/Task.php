@@ -47,7 +47,7 @@ class Task extends \yii\db\ActiveRecord
         return [
             [['dataset_id', 'label_group_id', 'name', 'status'], 'required'],
         //    [['id', 'user_id', 'dataset_id', 'label_group_id', 'name', 'description', 'contract_address', 'contract', 'status'], 'required'],
-            [['id', 'user_id', 'dataset_id', 'label_group_id'], 'integer'],
+            [['id', 'dataset_id', 'label_group_id'], 'integer'],
             [['description', 'contract'], 'string'],
             [['name'], 'string', 'max' => 255],
             [['contract_address'], 'string', 'max' => 42],

@@ -36,4 +36,20 @@ return [
     'eth_gateway_url'            => 'http://127.0.0.1:3000/api/',
     'eth_gateway_callback_url'   => 'http://tgbot.test/blockchain-callback/',
     'eth_gateway_callback_token' => md5('SeCrEt_T0k3n_2'),
+
+    /**
+     * Blockchain configs
+     */
+    'tokenContractAddress'                    => '0x11e0892806ab9fd37224a2031c51156968c2ee72',
+    // Contract defaults
+    'workItemPrice'                           => 1000000000000000000,
+    'approvalCommissionBenificiaryAddress'    => '0x24a8dcf36178e239134ce89f74b45d734b5780f8',
+    'disapprovalCommissionBeneficiaryAddress' => '0xe354a075b40ce98f1e1b377c0420020f358f2e48',
+    'approvalCommissionFraction'              => '0.1',
+    'disapprovalCommissionFraction'           => '0.2',
+    'autoApprovalTimeoutSec'                  => '60',
+    // User credit defaults
+    'creditEtherValue' => 1000000,
+    'creditTokenValue' => 1000000,
+
 ];

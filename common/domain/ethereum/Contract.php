@@ -46,19 +46,18 @@ class Contract
 	 */
 	public $autoApprovalTimeoutSec;
 
-	public function __construct(Address $clientAddress, int $totalWorkItems, int $workItemPrice = 1000000000000000000)
+	public function __construct(Address $clientAddress, int $totalWorkItems, int $workItemPrice = null)
 	{
 		$this->clientAddress  = (string) $clientAddress;
 		$this->totalWorkItems = (string) $totalWorkItems;
-		$this->workItemPrice  = (string) $workItemPrice;
+		$this->workItemPrice  = $workItemPrice ? (string) $workItemPrice : Yii::$app->params['workItemPrice'];
 
-		// TODO: config for all this params
-		$this->tokenContractAddress 				   = '0x11e0892806ab9fd37224a2031c51156968c2ee72'; 
-		$this->approvalCommissionBenificiaryAddress    = '0x24a8dcf36178e239134ce89f74b45d734b5780f8';
-		$this->disapprovalCommissionBeneficiaryAddress = '0xe354a075b40ce98f1e1b377c0420020f358f2e48';
-		$this->approvalCommissionFraction 	 = '0.1';
-		$this->disapprovalCommissionFraction = '0.2';
-		$this->autoApprovalTimeoutSec = '60';
+		$this->tokenContractAddress 				   = Yii::$app->params['tokenContractAddress']; 
+		$this->approvalCommissionBenificiaryAddress    = Yii::$app->params['approvalCommissionBenificiaryAddress'];
+		$this->disapprovalCommissionBeneficiaryAddress = Yii::$app->params['disapprovalCommissionBeneficiaryAddress'];
+		$this->approvalCommissionFraction 	 		   = Yii::$app->params['approvalCommissionFraction'];
+		$this->disapprovalCommissionFraction 		   = Yii::$app->params['disapprovalCommissionFraction'];
+		$this->autoApprovalTimeoutSec 				   = Yii::$app->params['autoApprovalTimeoutSec'];
 	}
 
 	// TODO: setters
