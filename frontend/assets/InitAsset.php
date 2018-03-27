@@ -19,5 +19,6 @@ class InitAsset extends AssetBundle
     public $depends = [
         YiiAsset::class,
         WebFontAsset::class,
+        ThemeJsAsset::class,
     ];
 }
