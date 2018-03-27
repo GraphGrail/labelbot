@@ -17,7 +17,7 @@ class DashBoardAsset extends AssetBundle
     ];
 
     public $depends = [
-        AppAsset::class,
+        InitAsset::class,
     ];
 
 }

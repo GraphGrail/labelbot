@@ -3,11 +3,11 @@
 /* @var $this \yii\web\View */
 /* @var $content string */
 
-use frontend\assets\MainAsset;
+use frontend\assets\AppAsset;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
-MainAsset::register($this);
+AppAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
