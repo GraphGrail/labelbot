@@ -3,7 +3,7 @@
 /* @var $this \yii\web\View */
 /* @var $content string */
 
-use backend\assets\AppAsset;
+use frontend\assets\AppAsset;
 use yii\helpers\Html;
 
 AppAsset::register($this);
