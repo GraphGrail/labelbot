@@ -213,11 +213,18 @@ class SiteController extends Controller
             throw new BadRequestHttpException($e->getMessage());
         }
 
-        if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
-            Yii::$app->session->setFlash('success', 'New password saved.');
-
-            return $this->goHome();
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate() && $model->resetPassword()) {
+                return $this->asJson([
+                    'success' => 'New password saved.',
+                    'redirect' => Yii::$app->getHomeUrl(),
+                ]);
+            }
+            return $this->asJson([
+                'errors' => $model->getErrors(),
+            ]);
         }
+        $this->layout = 'unauthorized';
 
         return $this->render('resetPassword', [
             'model' => $model,
