@@ -4,6 +4,7 @@
 /* @var $form yii\bootstrap\ActiveForm */
 /* @var $loginForm \common\models\LoginForm */
 /* @var $signUpForm \frontend\models\SignupForm */
+/* @var $forgottenForm \frontend\models\PasswordResetRequestForm */
 /* @var $urls array */
 
 use frontend\assets\LoginAsset;
@@ -15,8 +16,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
 LoginAsset::register($this);
 
-$errorSummaryHeader = '<div class="m-alert m-alert--outline alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"></button><span>';
-$errorSummaryFooter = '</span></div>';
+$errorSummaryHeader = '<div class="m-alert m-alert--outline alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"></button><div class="auth-form-err-message-container"><span>';
+$errorSummaryFooter = '</span></div></div>';
 
 ?>
 <div class="m-grid m-grid--hor m-grid--root m-page">
@@ -185,9 +186,35 @@ $errorSummaryFooter = '</span></div>';
                             Enter your email to reset your password:
                         </div>
                     </div>
-                    <form class="m-login__form m-form" action="">
+                    <?php
+                    $form = ActiveForm::begin([
+                        'id' => 'request-password-reset-form',
+                        'action' => $urls['forgotten'],
+                        'options' => [
+                            'class' => 'm-login__form m-form',
+                        ],
+                        'fieldConfig' => [
+                            'options' => [
+                                'tag' => false,
+                            ],
+                        ],
+                    ]);
+                    $form->errorSummaryCssClass = 'custom-error-summary';
+
+                    echo $form->errorSummary($forgottenForm, [
+                        'header' => $errorSummaryHeader,
+                        'footer' => $errorSummaryFooter,
+                    ]);
+                    ?>
                         <div class="form-group m-form__group">
-                            <input class="form-control m-input" type="text" placeholder="Email" name="email" id="m_email" autocomplete="off">
+                            <?= $form->field($forgottenForm, 'email', ['errorOptions' => ['class' => 'hidden'],])
+                                ->textInput([
+                                    'class' => 'form-control m-input',
+                                    'placeholder' => $signUpForm->getAttributeLabel('email'),
+                                    'errorOptions' => ['tag' => null],
+                                ])
+                                ->error(['tag' => null])
+                                ->label(false) ?>
                         </div>
                         <div class="m-login__form-action">
                             <button id="m_login_forget_password_submit" class="btn btn-focus m-btn m-btn--pill m-btn--custom m-btn--air  m-login__btn m-login__btn--primaryr">
@@ -198,7 +225,7 @@ $errorSummaryFooter = '</span></div>';
                                 Cancel
                             </button>
                         </div>
-                    </form>
+                    <?php ActiveForm::end(); ?>
                 </div>
                 <div class="m-login__account">
 							<span class="m-login__account-msg">
