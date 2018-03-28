@@ -6,7 +6,7 @@ var SnippetLogin = function() {
     var showErrorMsg = function(form, type, msg) {
         var alert = $('<div class="m-alert m-alert--outline alert alert-' + type + ' alert-dismissible" role="alert">\
 			<button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>\
-			<span></span>\
+			<div class="auth-form-err-message-container"><span></span></div>\
 		</div>');
 
         form.find('.alert').remove();
@@ -151,7 +151,7 @@ var SnippetLogin = function() {
 
             form.validate({
                 rules: {
-                    email: {
+                    'PasswordResetRequestForm[email]': {
                         required: true,
                         email: true
                     }
@@ -165,22 +165,22 @@ var SnippetLogin = function() {
             btn.addClass('m-loader m-loader--right m-loader--light').attr('disabled', true);
 
             form.ajaxSubmit({
-                url: '',
-                success: function(response, status, xhr, $form) { 
-                	// similate 2s delay
-                	setTimeout(function() {
-                		btn.removeClass('m-loader m-loader--right m-loader--light').attr('disabled', false); // remove 
-	                    form.clearForm(); // clear form
-	                    form.validate().resetForm(); // reset validation states
+                success: function(response, status, xhr, $form) {
+                    btn.removeClass('m-loader m-loader--right m-loader--light').attr('disabled', false);
+                    if (response.errors) {
+                        var field = '';
+                        $.each(response.errors, function(_, error) {
+                            field += error + '<br/>';
+                        });
 
-	                    // display signup form
-	                    displaySignInForm();
-	                    var signInForm = login.find('.m-login__signin form');
-	                    signInForm.clearForm();
-	                    signInForm.validate().resetForm();
-
-	                    showErrorMsg(signInForm, 'success', 'Cool! Password recovery instruction has been sent to your email.');
-                	}, 2000);
+                        showErrorMsg(form, 'danger', field);
+                        return;
+                    }
+                    if (response.success) {
+                        showErrorMsg(form, 'success', response.success);
+                    }
+                    form.clearForm(); // clear form
+                    form.validate().resetForm(); // reset validation states
                 }
             });
         });
