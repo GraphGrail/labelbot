@@ -6,23 +6,22 @@
 $currentUrl = Yii::$app->getRequest()->getUrl();
 
 $items = [
-    'tasks' => [
+    'task' => [
         'label' => 'Tasks',
         'icon' => 'flaticon-suitcase',
         'url' => '/tasks',
     ],
-    'datasets' => [
+    'dataset' => [
         'label' => 'Datasets',
         'icon' => 'flaticon-tabs',
         'url' => '/datasets',
     ],
-    'labels' => [
+    'label' => [
         'label' => 'Labels',
         'icon' => 'flaticon-network',
         'url' => '/labels',
     ],
 ];
-
 ?>
 
 <!-- BEGIN: Left Aside -->
@@ -39,8 +38,8 @@ $items = [
     >
         <ul class="m-menu__nav  m-menu__nav--dropdown-submenu-arrow ">
             <?php
-            foreach ($items as $item) {
-                $active = strpos($currentUrl, $item['url']) !== false;
+            foreach ($items as $name => $item) {
+                $active = strpos($currentUrl, $name) !== false;
                 ?>
                 <li class="m-menu__item <?= $active ? 'm-menu__item--active' : ''?>" aria-haspopup="true" >
                     <a  href="<?=$item['url']?>" class="m-menu__link ">
