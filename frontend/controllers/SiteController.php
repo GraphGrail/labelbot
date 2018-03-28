@@ -3,6 +3,7 @@ namespace frontend\controllers;
 
 use Yii;
 use yii\base\InvalidParamException;
+use yii\helpers\Url;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -88,14 +89,18 @@ class SiteController extends Controller
             return $this->goHome();
         }
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
+        $loginForm = new LoginForm();
+        if ($loginForm->load(Yii::$app->request->post()) && $loginForm->login()) {
             return $this->goBack();
         } else {
             $this->layout = 'unauthorized';
 
             return $this->render('login', [
-                'model' => $model,
+                'loginForm' => $loginForm,
+                'signUpForm' => new SignupForm(),
+                'urls' => [
+                    'signup' => Url::toRoute('site/signup'),
+                ],
             ]);
         }
     }
@@ -156,13 +161,15 @@ class SiteController extends Controller
         if ($model->load(Yii::$app->request->post())) {
             if ($user = $model->signup()) {
                 if (Yii::$app->getUser()->login($user)) {
-                    return $this->goHome();
+                    return $this->asJson([
+                        'redirect' => Yii::$app->getHomeUrl(),
+                    ]);
                 }
             }
         }
 
-        return $this->render('signup', [
-            'model' => $model,
+        return $this->asJson([
+            'errors' => $model->getErrors(),
         ]);
     }
 
