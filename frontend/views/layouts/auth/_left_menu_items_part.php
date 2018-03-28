@@ -3,6 +3,26 @@
  * @author Juriy Panasevich <u.panasevich@graphgrail.com>
  */
 
+$currentUrl = Yii::$app->getRequest()->getUrl();
+
+$items = [
+    'tasks' => [
+        'label' => 'Tasks',
+        'icon' => 'flaticon-suitcase',
+        'url' => '/tasks',
+    ],
+    'datasets' => [
+        'label' => 'Datasets',
+        'icon' => 'flaticon-tabs',
+        'url' => '/datasets',
+    ],
+    'labels' => [
+        'label' => 'Labels',
+        'icon' => 'flaticon-network',
+        'url' => '/labels',
+    ],
+];
+
 ?>
 
 <!-- BEGIN: Left Aside -->
@@ -18,42 +38,25 @@
         data-menu-scrollable="false" data-menu-dropdown-timeout="500"
     >
         <ul class="m-menu__nav  m-menu__nav--dropdown-submenu-arrow ">
-            <li class="m-menu__item " aria-haspopup="true" >
-                <a  href="/tasks" class="m-menu__link ">
-                    <i class="m-menu__link-icon flaticon-suitcase"></i>
-                    <span class="m-menu__link-title">
-                                    <span class="m-menu__link-wrap">
-                                        <span class="m-menu__link-text">
-                                            Tasks
-                                        </span>
-                                    </span>
-                                </span>
-                </a>
-            </li>
-            <li class="m-menu__item  m-menu__item--active" aria-haspopup="true" >
-                <a  href="/datasets" class="m-menu__link ">
-                    <i class="m-menu__link-icon flaticon-tabs"></i>
-                    <span class="m-menu__link-title">
-                                    <span class="m-menu__link-wrap">
-                                        <span class="m-menu__link-text">
-                                            Datasets
-                                        </span>
-                                    </span>
-                                </span>
-                </a>
-            </li>
-            <li class="m-menu__item " aria-haspopup="true" >
-                <a  href="/labels" class="m-menu__link ">
-                    <i class="m-menu__link-icon flaticon-network"></i>
-                    <span class="m-menu__link-title">
-                                    <span class="m-menu__link-wrap">
-                                        <span class="m-menu__link-text">
-                                            Labels
-                                        </span>
-                                    </span>
-                                </span>
-                </a>
-            </li>
+            <?php
+            foreach ($items as $item) {
+                $active = strpos($currentUrl, $item['url']) !== false;
+                ?>
+                <li class="m-menu__item <?= $active ? 'm-menu__item--active' : ''?>" aria-haspopup="true" >
+                    <a  href="<?=$item['url']?>" class="m-menu__link ">
+                        <i class="m-menu__link-icon <?=$item['icon']?>"></i>
+                        <span class="m-menu__link-title">
+                        <span class="m-menu__link-wrap">
+                            <span class="m-menu__link-text">
+                                <?=$item['label']?>
+                            </span>
+                        </span>
+                    </span>
+                    </a>
+                </li>
+                <?php
+            }
+            ?>
         </ul>
     </div>
     <!-- END: Aside Menu -->
