@@ -98,8 +98,10 @@ class SiteController extends Controller
             return $this->render('login', [
                 'loginForm' => $loginForm,
                 'signUpForm' => new SignupForm(),
+                'forgottenForm' => new PasswordResetRequestForm(),
                 'urls' => [
                     'signup' => Url::toRoute('site/signup'),
+                    'forgotten' => Url::toRoute('site/request-password-reset'),
                 ],
             ]);
         }
@@ -183,12 +185,12 @@ class SiteController extends Controller
         $model = new PasswordResetRequestForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail()) {
-                Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
-
-                return $this->goHome();
-            } else {
-                Yii::$app->session->setFlash('error', 'Sorry, we are unable to reset password for the provided email address.');
+                return $this->asJson([
+                    'success' => 'Check your email for further instructions.',
+                ]);
             }
+
+            return $this->asJson(['errors' => ['Sorry, we are unable to reset password for the provided email address.']]);
         }
 
         return $this->render('requestPasswordResetToken', [
