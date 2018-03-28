@@ -71,10 +71,10 @@ var SnippetLogin = function() {
 
             form.validate({
                 rules: {
-                    username: {
+                    'LoginForm[username]': {
                         required: true,
                     },
-                    password: {
+                    'LoginForm[password]': {
                         required: true
                     }
                 }
@@ -99,20 +99,17 @@ var SnippetLogin = function() {
 
             form.validate({
                 rules: {
-                    fullname: {
+                    'SignupForm[username]': {
                         required: true
                     },
-                    email: {
+                    'SignupForm[email]': {
                         required: true,
                         email: true
                     },
-                    password: {
+                    'SignupForm[password]': {
                         required: true
                     },
-                    rpassword: {
-                        required: true
-                    },
-                    agree: {
+                    'SignupForm[password_confirm]': {
                         required: true
                     }
                 }
@@ -125,22 +122,21 @@ var SnippetLogin = function() {
             btn.addClass('m-loader m-loader--right m-loader--light').attr('disabled', true);
 
             form.ajaxSubmit({
-                url: '',
                 success: function(response, status, xhr, $form) {
-                	// similate 2s delay
-                	setTimeout(function() {
-	                    btn.removeClass('m-loader m-loader--right m-loader--light').attr('disabled', false);
-	                    form.clearForm();
-	                    form.validate().resetForm();
+                    if (response.errors) {
+                        btn.removeClass('m-loader m-loader--right m-loader--light').attr('disabled', false);
+                        var field = $('<ul/>');
+                        $.each(response.errors, function(_, error) {
+                            field.append('<li>' + error + '</li>');
+                        });
 
-	                    // display signup form
-	                    displaySignInForm();
-	                    var signInForm = login.find('.m-login__signin form');
-	                    signInForm.clearForm();
-	                    signInForm.validate().resetForm();
-
-	                    showErrorMsg(signInForm, 'success', 'Thank you. To complete your registration please check your email.');
-	                }, 2000);
+                        showErrorMsg(form, 'danger', field);
+                        return;
+                    }
+                    if (response.redirect) {
+                        showErrorMsg(form, 'success', 'Thank you. Registration complete');
+                        window.location = response.redirect;
+                    }
                 }
             });
         });

@@ -2,7 +2,9 @@
 
 /* @var $this yii\web\View */
 /* @var $form yii\bootstrap\ActiveForm */
-/* @var $model \common\models\LoginForm */
+/* @var $loginForm \common\models\LoginForm */
+/* @var $signUpForm \frontend\models\SignupForm */
+/* @var $urls array */
 
 use frontend\assets\LoginAsset;
 use yii\helpers\Html;
@@ -12,6 +14,10 @@ $this->title = 'Login';
 $this->params['breadcrumbs'][] = $this->title;
 
 LoginAsset::register($this);
+
+$errorSummaryHeader = '<div class="m-alert m-alert--outline alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"></button><span>';
+$errorSummaryFooter = '</span></div>';
+
 ?>
 <div class="m-grid m-grid--hor m-grid--root m-page">
     <div class="m-grid__item m-grid__item--fluid m-grid m-grid--hor m-login m-login--signin m-login--2 m-login-2--skin-2" id="m_login" style="background-image: url(/images/bg/bg-3.jpg);">
@@ -40,40 +46,37 @@ LoginAsset::register($this);
                             ],
                         ]);
                         $form->errorSummaryCssClass = 'custom-error-summary';
-                        $header = '<div class="m-alert m-alert--outline alert alert-danger alert-dismissible" role="alert">
-                                   <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button><span>';
-                        $footer = '</span></div>';
 
-                        echo $form->errorSummary($model, [
-                            'header' => $header,
-                            'footer' => $footer,
+                        echo $form->errorSummary($loginForm, [
+                            'header' => $errorSummaryHeader,
+                            'footer' => $errorSummaryFooter,
                         ]);
                     ?>
 
                         <div class="form-group m-form__group">
-                            <?= $form->field($model, 'username', ['errorOptions' => ['class' => 'hidden'],])
+                            <?= $form->field($loginForm, 'username', ['errorOptions' => ['class' => 'hidden'],])
                                 ->textInput([
                                     'autofocus' => true,
                                     'class' => 'form-control m-input',
-                                    'placeholder' => $model->getAttributeLabel('username'),
+                                    'placeholder' => $loginForm->getAttributeLabel('username'),
                                     'errorOptions' => ['tag' => null],
                                 ])
                                 ->error(['tag' => null])
                                 ->label(false) ?>
                         </div>
                         <div class="form-group m-form__group">
-                            <?= $form->field($model, 'password', ['errorOptions' => ['class' => 'hidden'],])
+                            <?= $form->field($loginForm, 'password', ['errorOptions' => ['class' => 'hidden'],])
                                 ->passwordInput([
                                     'class' => 'form-control m-input m-login__form-input--last',
-                                    'placeholder' => $model->getAttributeLabel('password'),
+                                    'placeholder' => $loginForm->getAttributeLabel('password'),
                                 ])
                                 ->label(false) ?>
                         </div>
                         <div class="row m-login__form-sub">
                             <div class="col m--align-left m-login__form-left">
                                 <label class="m-checkbox  m-checkbox--focus">
-                                    <?= $model->getAttributeLabel('rememberMe');?>
-                                    <?= $form->field($model, 'rememberMe', ['errorOptions' => ['class' => 'hidden'],])
+                                    <?= $loginForm->getAttributeLabel('rememberMe');?>
+                                    <?= $form->field($loginForm, 'rememberMe', ['errorOptions' => ['class' => 'hidden'],])
                                         ->checkbox([
                                             'name' => 'remember',
                                             'label' => false,
@@ -105,32 +108,62 @@ LoginAsset::register($this);
                             Enter your details to create your account:
                         </div>
                     </div>
-                    <form class="m-login__form m-form" action="">
+                    <?php
+                    $form = ActiveForm::begin([
+                        'id' => 'form-signup',
+                        'action' => $urls['signup'],
+                        'options' => [
+                            'class' => 'm-login__form m-form',
+                        ],
+                        'fieldConfig' => [
+                            'options' => [
+                                'tag' => false,
+                            ],
+                        ],
+                    ]);
+                    $form->errorSummaryCssClass = 'custom-error-summary';
+
+                    echo $form->errorSummary($signUpForm, [
+                        'header' => $errorSummaryHeader,
+                        'footer' => $errorSummaryFooter,
+                    ]);
+                    ?>
                         <div class="form-group m-form__group">
-                            <input class="form-control m-input" type="text" placeholder="Fullname" name="fullname" >
+                            <?= $form->field($signUpForm, 'username', ['errorOptions' => ['class' => 'hidden'],])
+                                ->textInput([
+                                    'autofocus' => true,
+                                    'class' => 'form-control m-input',
+                                    'placeholder' => $signUpForm->getAttributeLabel('username'),
+                                    'errorOptions' => ['tag' => null],
+                                ])
+                                ->error(['tag' => null])
+                                ->label(false) ?>
                         </div>
                         <div class="form-group m-form__group">
-                            <input class="form-control m-input" type="text" placeholder="Email" name="email" autocomplete="off">
+                            <?= $form->field($signUpForm, 'email', ['errorOptions' => ['class' => 'hidden'],])
+                                ->textInput([
+                                    'class' => 'form-control m-input',
+                                    'placeholder' => $signUpForm->getAttributeLabel('email'),
+                                    'errorOptions' => ['tag' => null],
+                                ])
+                                ->error(['tag' => null])
+                                ->label(false) ?>
                         </div>
                         <div class="form-group m-form__group">
-                            <input class="form-control m-input" type="password" placeholder="Password" name="password">
+                            <?= $form->field($signUpForm, 'password', ['errorOptions' => ['class' => 'hidden'],])
+                                ->passwordInput([
+                                    'class' => 'form-control m-input m-login__form-input--last',
+                                    'placeholder' => $signUpForm->getAttributeLabel('password'),
+                                ])
+                                ->label(false) ?>
                         </div>
                         <div class="form-group m-form__group">
-                            <input class="form-control m-input m-login__form-input--last" type="password" placeholder="Confirm Password" name="rpassword">
-                        </div>
-                        <div class="row form-group m-form__group m-login__form-sub">
-                            <div class="col m--align-left">
-                                <label class="m-checkbox m-checkbox--focus">
-                                    <input type="checkbox" name="agree">
-                                    I Agree the
-                                    <a href="#" class="m-link m-link--focus">
-                                        terms and conditions
-                                    </a>
-                                    .
-                                    <span></span>
-                                </label>
-                                <span class="m-form__help"></span>
-                            </div>
+                            <?= $form->field($signUpForm, 'password_confirm', ['errorOptions' => ['class' => 'hidden'],])
+                                ->passwordInput([
+                                    'class' => 'form-control m-input m-login__form-input--last',
+                                    'placeholder' => $signUpForm->getAttributeLabel('password_confirm'),
+                                ])
+                                ->label(false) ?>
                         </div>
                         <div class="m-login__form-action">
                             <button id="m_login_signup_submit" class="btn btn-focus m-btn m-btn--pill m-btn--custom m-btn--air  m-login__btn">
@@ -141,7 +174,7 @@ LoginAsset::register($this);
                                 Cancel
                             </button>
                         </div>
-                    </form>
+                    <?php ActiveForm::end(); ?>
                 </div>
                 <div class="m-login__forget-password">
                     <div class="m-login__head">
