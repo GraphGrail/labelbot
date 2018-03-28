@@ -3,13 +3,17 @@ var SnippetLogin = function() {
 
     var login = $('#m_login');
 
+    var removeErrors = function (form) {
+        form.find('.alert').remove();
+    }
+
     var showErrorMsg = function(form, type, msg) {
         var alert = $('<div class="m-alert m-alert--outline alert alert-' + type + ' alert-dismissible" role="alert">\
 			<button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>\
 			<div class="auth-form-err-message-container"><span></span></div>\
 		</div>');
 
-        form.find('.alert').remove();
+        removeErrors(form);
         alert.prependTo(form);
         alert.animateClass('fadeIn animated');
         alert.find('span').html(msg);
@@ -83,6 +87,7 @@ var SnippetLogin = function() {
             if (!form.valid()) {
                 return;
             }
+            removeErrors(form);
 
             btn.addClass('m-loader m-loader--right m-loader--light').attr('disabled', true);
 
@@ -118,6 +123,7 @@ var SnippetLogin = function() {
             if (!form.valid()) {
                 return;
             }
+            removeErrors(form);
 
             btn.addClass('m-loader m-loader--right m-loader--light').attr('disabled', true);
 
@@ -161,6 +167,7 @@ var SnippetLogin = function() {
             if (!form.valid()) {
                 return;
             }
+            removeErrors(form);
 
             btn.addClass('m-loader m-loader--right m-loader--light').attr('disabled', true);
 
