@@ -210,7 +210,7 @@ $errorSummaryFooter = '</span></div></div>';
                             <?= $form->field($forgottenForm, 'email', ['errorOptions' => ['class' => 'hidden'],])
                                 ->textInput([
                                     'class' => 'form-control m-input',
-                                    'placeholder' => $signUpForm->getAttributeLabel('email'),
+                                    'placeholder' => $forgottenForm->getAttributeLabel('email'),
                                     'errorOptions' => ['tag' => null],
                                 ])
                                 ->error(['tag' => null])
