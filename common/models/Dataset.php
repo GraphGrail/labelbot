@@ -154,4 +154,9 @@ class Dataset extends \yii\db\ActiveRecord
         }
         return (object) $status;
     }
+
+    public static function find()
+    {
+        return new DatasetQuery(get_called_class());
+    }
 }
