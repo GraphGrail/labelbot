@@ -7,6 +7,7 @@ use frontend\models\UploadDatasetForm;
 use yii\filters\AccessControl;
 use yii\helpers\StringHelper;
 use yii\web\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\UploadedFile;
 use Yii;
 
@@ -67,9 +68,23 @@ class DatasetController extends Controller
     }
 
 
-    public function actionDelete()
+    /**
+     * @param $id
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     * @throws \Exception
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function actionDelete($id)
     {
-        return true;
+        if (!$model = Dataset::findOne($id)) {
+            throw new NotFoundHttpException(sprintf('Dataset with id `%s` not found', $id));
+        }
+        $model->delete();
+        return $this->asJson([
+            'success' => $model->deleted,
+        ]);
     }
 
 }
