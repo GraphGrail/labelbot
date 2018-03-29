@@ -9,6 +9,7 @@ use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use yii\filters\AccessControl;
 use Yii;
+use yii\web\NotFoundHttpException;
 
 class TaskController extends \yii\web\Controller
 {
@@ -172,12 +173,22 @@ class TaskController extends \yii\web\Controller
 
 
     /**
-     * Delete Task
-     * @param int $id Task id
+     * @param $id
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     * @throws \Exception
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
     public function actionDelete($id)
     {
-        Yii::$app->end();
+        if (!$model = Task::findOne($id)) {
+            throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
+        }
+        $model->delete();
+        return $this->asJson([
+            'success' => $model->deleted,
+        ]);
     }
 
 }
