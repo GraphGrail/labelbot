@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use common\models\behavior\DeletedAttributeBehavior;
 use \common\models\Label;
 use Yii;
 use yii\behaviors\AttributeTypecastBehavior;
@@ -62,6 +63,9 @@ class LabelGroup extends \yii\db\ActiveRecord
             'typecast' => [
                   'class' => AttributeTypecastBehavior::className(),
                   'typecastAfterFind' => true,
+            ],
+            'deletedAttribute' => [
+                'class' => DeletedAttributeBehavior::className(),
             ],
         ];
     }

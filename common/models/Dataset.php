@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use common\models\behavior\DeletedAttributeBehavior;
 use Yii;
 use yii\behaviors\AttributeTypecastBehavior;
 
@@ -67,6 +68,9 @@ class Dataset extends \yii\db\ActiveRecord
             'typecast' => [
                 'class' => AttributeTypecastBehavior::className(),
                 'typecastAfterFind' => true,
+            ],
+            'deletedAttribute' => [
+                'class' => DeletedAttributeBehavior::className(),
             ],
         ];
     }
