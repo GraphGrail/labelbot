@@ -32,12 +32,12 @@ class LabelController extends \yii\web\Controller
 
     /**
      * Show Labels list
-     * @return type
+     * @return string
      */
     public function actionIndex()
     {
         $labelGroups = LabelGroup::find()
-            ->where(['user_id' => Yii::$app->user->identity->id])
+            ->andWhere(['user_id' => Yii::$app->user->identity->id])
             ->orderBy(['id' => SORT_DESC])
             ->all();
         return $this->render('index', [
