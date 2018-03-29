@@ -103,4 +103,9 @@ class LabelGroup extends \yii\db\ActiveRecord
             ->viaTable('label_group_to_dataset', ['label_group_id' => 'id']);    
     }
 
+    public static function find()
+    {
+        return new LabelGroupQuery(get_called_class());
+    }
+
 }
