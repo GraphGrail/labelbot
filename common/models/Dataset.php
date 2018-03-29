@@ -101,11 +101,16 @@ class Dataset extends \yii\db\ActiveRecord
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
 
-    public function getLabelGroups()
+    public function getTasks()
+    {
+        return $this->hasMany(Task::className(), ['dataset_id' => 'id']);
+    }
+
+/*    public function getLabelGroups()
     {
         return $this->hasMany(LabelGroup::className(), ['id' => 'label_group_id'])
             ->viaTable('label_group_to_dataset', ['dataset_id' => 'id']);    
-    }
+    }*/
 
     public function updateStatus(int $status) : bool
     {

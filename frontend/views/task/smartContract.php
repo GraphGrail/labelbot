@@ -1,8 +1,11 @@
 <?php
 
 use yii\helpers\Html;
+use frontend\assets\EthGatewayAsset;
 
 /* @var $this yii\web\View */
+EthGatewayAsset::register($this);
+
 $this->registerJs("
 
 ");

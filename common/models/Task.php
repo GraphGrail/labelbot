@@ -2,6 +2,10 @@
 
 namespace common\models;
 
+use common\domain\ethereum\Address;
+use common\domain\ethereum\Contract;
+use common\models\BlockchainCallback;
+use common\interfaces\BlockchainGatewayInterface;
 use common\models\behavior\DeletedAttributeBehavior;
 use Yii;
 use yii\behaviors\AttributeTypecastBehavior;
@@ -30,9 +34,12 @@ class Task extends \yii\db\ActiveRecord
     const STATUS_CONTRACT_NOT_DEPLOYED       = 1;
     const STATUS_CONTRACT_DEPLOYMENT_PROCESS = 2;
     const STATUS_CONTRACT_DEPLOYMENT_ERROR   = 3;
-    const STATUS_CONTRACT_NEW       = 4;
-    const STATUS_CONTRACT_ACTIVE    = 5;
-    const STATUS_CONTRACT_FINALIZED = 6;
+    const STATUS_CONTRACT_NEW_NEED_TOKENS    = 4;
+    const STATUS_CONTRACT_NEW                = 5;
+    const STATUS_CONTRACT_ACTIVE             = 6;
+    const STATUS_CONTRACT_ACTIVE_PAUSED      = 7;
+    const STATUS_FORCE_FINALIZING            = 8;
+    const STATUS_CONTRACT_FINALIZED          = 9;
 
     /**
      * @inheritdoc
@@ -109,4 +116,57 @@ class Task extends \yii\db\ActiveRecord
     {
         return new TaskQuery(get_called_class());
     }
+
+    public function getDataset()
+    {
+        return $this->hasOne(Dataset::className(), ['id' => 'dataset_id']);
+    }
+
+    public function getLabelGroup()
+    {
+        return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id']);
+    }
+
+
+    public function deployContract(BlockchainGatewayInterface $blockchain, Address $clientAddress)
+    {
+        $contract    = new Contract($clientAddress, 20); // TODO: real jobs number
+        $callback_id = $blockchain->deployContract($contract);
+
+        $callback_params = [
+            'task_id' => $this->id
+        ];
+
+        $callback = new BlockchainCallback();
+        $callback->type = BlockchainCallback::DEPLOY_CONTRACT;
+        $callback->callback_id = $callback_id;
+        $callback->params = json_encode($callback_params);
+
+        if (!$callback->save()) {
+            throw new \Exception("Can't save Callback after deployContract() was called");
+        }
+
+        $this->contract = json_encode($contract);
+
+        $this->status = Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS;
+        if (!$this->save()) {
+            throw new \Exception("Can't update Task");
+        }
+    }
+
+    public function tokensNeededForContractActivation()
+    {
+        if ($this->contract === null) {
+            return null;
+        }
+
+        $contract = json_decode($this->contract);
+        return $contract->totalWorkItems * $contract->workItemPrice;
+    }
+
+    public function contractAddress() : Address
+    {
+        return $this->contract_address ? new Address($this->contract_address) : null;
+    }
+
 }
