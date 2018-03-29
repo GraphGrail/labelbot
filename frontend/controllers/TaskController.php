@@ -37,7 +37,7 @@ class TaskController extends \yii\web\Controller
     public function actionIndex()
     {
         $tasks = Task::find()
-            ->where(['user_id' => Yii::$app->user->identity->id])
+            ->andWhere(['user_id' => Yii::$app->user->identity->id])
             ->orderBy(['id' => SORT_DESC])
             ->all();
         return $this->render('index', [

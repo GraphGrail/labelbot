@@ -2,6 +2,10 @@
 
 namespace common\models;
 
+
+use common\models\behavior\DeletedAttributeQueryBehavior;
+use yii\helpers\ArrayHelper;
+
 /**
  * This is the ActiveQuery class for [[Task]].
  *
@@ -9,6 +13,16 @@ namespace common\models;
  */
 class TaskQuery extends \yii\db\ActiveQuery
 {
+
+    public function behaviors()
+    {
+        return ArrayHelper::merge(parent::behaviors(), [
+            'deletedAttribute' => [
+                'class' => DeletedAttributeQueryBehavior::class,
+            ],
+        ]);
+    }
+
     /*public function active()
     {
         return $this->andWhere('[[status]]=1');
