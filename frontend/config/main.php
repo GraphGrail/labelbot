@@ -52,6 +52,9 @@ return [
                 'task/<id:\d+>/get-credit/<address:[\w\-]+>' => 'task/get-credit',
             ],
         ],
+        'assetManager' => [
+            'appendTimestamp' => true,
+        ],
     ],
     'params' => $params,
     //'defaultRoute' => 'datasets/index',

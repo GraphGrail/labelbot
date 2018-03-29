@@ -1,24 +1,28 @@
 <?php
+/**
+ * @author Juriy Panasevich <u.panasevich@graphgrail.com>
+ */
 
 namespace frontend\assets;
 
+
 use yii\web\AssetBundle;
 
-/**
- * Main frontend application asset bundle.
- */
 class AppAsset extends AssetBundle
 {
-    public $basePath = '@webroot';
-    public $baseUrl = '@web';
+    public $sourcePath = '@resources/main';
+
     public $css = [
-        'css/site.css',
+        'style.bundle.css',
     ];
     public $js = [
-        'js/eth-gateway.js',
+        'scripts.bundle.js',
     ];
+
     public $depends = [
-        'yii\web\YiiAsset',
-//        'yii\bootstrap\BootstrapAsset',
+        InitAsset::class,
+        VendorsAsset::class,
+        FullCalendarAsset::class,
+        DashBoardAsset::class,
     ];
 }

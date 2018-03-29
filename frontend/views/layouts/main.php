@@ -3,10 +3,9 @@
 /* @var $this \yii\web\View */
 /* @var $content string */
 
+use frontend\assets\AppAsset;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\widgets\Breadcrumbs;
-use frontend\assets\AppAsset;
 
 AppAsset::register($this);
 ?>
@@ -17,26 +16,8 @@ AppAsset::register($this);
     <meta charset="<?= Yii::$app->charset ?>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!--begin::Web font -->
-    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
-    <script>
-      WebFont.load({
-        google: {"families":["Poppins:300,400,500,600,700","Roboto:300,400,500,600,700"]},
-        active: function() {
-            sessionStorage.fonts = true;
-        }
-      });
-    </script>
-    <!--end::Web font -->
-    <?php $this->head() ?>
-    <!--begin::Base Styles -->  
-    <!--begin::Page Vendors -->
-    <link href="/assets/vendors/custom/fullcalendar/fullcalendar.bundle.css" rel="stylesheet" type="text/css" />
-    <!--end::Page Vendors -->
-    <link href="/assets/vendors/base/vendors.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="/assets/demo/default/base/style.bundle.css" rel="stylesheet" type="text/css" />
-    <!--end::Base Styles -->
-    <link rel="shortcut icon" href="/assets/img/logo/favicon.ico" />
+        <?php $this->head() ?>
+    <link rel="shortcut icon" href="/images/logo/favicon.ico" />
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
 </head>
@@ -54,7 +35,7 @@ AppAsset::register($this);
                         <div class="m-stack m-stack--ver m-stack--general">
                             <div class="m-stack__item m-stack__item--middle m-brand__logo">
                                 <a href="/" class="m-brand__logo-wrapper">
-                                    <img alt="" src="/assets/img/logo/graphgrail.png"/>
+                                    <img alt="" src="/images/logo/graphgrail.png"/>
                                 </a>
                             </div>
                             <div class="m-stack__item m-stack__item--middle m-brand__tools">
@@ -134,7 +115,7 @@ AppAsset::register($this);
                                     <li class="m-nav__item m-topbar__user-profile m-topbar__user-profile--img  m-dropdown m-dropdown--medium m-dropdown--arrow m-dropdown--header-bg-fill m-dropdown--align-right m-dropdown--mobile-full-width m-dropdown--skin-light" data-dropdown-toggle="click">
                                         <a href="#" class="m-nav__link m-dropdown__toggle">
                                             <span class="m-topbar__userpic">
-                                                <img src="/assets/app/media/img/users/user4.jpg" class="m--img-rounded m--marginless m--img-centered" alt=""/>
+                                                <img src="/images/users/user4.jpg" class="m--img-rounded m--marginless m--img-centered" alt=""/>
                                             </span>
                                             <span class="m-topbar__username m--hide">
                                                 Nick
@@ -143,10 +124,10 @@ AppAsset::register($this);
                                         <div class="m-dropdown__wrapper">
                                             <span class="m-dropdown__arrow m-dropdown__arrow--right m-dropdown__arrow--adjust"></span>
                                             <div class="m-dropdown__inner">
-                                                <div class="m-dropdown__header m--align-center" style="background: url(/assets/app/media/img/misc/user_profile_bg.jpg); background-size: cover;">
+                                                <div class="m-dropdown__header m--align-center" style="background: url(/images/misc/user_profile_bg.jpg); background-size: cover;">
                                                     <div class="m-card-user m-card-user--skin-dark">
                                                         <div class="m-card-user__pic">
-                                                            <img src="/assets/app/media/img/users/user4.jpg" class="m--img-rounded m--marginless" alt=""/>
+                                                            <img src="/images/users/user4.jpg" class="m--img-rounded m--marginless" alt=""/>
                                                         </div>
                                                         <div class="m-card-user__details">
                                                             <span class="m-card-user__name m--font-weight-500">
@@ -432,19 +413,8 @@ AppAsset::register($this);
             </a>
         </li>
     </ul-->
-    <!-- begin::Quick Nav --> 
+    <!-- begin::Quick Nav -->
 <?php $this->endBody() ?>
-    <!--begin::Base Scripts -->
-    <script src="/assets/vendors/base/vendors.bundle.js" type="text/javascript"></script>
-    <script src="/assets/demo/default/base/scripts.bundle.js" type="text/javascript"></script>
-    <!--end::Base Scripts -->   
-    <!--begin::Page Vendors -->
-    <script src="/assets/vendors/custom/fullcalendar/fullcalendar.bundle.js" type="text/javascript"></script>
-    <!--end::Page Vendors -->  
-    <!--begin::Page Snippets -->
-    <script src="/assets/app/js/dashboard.js" type="text/javascript"></script>
-    <!--end::Page Snippets -->
-
 </body>
 </html>
 <?php $this->endPage() ?>

@@ -5,7 +5,7 @@ $formatter = \Yii::$app->formatter;
 <div class="m-widget3__item">
 	<div class="m-widget3__header">
 		<div class="m-widget3__user-img">
-			<img class="m-widget3__img" src="/assets/img/logo/graphgrail.png" alt="">
+            <img class="m-widget3__img" src="/images/logo/graphgrail.png" alt="">
 		</div>
 		<div class="m-widget3__info">
 			<span class="m-widget3__username">
