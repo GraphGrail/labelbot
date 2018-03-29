@@ -3,7 +3,7 @@
  * @author Juriy Panasevich <u.panasevich@graphgrail.com>
  */
 
-namespace frontend\assets;
+namespace frontend\assets\pages;
 
 
 use yii\web\AssetBundle;

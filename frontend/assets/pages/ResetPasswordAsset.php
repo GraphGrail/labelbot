@@ -3,17 +3,18 @@
  * @author Juriy Panasevich <u.panasevich@graphgrail.com>
  */
 
-namespace frontend\assets;
+namespace frontend\assets\pages;
 
 
+use frontend\assets\AppAsset;
 use yii\web\AssetBundle;
 
-class LoginAsset extends AssetBundle
+class ResetPasswordAsset extends AssetBundle
 {
-    public $sourcePath = '@resources/main';
+    public $sourcePath = '@resources/pages';
 
     public $js = [
-        'login.js',
+        'resetPassword.js',
     ];
 
     public $depends = [

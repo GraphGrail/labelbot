@@ -1,6 +1,6 @@
 <?php
 
-use frontend\assets\LabelPageAsset;
+use frontend\assets\pages\LabelPageAsset;
 use yii\helpers\Url;
 
 LabelPageAsset::register($this);
