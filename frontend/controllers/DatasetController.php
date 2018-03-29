@@ -33,7 +33,7 @@ class DatasetController extends Controller
 
     /**
      * Show Datasets list
-     * @return type
+     * @return string
      */
     public function actionIndex()
     {
@@ -48,7 +48,7 @@ class DatasetController extends Controller
 
     /**
      * New Dataset Uploading
-     * @return type
+     * @return string
      */
     public function actionNew()
     {
