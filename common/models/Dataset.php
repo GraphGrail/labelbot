@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use yii\behaviors\AttributeTypecastBehavior;
 
 /**
  * This is the model class for table "dataset".
@@ -14,6 +15,7 @@ use Yii;
  * @property int $status
  * @property int $created_at
  * @property int $updated_at
+ * @property bool $deleted
  */
 class Dataset extends \yii\db\ActiveRecord
 {
@@ -46,6 +48,7 @@ class Dataset extends \yii\db\ActiveRecord
             [['status', 'created_at', 'updated_at'], 'integer'],
             [['description'], 'string'],
             [['name'], 'string', 'max' => 200],
+            [['deleted'], 'boolean'],
         ];
     }
 
@@ -60,6 +63,10 @@ class Dataset extends \yii\db\ActiveRecord
                 'class' => \yii\behaviors\BlameableBehavior::className(),
                 'createdByAttribute' => 'user_id',
                 'updatedByAttribute' => null,
+            ],
+            'typecast' => [
+                'class' => AttributeTypecastBehavior::className(),
+                'typecastAfterFind' => true,
             ],
         ];
     }

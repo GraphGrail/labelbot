@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use yii\behaviors\AttributeTypecastBehavior;
 
 /**
  * This is the model class for table "task".
@@ -18,6 +19,7 @@ use Yii;
  * @property int $status
  * @property int $created_at
  * @property int $updated_at
+ * @property bool $deleted
  */
 class Task extends \yii\db\ActiveRecord
 {
@@ -52,6 +54,7 @@ class Task extends \yii\db\ActiveRecord
             [['name'], 'string', 'max' => 255],
             [['contract_address'], 'string', 'max' => 42],
             [['status'], 'integer'],
+            [['deleted'], 'boolean'],
         ];
     }
 
@@ -66,6 +69,10 @@ class Task extends \yii\db\ActiveRecord
                 'class' => \yii\behaviors\BlameableBehavior::className(),
                 'createdByAttribute' => 'user_id',
                 'updatedByAttribute' => null,
+            ],
+            'typecast' => [
+                'class' => AttributeTypecastBehavior::className(),
+                'typecastAfterFind' => true,
             ],
         ];
     }

@@ -4,6 +4,7 @@ namespace common\models;
 
 use \common\models\Label;
 use Yii;
+use yii\behaviors\AttributeTypecastBehavior;
 
 /**
  * This is the model class for table "label_group".
@@ -15,6 +16,7 @@ use Yii;
  * @property int $status
  * @property int $created_at
  * @property int $updated_at
+ * @property bool $deleted
  */
 class LabelGroup extends \yii\db\ActiveRecord
 {
@@ -41,6 +43,7 @@ class LabelGroup extends \yii\db\ActiveRecord
             [['status', 'created_at', 'updated_at'], 'integer'],
             [['description'], 'string', 'max' => 6000],
             [['labels_tree'], 'string', 'max' => 60000],
+            [['deleted'], 'boolean'],
         ];
     }
 
@@ -55,6 +58,10 @@ class LabelGroup extends \yii\db\ActiveRecord
                 'class' => \yii\behaviors\BlameableBehavior::className(),
                 'createdByAttribute' => 'user_id',
                 'updatedByAttribute' => null,
+            ],
+            'typecast' => [
+                  'class' => AttributeTypecastBehavior::className(),
+                  'typecastAfterFind' => true,
             ],
         ];
     }
