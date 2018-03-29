@@ -3,6 +3,7 @@
 namespace common\domain\ethereum;
 
 use common\domain\ethereum\Address;
+use Yii;
 
 /**
  * Ethereum Contract Type
@@ -50,14 +51,14 @@ class Contract
 	{
 		$this->clientAddress  = (string) $clientAddress;
 		$this->totalWorkItems = (string) $totalWorkItems;
-		$this->workItemPrice  = $workItemPrice ? (string) $workItemPrice : Yii::$app->params['workItemPrice'];
+		$this->workItemPrice  = $workItemPrice ? (string) $workItemPrice : (string) Yii::$app->params['workItemPrice'];
 
-		$this->tokenContractAddress 				   = Yii::$app->params['tokenContractAddress']; 
-		$this->approvalCommissionBenificiaryAddress    = Yii::$app->params['approvalCommissionBenificiaryAddress'];
-		$this->disapprovalCommissionBeneficiaryAddress = Yii::$app->params['disapprovalCommissionBeneficiaryAddress'];
-		$this->approvalCommissionFraction 	 		   = Yii::$app->params['approvalCommissionFraction'];
-		$this->disapprovalCommissionFraction 		   = Yii::$app->params['disapprovalCommissionFraction'];
-		$this->autoApprovalTimeoutSec 				   = Yii::$app->params['autoApprovalTimeoutSec'];
+		$this->tokenContractAddress 				   = (string) Yii::$app->params['tokenContractAddress']; 
+		$this->approvalCommissionBenificiaryAddress    = (string) Yii::$app->params['approvalCommissionBenificiaryAddress'];
+		$this->disapprovalCommissionBeneficiaryAddress = (string) Yii::$app->params['disapprovalCommissionBeneficiaryAddress'];
+		$this->approvalCommissionFraction 	 		   = (string) Yii::$app->params['approvalCommissionFraction'];
+		$this->disapprovalCommissionFraction 		   = (string) Yii::$app->params['disapprovalCommissionFraction'];
+		$this->autoApprovalTimeoutSec 				   = (string) Yii::$app->params['autoApprovalTimeoutSec'];
 	}
 
 	// TODO: setters

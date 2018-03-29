@@ -18,10 +18,10 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
 
 	public function __construct()
 	{
-		$this->callbackUrl = Yii::$app->params['eth_gateway_callback_url'];
+		$this->callbackUrl = Yii::$app->params['ethGatewayCallbackUrl'];
 
 		$this->httpClient = new Client([
-			'baseUrl' => Yii::$app->params['eth_gateway_url'],
+			'baseUrl' => Yii::$app->params['ethGatewayApiUrl'],
 		    'requestConfig' => [
 		        'format' => Client::FORMAT_JSON
 		    ],
