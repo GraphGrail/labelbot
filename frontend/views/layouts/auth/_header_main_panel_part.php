@@ -50,6 +50,18 @@ use yii\helpers\Url;
                                 </span>
                             </a>
                         </li>
+                        <li class="m-menu__item " data-redirect="true" aria-haspopup="true">
+                            <a href="<?= Url::to(['task/new']) ?>" class="m-menu__link ">
+                                <i class="m-menu__link-icon flaticon-suitcase"></i>
+                                <span class="m-menu__link-title">
+                                    <span class="m-menu__link-wrap">
+                                        <span class="m-menu__link-text">
+                                            <?= Yii::t('app', 'Create New Task') ?>
+                                        </span>
+                                    </span>
+                                </span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
