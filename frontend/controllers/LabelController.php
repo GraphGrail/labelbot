@@ -8,6 +8,7 @@ use common\components\LabelsTree;
 use yii\helpers\StringHelper;
 use yii\filters\AccessControl;
 use Yii;
+use yii\web\NotFoundHttpException;
 
 class LabelController extends \yii\web\Controller
 {
@@ -81,10 +82,22 @@ class LabelController extends \yii\web\Controller
         return $this->render('new', ['model' => $model]);
     }
 
-    public function actionDelete()
+    /**
+     * @param $id
+     * @return string
+     * @throws \yii\db\StaleObjectException
+     * @throws \Exception
+     * @throws NotFoundHttpException
+     * @throws \Throwable
+     */
+    public function actionDelete($id)
     {
-        return $this->render('delete');
+        if (!$model = LabelGroup::findOne($id)) {
+            throw new NotFoundHttpException(sprintf('Label group with id `%s` not found', $id));
+        }
+        $model->delete();
+        return $this->asJson([
+            'success' => $model->deleted,
+        ]);
     }
-
-
 }
