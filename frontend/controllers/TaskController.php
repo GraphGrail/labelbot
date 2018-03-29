@@ -68,70 +68,74 @@ class TaskController extends \yii\web\Controller
      */
     public function actionSmartContract($id)
     {
+        $blockchain  = new EthereumGateway;
+        $task = Task::findOne($id);
+        // Checks is task exists and belongs to user
+        if ($task === null || $task->user_id !== Yii::$app->user->identity->id) {
+            throw new \Exception("Can't find Task");
+        }
+
+        // Contract deployment
+        $contractCanBeDeployed = $task->status === Task::STATUS_CONTRACT_NOT_DEPLOYED 
+                              || $task->status === Task::STATUS_CONTRACT_DEPLOYMENT_ERROR;
+
+        if ($contractCanBeDeployed && Yii::$app->request->isPost) {
+            $clientAddress = new Address(Yii::$app->request->post()['address']);
+            $task->deployContract($blockchain, $clientAddress);
+        }
+
+        // Contract activation payment
+        if ($task->status === Task::STATUS_CONTRACT_NEW_NEED_TOKENS && Yii::$app->request->isPost) {
+            // We need to check that contract tokenBalance really >= requiredInitialTokenBalance
+            $contractStatus = $blockchain->contractStatus($task->contractAddress());
+            if ($contractStatus->tokenBalance >= $contractStatus->requiredInitialTokenBalance) {
+                $task->status = Task::STATUS_CONTRACT_NEW;
+                $task->save();
+            }
+        }
+
+        // Contract activation
+        if ($task->status === Task::STATUS_CONTRACT_NEW && Yii::$app->request->isPost) {
+            // We need to check that contract is active
+            $contractStatus = $blockchain->contractStatus($task->contractAddress());
+            if ($contractStatus->state === 'ACTIVE') {
+                $task->status = Task::STATUS_CONTRACT_ACTIVE;
+                $task->save();
+            }
+        }
+
+
+
+        $views = [
+            Task::STATUS_CONTRACT_NOT_DEPLOYED       => 'smartContract_deployment',
+            Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS => 'smartContract_deploymentProcess',
+            Task::STATUS_CONTRACT_NEW_NEED_TOKENS    => 'smartContract_sendTokens',
+            Task::STATUS_CONTRACT_NEW                => 'smartContract_activation',
+        ];
+        return $this->render($views[$task->status] ?: 'smartContract', [
+            'task' => $task
+        ]);
+    }
+
+
+    /**
+     * Creates smartcontract for Task
+     * @param int $id Task id
+     */
+    public function actionSendTokens($id)
+    {
+        $blockchain  = new EthereumGateway;
         $task = Task::findOne($id);
 
         // Check is task exists and belongs to user
         if ($task === null || $task->user_id !== Yii::$app->user->identity->id) {
             throw new \Exception("Can't find Task");
-        }        
-
-        if (Yii::$app->request->isPost) {
-            // Commented for Dev
-    /*        if ($task->status !== Task::STATUS_CONTRACT_NOT_DEPLOYED || $task->status !== Task::STATUS_CONTRACT_DEPLOYMENT_ERROR ) {
-                throw new \Exception("Contract for this Task already was created");
-            }*/
-
-            $blockchain  = new EthereumGateway;
-            $client_addr = new Address(Yii::$app->request->post()['address']);
-
-            // Check that client have ethereum and tokens, if not, redirect to credit invitation
-/*            $balance = $blockchain->checkBalances($client_addr);
-            if ($balance->ether === 0 || $balance->token === 0) {
-                Yii::$app->session->setFlash('credit-invitation', '');
-                $this->refresh();
-            }*/
-
-            $contract    = new Contract($client_addr, 100); // TODO: real jobs number
-            $callback_id = $blockchain->deployContract($contract);
-            
-            $callback_params = [
-                'task_id' => $task->id
-            ];
-
-            $callback = new BlockchainCallback();
-            $callback->type = BlockchainCallback::DEPLOY_CONTRACT;
-            $callback->callback_id = $callback_id;
-            $callback->params = json_encode($callback_params);
-            
-            if (!$callback->save()) {
-                throw new \Exception("Can't save Callback after deployContract() was called");
-            }
-
-            $task->contract = json_encode($contract);
-
-            $task->status = Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS;
-            if (!$task->save()) {
-                throw new \Exception("Can't update Task");
-            }
-
         }
 
-        switch ($task->status) {
-            case Task::STATUS_CONTRACT_NOT_DEPLOYED:
-                $view = 'smartContract_notDeployed';
-                break;
-            case Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS:
-                $view = 'smartContract_deploymentProcess';
-                break;
-            case Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS:
-                $view = 'smartContract_activation';
-                break;
-            default:
-                $view = 'smartContract';
-                break;
-        }
+        $contractNotDeployed = $task->status === Task::STATUS_CONTRACT_NOT_DEPLOYED 
+                            || $task->status === Task::STATUS_CONTRACT_DEPLOYMENT_ERROR;
 
-        return $this->render($view, [
+        return $this->render('sendTokens', [
             'task' => $task
         ]);
     }

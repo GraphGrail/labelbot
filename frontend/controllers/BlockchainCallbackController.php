@@ -95,7 +95,7 @@ class BlockchainCallbackController extends \yii\web\Controller
         } 
 
         $task->contract_address = $this->data['payload']['contractAddress'];
-        $task->status = Task::STATUS_CONTRACT_NEW;
+        $task->status = Task::STATUS_CONTRACT_NEW_NEED_TOKENS;
 
         if (!$task->save()) {
             throw new \Exception("Can't save Task");

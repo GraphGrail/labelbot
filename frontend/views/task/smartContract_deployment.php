@@ -1,13 +1,17 @@
 <?php
 
 use yii\helpers\Html;
+use frontend\assets\EthGatewayAsset;
 
 /* @var $this yii\web\View */
+EthGatewayAsset::register($this);
+
 $this->registerJs("
 	const ggEth = graphGrailEther
-	const tokenContractAddress = '0x11e0892806ab9fd37224a2031c51156968c2ee72'
-	const expectedNetworkId = 4 // Rinkeby
-	const internalApi = 'http://tgbot.test/api'
+	const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
+	const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
+	const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'
+
 	let clientAddress
 
 	ggEth.init(tokenContractAddress, expectedNetworkId, internalApi)  
@@ -28,10 +32,12 @@ $this->registerJs("
 			return ggEth.checkBalances(address)
 		})
 		.then(balances => {
+			// $('.js-btn-create').attr('disabled', false) // on testing
+			console.log('Ether: ' + balances.ether + ', tokens: ' + balances.ether)
 			if (balances.ether == 0 || balances.token == 0) {
 				$('.js-credit-invitation').show()
 			} else {
-				$('.js-btn-create').css('display', 'block')
+				$('.js-btn-create').attr('disabled', false)
 			}
 		})
 		.catch(err => {
@@ -50,7 +56,7 @@ $this->registerJs("
 <div class="row">
   <div class="col-lg-8">
 
-  	<div class="m-alert m-alert--icon alert alert-danger js-credit-invitation" role="alert">
+  	<div class="m-alert m-alert--icon alert alert-danger js-credit-invitation" role="alert" style="display:none">
 	  <div class="m-alert__icon">
 		<i class="flaticon-danger"></i>
 	  </div>
@@ -71,7 +77,7 @@ $this->registerJs("
               <h5 class="m-widget5__title m--margin-bottom-25">
               	<?=Yii::t('app', 'Create Smart-contract') ?>
               </h5>
-			  <form id="w0" class="m-section m--margin-bottom-5" action="" method="post">
+			  <form class="m-section m--margin-bottom-5" action="" method="post">
 			  	<input type="hidden" name="<?=Yii::$app->request->csrfParam ?>" value="<?=Yii::$app->request->getCsrfToken() ?>" />
 			    <div class="form-group m-form__group">
 			    <div class="m-section__sub">
