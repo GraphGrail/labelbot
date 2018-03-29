@@ -52,7 +52,7 @@ use yii\helpers\Url;
                         </li>
                         <li class="m-menu__item " data-redirect="true" aria-haspopup="true">
                             <a href="<?= Url::to(['task/new']) ?>" class="m-menu__link ">
-                                <i class="m-menu__link-icon flaticon-suitcase"></i>
+                                <i class="m-menu__link-icon flaticon-notes"></i>
                                 <span class="m-menu__link-title">
                                     <span class="m-menu__link-wrap">
                                         <span class="m-menu__link-text">

@@ -8,7 +8,7 @@ $currentUrl = Yii::$app->getRequest()->getUrl();
 $items = [
     'task' => [
         'label' => 'Tasks',
-        'icon' => 'flaticon-suitcase',
+        'icon' => 'flaticon-notes',
         'url' => '/tasks',
     ],
     'dataset' => [
