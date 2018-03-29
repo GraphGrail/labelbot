@@ -118,3 +118,7 @@ a.desc:after {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+.m-alert > div.auth-form-err-message-container {
+    padding-right: 10px;
+}

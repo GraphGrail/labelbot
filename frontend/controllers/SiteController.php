@@ -3,6 +3,7 @@ namespace frontend\controllers;
 
 use Yii;
 use yii\base\InvalidParamException;
+use yii\helpers\Url;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -59,6 +60,7 @@ class SiteController extends Controller
         return [
             'error' => [
                 'class' => 'yii\web\ErrorAction',
+                'layout' => 'main',
             ],
             'captcha' => [
                 'class' => 'yii\captcha\CaptchaAction',
@@ -88,12 +90,20 @@ class SiteController extends Controller
             return $this->goHome();
         }
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
+        $loginForm = new LoginForm();
+        if ($loginForm->load(Yii::$app->request->post()) && $loginForm->login()) {
             return $this->goBack();
         } else {
+            $this->layout = 'unauthorized';
+
             return $this->render('login', [
-                'model' => $model,
+                'loginForm' => $loginForm,
+                'signUpForm' => new SignupForm(),
+                'forgottenForm' => new PasswordResetRequestForm(),
+                'urls' => [
+                    'signup' => Url::toRoute('site/signup'),
+                    'forgotten' => Url::toRoute('site/request-password-reset'),
+                ],
             ]);
         }
     }
@@ -154,13 +164,15 @@ class SiteController extends Controller
         if ($model->load(Yii::$app->request->post())) {
             if ($user = $model->signup()) {
                 if (Yii::$app->getUser()->login($user)) {
-                    return $this->goHome();
+                    return $this->asJson([
+                        'redirect' => Yii::$app->getHomeUrl(),
+                    ]);
                 }
             }
         }
 
-        return $this->render('signup', [
-            'model' => $model,
+        return $this->asJson([
+            'errors' => $model->getErrors(),
         ]);
     }
 
@@ -174,12 +186,12 @@ class SiteController extends Controller
         $model = new PasswordResetRequestForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail()) {
-                Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
-
-                return $this->goHome();
-            } else {
-                Yii::$app->session->setFlash('error', 'Sorry, we are unable to reset password for the provided email address.');
+                return $this->asJson([
+                    'success' => 'Check your email for further instructions.',
+                ]);
             }
+
+            return $this->asJson(['errors' => ['Sorry, we are unable to reset password for the provided email address.']]);
         }
 
         return $this->render('requestPasswordResetToken', [
@@ -202,11 +214,18 @@ class SiteController extends Controller
             throw new BadRequestHttpException($e->getMessage());
         }
 
-        if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
-            Yii::$app->session->setFlash('success', 'New password saved.');
-
-            return $this->goHome();
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate() && $model->resetPassword()) {
+                return $this->asJson([
+                    'success' => 'New password saved.',
+                    'redirect' => Yii::$app->getHomeUrl(),
+                ]);
+            }
+            return $this->asJson([
+                'errors' => $model->getErrors(),
+            ]);
         }
+        $this->layout = 'unauthorized';
 
         return $this->render('resetPassword', [
             'model' => $model,
