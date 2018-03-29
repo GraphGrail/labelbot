@@ -11,13 +11,13 @@
             </span>
         <ul id="m_quick_sidebar_tabs" class="nav nav-tabs m-tabs m-tabs-line m-tabs-line--brand" role="tablist">
             <li class="nav-item m-tabs__item">
-                <a class="nav-link m-tabs__link"        data-toggle="tab" href="#m_quick_sidebar_tabs_settings" role="tab">
+                <a class="nav-link m-tabs__link active show" data-toggle="tab" href="#m_quick_sidebar_tabs_settings" role="tab">
                     Settings
                 </a>
             </li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane  m-scrollable" id="m_quick_sidebar_tabs_settings" role="tabpanel">
+            <div class="tab-pane  m-scrollable active show" id="m_quick_sidebar_tabs_settings" role="tabpanel">
                 <div class="m-list-settings">
                     <div class="m-list-settings__group">
                         <div class="m-list-settings__heading">
