@@ -14,6 +14,7 @@ class EthGatewayAsset extends AssetBundle
 
     public $js = [
         'eth-gateway.js',
+    //    'eth-gateway.js.map',
     ];
 
     public $depends = [
