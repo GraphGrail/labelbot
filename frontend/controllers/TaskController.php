@@ -83,7 +83,7 @@ class TaskController extends \yii\web\Controller
     }
 
     /**
-     * Creates smartcontract for Task
+     * Creation and activation of smartcontract for Task
      * @param int $id Task id
      */
     public function actionSmartContract($id)
@@ -124,8 +124,6 @@ class TaskController extends \yii\web\Controller
             }
         }
 
-
-
         $views = [
             Task::STATUS_CONTRACT_NOT_DEPLOYED       => 'smartContract_deployment',
             Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS => 'smartContract_deploymentProcess',
@@ -135,6 +133,54 @@ class TaskController extends \yii\web\Controller
         return $this->render($views[$task->status] ?: 'smartContract', [
             'task' => $task
         ]);
+    }
+
+
+    public function actionStop($id)
+    {
+        $task = Task::findOne($id);
+        // Checks is task exists and belongs to user
+        if ($task === null || $task->user_id !== Yii::$app->user->identity->id) {
+            throw new \Exception("Can't find Task");
+        }
+
+        if ($task->status !== Task::STATUS_CONTRACT_ACTIVE) {
+            // TODO: remove that
+            throw new \Exception("Task must be active for pause.");            
+        }
+
+        $task->status = Task::STATUS_CONTRACT_ACTIVE_PAUSED;
+        $task->save();
+
+        $this->redirect('score-work');
+    }
+
+
+    /**
+     * Moderators' work scoring
+     * @param int $id Task id
+     */
+    public function actionScoreWork($id)
+    {
+        $blockchain  = new EthereumGateway;
+        $task = Task::findOne($id);
+        // Checks is task exists and belongs to user
+        if ($task === null || $task->user_id !== Yii::$app->user->identity->id) {
+            throw new \Exception("Can't find Task");
+        }
+
+        if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED) {
+            // TODO: remove that
+            throw new \Exception("Task must be paused for scoring.");
+        }
+
+        $contractStatus = $blockchain->contractStatus($task->contractAddress());
+
+        return $this->render('scoreWork', [
+            'task' => $task,
+            'contractStatus' => $contractStatus
+        ]);
+
     }
 
 

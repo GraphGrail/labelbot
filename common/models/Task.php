@@ -38,8 +38,9 @@ class Task extends ActiveRecord
     const STATUS_CONTRACT_NEW                = 5;
     const STATUS_CONTRACT_ACTIVE             = 6;
     const STATUS_CONTRACT_ACTIVE_PAUSED      = 7;
-    const STATUS_FORCE_FINALIZING            = 8;
-    const STATUS_CONTRACT_FINALIZED          = 9;
+    const STATUS_CONTRACT_ACTIVE_NEED_TOKENS = 8;
+    const STATUS_CONTRACT_FORCE_FINALIZING   = 9;
+    const STATUS_CONTRACT_FINALIZED          = 10;
 
     /**
      * @inheritdoc
