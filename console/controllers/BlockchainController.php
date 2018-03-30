@@ -10,15 +10,25 @@ use yii\log\Logger;
 class BlockchainController extends \yii\console\Controller
 {
 
+    public $taskId;
+
+    public function options($actionID)
+    {
+        return ['taskId'];
+    }
+
     public function actionUpdateCompletedWork()
     {
         try {
-            /** @var Task[] $tasks */
-            $tasks = Task::find()
+            $finder = Task::find()
                 ->active()
                 ->notInDeliveringQueue()
-                ->undeleted()
-                ->all();
+                ->undeleted();
+
+            $this->taskId && $finder->andWhere(['id' => $this->taskId]);
+
+            /** @var Task[] $tasks */
+            $tasks = $finder->all();
 
             foreach ($tasks as $task) {
                 try {
