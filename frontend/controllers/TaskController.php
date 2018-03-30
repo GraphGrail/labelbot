@@ -63,7 +63,7 @@ class TaskController extends \yii\web\Controller
         }
 
         $datasets = Dataset::find()
-            ->andWhere(['user_id' => Yii::$app->user->identity->id])
+            ->where(['user_id' => Yii::$app->user->identity->id])
             ->orderBy(['id' => SORT_DESC])
             ->all();
 

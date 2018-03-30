@@ -25,6 +25,6 @@ class DeletedAttributeQueryBehavior extends Behavior
 
         $modelClass = $owner->modelClass;
         $tableName = $modelClass::tableName();
-        $owner->andWhere([$tableName.'.deleted' => 0]);
+        $owner->andOnCondition([$tableName.'.deleted' => 0]);
     }
 }
