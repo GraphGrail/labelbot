@@ -38,7 +38,8 @@ class DatasetController extends Controller
     public function actionIndex()
     {
         $datasets = Dataset::find()
-            ->where(['user_id' => Yii::$app->user->identity->id])
+            ->ownedByUser()
+            ->undeleted()
             ->orderBy(['id' => SORT_DESC])
             ->all();
         return $this->render('index', [

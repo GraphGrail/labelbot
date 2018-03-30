@@ -37,7 +37,8 @@ class LabelController extends \yii\web\Controller
     public function actionIndex()
     {
         $labelGroups = LabelGroup::find()
-            ->where(['user_id' => Yii::$app->user->identity->id])
+            ->ownedByUser()
+            ->undeleted()
             ->orderBy(['id' => SORT_DESC])
             ->all();
         return $this->render('index', [
