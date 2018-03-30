@@ -22,6 +22,14 @@ $formatter = \Yii::$app->formatter;
         </span>
     </div>
     <div class="m-widget4__progress">
+        <?php
+        if ($dataset = $task->getDataset()) {
+            printf('%s: %s<br>', $task->getAttributeLabel('dataset_id'), $dataset);
+        }
+        if ($labelGroup = $task->getLabelGroup()) {
+            printf('%s: %s<br>', $task->getAttributeLabel('label_group_id'), $labelGroup);
+        }
+        ?>
     </div>
     <div class="m-widget4__ext">
         <ul class="m-portlet__nav">

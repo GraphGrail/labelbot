@@ -3,6 +3,8 @@
 namespace frontend\controllers;
 
 use common\components\EthereumGateway;
+use common\models\Dataset;
+use common\models\LabelGroup;
 use common\models\Task;
 use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
@@ -60,7 +62,21 @@ class TaskController extends \yii\web\Controller
             }
         }
 
-        return $this->render('new', ['model' => $model]);
+        $datasets = Dataset::find()
+            ->andWhere(['user_id' => Yii::$app->user->identity->id])
+            ->orderBy(['id' => SORT_DESC])
+            ->all();
+
+        $labelGroups = LabelGroup::find()
+            ->andWhere(['user_id' => Yii::$app->user->identity->id])
+            ->orderBy(['id' => SORT_DESC])
+            ->all();
+
+        return $this->render('new', [
+            'model' => $model,
+            'datasets' => $datasets,
+            'labelGroups' => $labelGroups,
+        ]);
     }
 
     /**
