@@ -16,6 +16,7 @@ class BlockchainController extends \yii\console\Controller
             /** @var Task[] $tasks */
             $tasks = Task::find()
                 ->active()
+                ->notInDeliveringQueue()
                 ->undeleted()
                 ->all();
 
@@ -34,8 +35,11 @@ class BlockchainController extends \yii\console\Controller
 
     protected function addToQueue(Task $task)
     {
-        \Yii::$app->queue->push(new UpdateCompletedWorkJob([
+        $id = \Yii::$app->queue->push(new UpdateCompletedWorkJob([
             'taskId' => $task->id,
         ]));
+
+        $task->delivering_job_id = $id;
+        return $task->save(false, ['delivering_job_id']);
     }
 }

@@ -35,4 +35,9 @@ class TaskQuery extends UserEntityQuery
     {
         return parent::one($db);
     }
+
+    public function notInDeliveringQueue()
+    {
+        return $this->andWhere('[[delivering_job_id]]=0');
+    }
 }
