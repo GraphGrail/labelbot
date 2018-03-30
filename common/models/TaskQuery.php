@@ -3,25 +3,15 @@
 namespace common\models;
 
 
-use common\models\behavior\DeletedAttributeQueryBehavior;
-use yii\helpers\ArrayHelper;
+use common\models\query\UserEntityQuery;
 
 /**
  * This is the ActiveQuery class for [[Task]].
  *
  * @see Task
  */
-class TaskQuery extends \yii\db\ActiveQuery
+class TaskQuery extends UserEntityQuery
 {
-
-    public function behaviors()
-    {
-        return ArrayHelper::merge(parent::behaviors(), [
-            'deletedAttribute' => [
-                'class' => DeletedAttributeQueryBehavior::class,
-            ],
-        ]);
-    }
 
     /*public function active()
     {

@@ -39,7 +39,8 @@ class TaskController extends \yii\web\Controller
     public function actionIndex()
     {
         $tasks = Task::find()
-            ->andWhere(['user_id' => Yii::$app->user->identity->id])
+            ->ownedByUser()
+            ->undeleted()
             ->orderBy(['id' => SORT_DESC])
             ->all();
         return $this->render('index', [
@@ -63,12 +64,14 @@ class TaskController extends \yii\web\Controller
         }
 
         $datasets = Dataset::find()
-            ->where(['user_id' => Yii::$app->user->identity->id])
+            ->ownedByUser()
+            ->undeleted()
             ->orderBy(['id' => SORT_DESC])
             ->all();
 
         $labelGroups = LabelGroup::find()
-            ->andWhere(['user_id' => Yii::$app->user->identity->id])
+            ->ownedByUser()
+            ->undeleted()
             ->orderBy(['id' => SORT_DESC])
             ->all();
 
