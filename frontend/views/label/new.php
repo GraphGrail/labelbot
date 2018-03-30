@@ -13,6 +13,8 @@ $this->registerCss("
 ");
 
 $this->registerJs("
+const form = $('#add_label');
+
 $('.js-add-child').on('click', function(e) {
   const parent = $(this).closest('.label');
   const label  = parent.clone(true);
@@ -38,9 +40,25 @@ $('.js-del-label').on('click', function(e) {
 $('.js-save').on('click', function(e) {
   e.preventDefault();
   const labelsTree = createLabelTreeRecursievly($('.label-0').children('.child-labels'));
-  $('#labelgroup-labels_tree').val(labelsTree.lenght < 1 ? '' : JSON.stringify(labelsTree));
-  //alert(JSON.stringify(labelsTree));
-  $(this).submit();
+  $('#labelgroup-labels_tree').val(labelsTree.length < 1 ? '' : JSON.stringify(labelsTree));
+  
+  form.validate({
+    rules: {
+        'LabelGroup[name]': {
+            required: true,
+        },
+        'LabelGroup[description]': {
+            required: true
+        },
+        'LabelGroup[labels_tree]': {
+            required: true
+        }
+    }
+  });
+  
+  if (form.valid()) {
+    $(this).submit()  
+  }
 });
 
 function createLabelTreeRecursievly(childLabels) {
@@ -72,7 +90,7 @@ $('.js-add')
               <h5 class="m-widget5__title m--margin-bottom-25">
               	<?=Yii::t('app', 'Create label group') ?>
               </h5>
-              <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data', 'class'=>'m-section m--margin-bottom-5']]) ?>
+              <?php $form = ActiveForm::begin(['options' => ['id' => 'add_label', 'class'=>'m-section m--margin-bottom-5']]) ?>
                 <div class="m-section__sub">
                 	<?=Yii::t('app', 'Labels group name') ?>
                 </div>
