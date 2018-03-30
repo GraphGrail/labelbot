@@ -18,7 +18,7 @@ use yii\behaviors\AttributeTypecastBehavior;
  * @property int $updated_at
  * @property bool $deleted
  */
-class Dataset extends \yii\db\ActiveRecord
+class Dataset extends ActiveRecord
 {
     /**
      * Dataset statuses

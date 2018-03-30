@@ -19,7 +19,7 @@ use yii\behaviors\AttributeTypecastBehavior;
  * @property int $updated_at
  * @property bool $deleted
  */
-class LabelGroup extends \yii\db\ActiveRecord
+class LabelGroup extends ActiveRecord
 {
     const STATUS_OK = 1;
     const STATUS_NO_LABELS_TREE = 2;

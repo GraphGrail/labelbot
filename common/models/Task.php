@@ -26,7 +26,7 @@ use yii\behaviors\AttributeTypecastBehavior;
  * @property int $updated_at
  * @property bool $deleted
  */
-class Task extends \yii\db\ActiveRecord
+class Task extends ActiveRecord
 {
     /**
      * Statuses
@@ -119,12 +119,12 @@ class Task extends \yii\db\ActiveRecord
 
     public function getDataset()
     {
-        return $this->hasOne(Dataset::className(), ['id' => 'dataset_id']);
+        return $this->hasOne(Dataset::className(), ['id' => 'dataset_id'])->one();
     }
 
     public function getLabelGroup()
     {
-        return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id']);
+        return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id'])->one();
     }
 
 
