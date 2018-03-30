@@ -38,9 +38,9 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
         return new Address($this->get('wallet-address')->address);
     }
 
-    public function checkBalances(Address $address): object
+    public function checkBalances(Address $address, Address $tokenAddress): object
     {
-        return $this->get('check-balances', $address);
+        return $this->get('check-balances', $address, '?tokenAddress='.$tokenAddress);
     }
 
     public function creditAccount(array $payload) : string
@@ -75,12 +75,12 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
      * @param Address|null $address 
      * @return type
      */
-    private function get(string $api_method, Address $address=null)
+    private function get(string $api_method, Address $address=null, string $otherParams='') // TODO: refact $otherParams to array
     {
         $param = ($address === null) ? '' : '/' . (string) $address;
 
         $res = $this->httpClient
-            ->get($api_method . $param)
+            ->get($api_method . $param . $otherParams)
             ->send();
         if (!$res->isOk) {
             throw new \Exception("Can't call " . $api_method);
