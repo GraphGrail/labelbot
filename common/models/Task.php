@@ -25,6 +25,7 @@ use yii\behaviors\AttributeTypecastBehavior;
  * @property int $created_at
  * @property int $updated_at
  * @property bool $deleted
+ * @property string $delivering_job_id
  */
 class Task extends ActiveRecord
 {
@@ -60,7 +61,7 @@ class Task extends ActiveRecord
         //    [['id', 'user_id', 'dataset_id', 'label_group_id', 'name', 'description', 'contract_address', 'contract', 'status'], 'required'],
             [['id', 'dataset_id', 'label_group_id'], 'integer'],
             [['description', 'contract'], 'string'],
-            [['name'], 'string', 'max' => 255],
+            [['name', 'delivering_job_id'], 'string', 'max' => 255],
             [['contract_address'], 'string', 'max' => 42],
             [['status'], 'integer'],
             [['deleted'], 'boolean'],

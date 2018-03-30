@@ -21,7 +21,8 @@
         "yiisoft/yii2-faker": "^2.0",
         "longman/telegram-bot": "^0.52.0",
         "yiisoft/yii2-queue": "^2.0",
-        "yiisoft/yii2-httpclient": "*"
+        "yiisoft/yii2-httpclient": "*",
+        "omnilight/yii2-scheduling": "dev-process"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
@@ -38,6 +39,10 @@
         {
             "type": "composer",
             "url": "https://asset-packagist.org"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/elfelrandcor/yii2-scheduling"
         }
     ]
 }
