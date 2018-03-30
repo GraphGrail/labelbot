@@ -6,7 +6,9 @@ use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use common\models\BlockchainCallback;
 use common\interfaces\BlockchainGatewayInterface;
+use common\models\behavior\DeletedAttributeBehavior;
 use Yii;
+use yii\behaviors\AttributeTypecastBehavior;
 
 /**
  * This is the model class for table "task".
@@ -22,8 +24,9 @@ use Yii;
  * @property int $status
  * @property int $created_at
  * @property int $updated_at
+ * @property bool $deleted
  */
-class Task extends \yii\db\ActiveRecord
+class Task extends ActiveRecord
 {
     /**
      * Statuses
@@ -59,6 +62,7 @@ class Task extends \yii\db\ActiveRecord
             [['name'], 'string', 'max' => 255],
             [['contract_address'], 'string', 'max' => 42],
             [['status'], 'integer'],
+            [['deleted'], 'boolean'],
         ];
     }
 
@@ -73,6 +77,13 @@ class Task extends \yii\db\ActiveRecord
                 'class' => \yii\behaviors\BlameableBehavior::className(),
                 'createdByAttribute' => 'user_id',
                 'updatedByAttribute' => null,
+            ],
+            'typecast' => [
+                'class' => AttributeTypecastBehavior::className(),
+                'typecastAfterFind' => true,
+            ],
+            'deletedAttribute' => [
+                'class' => DeletedAttributeBehavior::className(),
             ],
         ];
     }
@@ -108,12 +119,12 @@ class Task extends \yii\db\ActiveRecord
 
     public function getDataset()
     {
-        return $this->hasOne(Dataset::className(), ['id' => 'dataset_id']);
+        return $this->hasOne(Dataset::className(), ['id' => 'dataset_id'])->one();
     }
 
     public function getLabelGroup()
     {
-        return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id']);
+        return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id'])->one();
     }
 
 
@@ -121,7 +132,7 @@ class Task extends \yii\db\ActiveRecord
     {
         $contract    = new Contract($clientAddress, 20); // TODO: real jobs number
         $callback_id = $blockchain->deployContract($contract);
-        
+
         $callback_params = [
             'task_id' => $this->id
         ];
@@ -130,7 +141,7 @@ class Task extends \yii\db\ActiveRecord
         $callback->type = BlockchainCallback::DEPLOY_CONTRACT;
         $callback->callback_id = $callback_id;
         $callback->params = json_encode($callback_params);
-        
+
         if (!$callback->save()) {
             throw new \Exception("Can't save Callback after deployContract() was called");
         }

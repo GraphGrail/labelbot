@@ -1,24 +1,35 @@
 <?php
 /* @var $this yii\web\View */
-/* @var $labelGroup \common\models\LabelGroup */
+
+use yii\helpers\Url;
+
+/* @var $task \common\models\Task */
 
 $formatter = \Yii::$app->formatter;
 ?>
-<div class="m-widget4__item label-item" data-id="<?=$labelGroup->id?>" data-delete-url="<?=\yii\helpers\Url::toRoute(sprintf('label/%s/delete', $labelGroup->id))?>" >
+<div class="m-widget4__item task-item" data-id="<?=$task->id?>" data-delete-url="<?= Url::toRoute(sprintf('task/%s/delete', $task->id))?>" >
     <div class="m-widget4__img m-widget4__img--pic">
     </div>
     <div class="m-widget4__info">
         <span class="m-widget4__title">
-            <?=$labelGroup->name ?>
+            <?=$task->name ?>
         </span>
         <br>
         <span class="m-widget4__sub">
-            <?=Yii::t('app', 'Created at') ?> <?=$formatter->asDatetime($labelGroup->created_at, 'long') ?>
+            <?=Yii::t('app', 'Created at') ?> <?=$formatter->asDatetime($task->created_at, 'long') ?>
             <br>
-            <?=$labelGroup->description ?>
+            <?=$task->description ?>
         </span>
     </div>
     <div class="m-widget4__progress">
+        <?php
+        if ($dataset = $task->getDataset()) {
+            printf('%s: %s<br>', $task->getAttributeLabel('dataset_id'), $dataset);
+        }
+        if ($labelGroup = $task->getLabelGroup()) {
+            printf('%s: %s<br>', $task->getAttributeLabel('label_group_id'), $labelGroup);
+        }
+        ?>
     </div>
     <div class="m-widget4__ext">
         <ul class="m-portlet__nav">
@@ -33,7 +44,7 @@ $formatter = \Yii::$app->formatter;
                             <div class="m-dropdown__content">
                                 <ul class="m-nav">
                                     <li class="m-nav__item">
-                                        <a href="javascript:void(0)" class="m-nav__link label-delete-link" data-id="<?=$labelGroup->id?>" data-toggle="modal" data-target="#delete_label_modal">
+                                        <a href="javascript:void(0)" class="m-nav__link task-delete-link" data-id="<?=$task->id?>" data-toggle="modal" data-target="#delete_task_modal">
                                             <i class="m-nav__link-icon fa fa-trash-o m--font-danger"></i>
                                             <span class="m-nav__link-text m--font-danger">
                                                 Delete

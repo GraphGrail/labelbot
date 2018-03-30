@@ -2,8 +2,10 @@
 
 namespace common\models;
 
+use common\models\behavior\DeletedAttributeBehavior;
 use \common\models\Label;
 use Yii;
+use yii\behaviors\AttributeTypecastBehavior;
 
 /**
  * This is the model class for table "label_group".
@@ -15,8 +17,9 @@ use Yii;
  * @property int $status
  * @property int $created_at
  * @property int $updated_at
+ * @property bool $deleted
  */
-class LabelGroup extends \yii\db\ActiveRecord
+class LabelGroup extends ActiveRecord
 {
     const STATUS_OK = 1;
     const STATUS_NO_LABELS_TREE = 2;
@@ -41,6 +44,7 @@ class LabelGroup extends \yii\db\ActiveRecord
             [['status', 'created_at', 'updated_at'], 'integer'],
             [['description'], 'string', 'max' => 6000],
             [['labels_tree'], 'string', 'max' => 60000],
+            [['deleted'], 'boolean'],
         ];
     }
 
@@ -55,6 +59,13 @@ class LabelGroup extends \yii\db\ActiveRecord
                 'class' => \yii\behaviors\BlameableBehavior::className(),
                 'createdByAttribute' => 'user_id',
                 'updatedByAttribute' => null,
+            ],
+            'typecast' => [
+                  'class' => AttributeTypecastBehavior::className(),
+                  'typecastAfterFind' => true,
+            ],
+            'deletedAttribute' => [
+                'class' => DeletedAttributeBehavior::className(),
             ],
         ];
     }
@@ -96,5 +107,10 @@ class LabelGroup extends \yii\db\ActiveRecord
         return $this->hasMany(Dataset::className(), ['id' => 'dataset_id'])
             ->viaTable('label_group_to_dataset', ['label_group_id' => 'id']);    
     }*/
+
+    public static function find()
+    {
+        return new LabelGroupQuery(get_called_class());
+    }
 
 }

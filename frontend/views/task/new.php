@@ -1,9 +1,14 @@
 <?php
 
+use common\models\Dataset;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
+/* @var $datasets Dataset[] */
+/* @var $labelGroups \common\models\LabelGroup[] */
+
 $this->title = Yii::t('app', 'Add New Task');
 
 $this->registerJs("
@@ -45,7 +50,7 @@ $this->registerJs("
                 <div class="form-group m-form__group">
                   <div class="custom-file">
                   	<?= $form->field($model, 'dataset_id')
-                  	         ->textInput(['class'=>'form-control m-input'])
+                  	         ->dropDownList(ArrayHelper::map($datasets, 'id', 'name'), ['class'=>'form-control m-input'])
                   	         ->label(false) ?>
                   </div>
                 </div>
@@ -55,7 +60,7 @@ $this->registerJs("
                 <div class="form-group m-form__group">
                   <div class="custom-file">
                     <?= $form->field($model, 'label_group_id')
-                             ->textInput(['class'=>'form-control m-input'])
+                             ->dropDownList(ArrayHelper::map($labelGroups, 'id', 'name'), ['class'=>'form-control m-input'])
                              ->label(false) ?>
                   </div>
                 </div>

@@ -50,6 +50,18 @@ use yii\helpers\Url;
                                 </span>
                             </a>
                         </li>
+                        <li class="m-menu__item " data-redirect="true" aria-haspopup="true">
+                            <a href="<?= Url::to(['task/new']) ?>" class="m-menu__link ">
+                                <i class="m-menu__link-icon flaticon-notes"></i>
+                                <span class="m-menu__link-title">
+                                    <span class="m-menu__link-wrap">
+                                        <span class="m-menu__link-text">
+                                            <?= Yii::t('app', 'Create New Task') ?>
+                                        </span>
+                                    </span>
+                                </span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -62,10 +74,9 @@ use yii\helpers\Url;
             <ul class="m-topbar__nav m-nav m-nav--inline">
                 <li class="m-nav__item m-topbar__user-profile m-topbar__user-profile--img  m-dropdown m-dropdown--medium m-dropdown--arrow m-dropdown--header-bg-fill m-dropdown--align-right m-dropdown--mobile-full-width m-dropdown--skin-light"
                     data-dropdown-toggle="click">
-                    <a href="#" class="m-nav__link m-dropdown__toggle">
-                        <span class="m-topbar__userpic">
-                            <img src="/images/users/user4.jpg"
-                                 class="m--img-rounded m--marginless m--img-centered" alt=""/>
+                    <a href="#" class="m-nav__link m-dropdown__toggle m-demo-icon">
+                        <span class="m-topbar__userpic m-demo-icon m-demo-icon__preview">
+                            <i class="m--img-rounded m--marginless m--img-centered flaticon-profile-1"></i>
                         </span>
                         <span class="m-topbar__username m--hide">
                             Nick
@@ -78,7 +89,7 @@ use yii\helpers\Url;
                                  style="background: url(/images/misc/user_profile_bg.jpg); background-size: cover;">
                                 <div class="m-card-user m-card-user--skin-dark">
                                     <div class="m-card-user__pic">
-                                        <img src="/images/users/user4.jpg" class="m--img-rounded m--marginless" alt=""/>
+<!--                                        <img src="/images/users/user4.jpg" class="m--img-rounded m--marginless" alt=""/>-->
                                     </div>
                                     <div class="m-card-user__details">
                                         <span class="m-card-user__name m--font-weight-500">

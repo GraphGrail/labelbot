@@ -7,7 +7,7 @@
 /* @var $forgottenForm \frontend\models\PasswordResetRequestForm */
 /* @var $urls array */
 
-use frontend\assets\LoginAsset;
+use frontend\assets\pages\LoginAsset;
 use yii\helpers\Html;
 use yii\bootstrap\ActiveForm;
 

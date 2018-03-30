@@ -3,12 +3,15 @@
 namespace frontend\controllers;
 
 use common\components\EthereumGateway;
+use common\models\Dataset;
+use common\models\LabelGroup;
 use common\models\Task;
 use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use yii\filters\AccessControl;
 use Yii;
+use yii\web\NotFoundHttpException;
 
 class TaskController extends \yii\web\Controller
 {
@@ -36,7 +39,7 @@ class TaskController extends \yii\web\Controller
     public function actionIndex()
     {
         $tasks = Task::find()
-            ->where(['user_id' => Yii::$app->user->identity->id])
+            ->andWhere(['user_id' => Yii::$app->user->identity->id])
             ->orderBy(['id' => SORT_DESC])
             ->all();
         return $this->render('index', [
@@ -59,7 +62,21 @@ class TaskController extends \yii\web\Controller
             }
         }
 
-        return $this->render('new', ['model' => $model]);
+        $datasets = Dataset::find()
+            ->andWhere(['user_id' => Yii::$app->user->identity->id])
+            ->orderBy(['id' => SORT_DESC])
+            ->all();
+
+        $labelGroups = LabelGroup::find()
+            ->andWhere(['user_id' => Yii::$app->user->identity->id])
+            ->orderBy(['id' => SORT_DESC])
+            ->all();
+
+        return $this->render('new', [
+            'model' => $model,
+            'datasets' => $datasets,
+            'labelGroups' => $labelGroups,
+        ]);
     }
 
     /**
@@ -176,12 +193,22 @@ class TaskController extends \yii\web\Controller
 
 
     /**
-     * Delete Task
-     * @param int $id Task id
+     * @param $id
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     * @throws \Exception
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
     public function actionDelete($id)
     {
-        Yii::$app->end();
+        if (!$model = Task::findOne($id)) {
+            throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
+        }
+        $model->delete();
+        return $this->asJson([
+            'success' => $model->deleted,
+        ]);
     }
 
 }

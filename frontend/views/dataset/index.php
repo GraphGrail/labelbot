@@ -1,9 +1,13 @@
 <?php
-use yii\helpers\Html;
+
+use frontend\assets\pages\DatasetPageAsset;
 use yii\helpers\Url;
 
 /* @var $this yii\web\View */
+/* @var $datasets \common\models\Dataset[] */
 $this->title = 'Datasets';
+
+DatasetPageAsset::register($this);
 ?>
 <div class="row">
 	<div class="col-xl-8">
@@ -57,7 +61,7 @@ $this->title = 'Datasets';
 				</div>
 			</div>
 			<div class="m-portlet__body">
-				<div class="m-widget3">
+                <div class="m-widget4 m-widget4--progress">
 				<?php 
 					foreach ($datasets as $dataset) {
 						echo $this->render('_dataset', [
@@ -76,4 +80,35 @@ $this->title = 'Datasets';
 		</div>
 		<!--end:: Widgets/Support Tickets -->
 	</div>
+</div>
+
+<div class="modal fade" id="delete_dataset_modal" tabindex="-1" role="dialog" aria-labelledby="delete_dataset_modal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                    Delete dataset
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">
+                        &times;
+                    </span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Are you sure?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary break-delete-link" data-dismiss="modal">
+                    No
+                </button>
+                <a href="<?=Url::toRoute('dataset/delete')?>" class="btn btn-danger confirm-delete-link">
+                    <i class="fa fa-trash-o"></i>
+                    Yes
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
