@@ -13,10 +13,10 @@ use common\models\query\UserEntityQuery;
 class TaskQuery extends UserEntityQuery
 {
 
-    /*public function active()
+    public function active()
     {
-        return $this->andWhere('[[status]]=1');
-    }*/
+        return $this->andWhere('[[status]]='. Task::STATUS_CONTRACT_ACTIVE);
+    }
 
     /**
      * @inheritdoc
