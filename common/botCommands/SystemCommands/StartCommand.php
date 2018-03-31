@@ -2,9 +2,12 @@
 
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
+
 use Longman\TelegramBot\Commands\SystemCommand;
 use Longman\TelegramBot\Request;
 use common\models\Moderator;
+use common\domain\ethereum\Address;
+
 
 /**
  * Start command
@@ -47,21 +50,7 @@ class StartCommand extends SystemCommand
      */
     public function execute()
     {
-        $message = $this->getMessage();
-        $token  = trim($message->getText(true));
-
-        if ($token) {
-            $this->deepLink($token);
-        }
-
-        $text = 'Hi, man!' . PHP_EOL 
-              . 'Type /help to see all commands!';
-
-        $data = [
-            'chat_id' => $message->getChat()->getId(),
-            'text'    => $text,
-        ];
-        return Request::sendMessage($data);
+        $this->telegram->executeCommand('help');
     }
 
     /**
@@ -71,7 +60,7 @@ class StartCommand extends SystemCommand
      * @param string $auth_token 
      * @return bool
      */
-    private function deepLink(string $auth_token) : bool
+/*    private function deepLink(string $auth_token) : bool
     {
         $from = $this->getMessage()->getFrom();
 
@@ -95,5 +84,5 @@ class StartCommand extends SystemCommand
         }
 
         return false;
-    }
+    }*/
 }

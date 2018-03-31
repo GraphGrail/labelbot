@@ -55,7 +55,7 @@ abstract class AuthenticatedUserCommand extends UserCommand
         $this->moderator = Moderator::findOne(['tg_id'=>$this->chat_id]);
 
         if ($this->moderator === null) {
-            $this->telegram->executeCommand('showauthinfo');
+            return $this->telegram->executeCommand('login');
         }
     }
 

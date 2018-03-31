@@ -34,8 +34,9 @@ class Moderator extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['tg_chat_id', 'tg_id', 'created_at', 'updated_at'], 'integer'],
-            [['tg_id', 'created_at', 'updated_at'], 'required'],
+            [['tg_chat_id', 'tg_id'], 'integer'],
+            [['tg_id'], 'required'],
+            [['eth_addr'], 'string', 'max' => 42],
             [['auth_token'], 'string', 'max' => 64],
             [['tg_username', 'tg_first_name', 'tg_last_name'], 'string', 'max' => 200],
             [['phone'], 'string', 'max' => 20],
