@@ -41,7 +41,7 @@ class TaskController extends \yii\web\Controller
         $tasks = Task::find()
             ->ownedByUser()
             ->undeleted()
-            ->orderBy(['id' => SORT_DESC])
+            ->orderBy(['created_at' => SORT_DESC])
             ->all();
         return $this->render('index', [
             'tasks' => $tasks
@@ -57,6 +57,31 @@ class TaskController extends \yii\web\Controller
 
         if (Yii::$app->request->isPost) {
             $model->load(Yii::$app->request->post());
+
+            // We must verify dataset_id and label_group_id correctness
+            $dataset = Dataset::find()
+                ->where(['id' => $model->dataset_id])
+                ->ownedByUser()
+                ->undeleted()
+                ->one();
+            if ($dataset === null) throw new \Exception("Incorrect dataset_id");
+
+            $labelGroup = LabelGroup::find()
+                ->where(['id' => $model->label_group_id])
+                ->ownedByUser()
+                ->undeleted()
+                ->one();
+            if ($labelGroup === null) $model->total_work_items;
+
+            // We must save actual workItemSize on the moment of Task creation and use it later 
+            // in operations belong to this Task, coz workItemSize in config can be modified.
+            $model->work_item_size = Yii::$app->params['workItemSize'];
+            $model->total_work_items = (int) ($dataset->dataCount/$model->work_item_size);
+
+            if ($model->total_work_items == 0) {
+                 throw new \Exception("Very few data in dataset to create Task.");
+            }
+
             $model->status = Task::STATUS_CONTRACT_NOT_DEPLOYED;
             if ($model->save()) {
                 $this->redirect($model->id . '/smart-contract');
@@ -66,13 +91,13 @@ class TaskController extends \yii\web\Controller
         $datasets = Dataset::find()
             ->ownedByUser()
             ->undeleted()
-            ->orderBy(['id' => SORT_DESC])
+            ->orderBy(['created_at' => SORT_DESC])
             ->all();
 
         $labelGroups = LabelGroup::find()
             ->ownedByUser()
             ->undeleted()
-            ->orderBy(['id' => SORT_DESC])
+            ->orderBy(['created_at' => SORT_DESC])
             ->all();
 
         return $this->render('new', [
@@ -138,9 +163,12 @@ class TaskController extends \yii\web\Controller
 
     public function actionStop($id)
     {
-        $task = Task::findOne($id);
-        // Checks is task exists and belongs to user
-        if ($task === null || $task->user_id !== Yii::$app->user->identity->id) {
+        $task = Task::find()
+            ->where(['id'=>$id])
+            ->ownedByUser() // task must belongs to user
+            ->one();
+
+        if ($task === null) {
             throw new \Exception("Can't find Task");
         }
 
@@ -149,7 +177,12 @@ class TaskController extends \yii\web\Controller
             throw new \Exception("Task must be active for pause.");            
         }
 
-        $task->status = Task::STATUS_CONTRACT_ACTIVE_PAUSED;
+        // Runs console command blockchain/update-completed-work for this task
+        // Task status must be ACTIVE
+        $c = new \console\controllers\BlockchainController(Yii::$app->controller->id, Yii::$app);
+        $c->runAction('update-completed-work', ['taskId'=>$task->id]);
+
+        $task->status = Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE;
         $task->save();
 
         $this->redirect('score-work');
@@ -163,10 +196,20 @@ class TaskController extends \yii\web\Controller
     public function actionScoreWork($id)
     {
         $blockchain  = new EthereumGateway;
-        $task = Task::findOne($id);
-        // Checks is task exists and belongs to user
-        if ($task === null || $task->user_id !== Yii::$app->user->identity->id) {
+
+        $task = Task::find()
+            ->where(['id'=>$id])
+            ->ownedByUser() // task must belongs to user
+            ->one();
+
+        if ($task === null) {
             throw new \Exception("Can't find Task");
+        }
+
+        if ($task->status === Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE) {
+            return $this->render('scoreWork_waitingPause', [
+                'task' => $task
+            ]);
         }
 
         if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED) {
@@ -191,10 +234,13 @@ class TaskController extends \yii\web\Controller
     public function actionSendTokens($id)
     {
         $blockchain  = new EthereumGateway;
-        $task = Task::findOne($id);
 
-        // Check is task exists and belongs to user
-        if ($task === null || $task->user_id !== Yii::$app->user->identity->id) {
+        $task = Task::find()
+            ->where(['id'=>$id])
+            ->ownedByUser() // task must belongs to user
+            ->one();
+
+        if ($task === null) {
             throw new \Exception("Can't find Task");
         }
 

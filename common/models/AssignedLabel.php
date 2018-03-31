@@ -53,11 +53,21 @@ class AssignedLabel extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'data_id' => 'Data ID',
+            'task_id' => 'Task ID',
             'label_id' => 'Label ID',
             'moderator_id' => 'Moderator ID',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At'
         ];
+    }
+
+    /**
+     * Returns related Data model
+     * @return common\models\Task
+     */
+    public function getTask()
+    {
+        return $this->hasOne(Task::className(), ['id' => 'task_id']);
     }
 
     /**

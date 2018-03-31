@@ -96,6 +96,11 @@ class Dataset extends ActiveRecord
         return $this->hasMany(Data::className(), ['dataset_id' => 'id']);
     }
 
+    public function getDataCount()
+    {
+        return $this->hasMany(Data::className(), ['dataset_id' => 'id'])->count();
+    }
+
     public function getUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);

@@ -6,9 +6,7 @@ use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use common\models\BlockchainCallback;
 use common\interfaces\BlockchainGatewayInterface;
-use common\models\behavior\DeletedAttributeBehavior;
 use Yii;
-use yii\behaviors\AttributeTypecastBehavior;
 
 /**
  * This is the model class for table "task".
@@ -32,16 +30,17 @@ class Task extends ActiveRecord
     /**
      * Statuses
      */
-    const STATUS_CONTRACT_NOT_DEPLOYED       = 1;
-    const STATUS_CONTRACT_DEPLOYMENT_PROCESS = 2;
-    const STATUS_CONTRACT_DEPLOYMENT_ERROR   = 3;
-    const STATUS_CONTRACT_NEW_NEED_TOKENS    = 4;
-    const STATUS_CONTRACT_NEW                = 5;
-    const STATUS_CONTRACT_ACTIVE             = 6;
-    const STATUS_CONTRACT_ACTIVE_PAUSED      = 7;
-    const STATUS_CONTRACT_ACTIVE_NEED_TOKENS = 8;
-    const STATUS_CONTRACT_FORCE_FINALIZING   = 9;
-    const STATUS_CONTRACT_FINALIZED          = 10;
+    const STATUS_CONTRACT_NOT_DEPLOYED         = 1;
+    const STATUS_CONTRACT_DEPLOYMENT_PROCESS   = 2;
+    const STATUS_CONTRACT_DEPLOYMENT_ERROR     = 3;
+    const STATUS_CONTRACT_NEW_NEED_TOKENS      = 4;
+    const STATUS_CONTRACT_NEW                  = 5;
+    const STATUS_CONTRACT_ACTIVE               = 6;
+    const STATUS_CONTRACT_ACTIVE_NEED_TOKENS   = 7;
+    const STATUS_CONTRACT_ACTIVE_WAITING_PAUSE = 8;
+    const STATUS_CONTRACT_ACTIVE_PAUSED        = 9;
+    const STATUS_CONTRACT_FORCE_FINALIZING     = 10;
+    const STATUS_CONTRACT_FINALIZED            = 11;
 
     /**
      * @inheritdoc
@@ -57,13 +56,11 @@ class Task extends ActiveRecord
     public function rules()
     {
         return [
-            [['dataset_id', 'label_group_id', 'name', 'status'], 'required'],
-        //    [['id', 'user_id', 'dataset_id', 'label_group_id', 'name', 'description', 'contract_address', 'contract', 'status'], 'required'],
-            [['id', 'dataset_id', 'label_group_id'], 'integer'],
+            [['dataset_id', 'label_group_id', 'total_work_items', 'status','name'], 'required'],
+            [['dataset_id', 'label_group_id', 'total_work_items', 'status'], 'integer'],
             [['description', 'contract'], 'string'],
             [['name', 'delivering_job_id'], 'string', 'max' => 255],
             [['contract_address'], 'string', 'max' => 42],
-            [['status'], 'integer'],
             [['deleted'], 'boolean'],
         ];
     }
@@ -81,11 +78,11 @@ class Task extends ActiveRecord
                 'updatedByAttribute' => null,
             ],
             'typecast' => [
-                'class' => AttributeTypecastBehavior::className(),
+                'class' => \yii\behaviors\AttributeTypecastBehavior::className(),
                 'typecastAfterFind' => true,
             ],
             'deletedAttribute' => [
-                'class' => DeletedAttributeBehavior::className(),
+                'class' => \common\models\behavior\DeletedAttributeBehavior::className(),
             ],
         ];
     }
@@ -102,6 +99,8 @@ class Task extends ActiveRecord
             'label_group_id' => Yii::t('app', 'Label Group ID'),
             'name' => Yii::t('app', 'Name'),
             'description' => Yii::t('app', 'Description'),
+            'work_item_size' => Yii::t('app', 'Work item size'),
+            'total_work_items' => Yii::t('app', 'Total work items'),
             'contract_address' => Yii::t('app', 'Contract Address'),
             'contract' => Yii::t('app', 'Contract'),
             'status' => Yii::t('app', 'Status'),
@@ -129,10 +128,14 @@ class Task extends ActiveRecord
         return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id'])->one();
     }
 
+    public function getAssignedLabels()
+    {
+        return $this->hasMany(AssignedLabel::className(), ['task_id' => 'id']);
+    }
 
     public function deployContract(BlockchainGatewayInterface $blockchain, Address $clientAddress)
     {
-        $contract    = new Contract($clientAddress, 20); // TODO: real jobs number
+        $contract    = new Contract($clientAddress, $this->total_work_items);
         $callback_id = $blockchain->deployContract($contract);
 
         $callback_params = [
@@ -158,12 +161,10 @@ class Task extends ActiveRecord
 
     public function tokensNeededForContractActivation()
     {
-        if ($this->contract === null) {
-            return null;
-        }
+        if ($this->contract === null) return null;
 
         $contract = json_decode($this->contract);
-        return $contract->totalWorkItems * $contract->workItemPrice;
+        return bcmul($contract->totalWorkItems, bcmul($contract->workItemPrice, 1 + Yii::$app->params['approvalCommissionFraction']));
     }
 
     public function contractAddress() : Address
