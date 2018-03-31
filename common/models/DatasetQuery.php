@@ -12,5 +12,8 @@ use common\models\query\UserEntityQuery;
  */
 class DatasetQuery extends UserEntityQuery
 {
-
+    public function ready()
+    {
+        return $this->andWhere('[[status]]='. Dataset::STATUS_READY);
+    }
 }

@@ -27,7 +27,8 @@ $this->registerJs("
               <h5 class="m-widget5__title m--margin-bottom-25">
               	<?=Yii::t('app', 'Upload your dataset') ?>
               </h5>
-              <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data', 'class'=>'m-section m--margin-bottom-5']]) ?>
+              <?php $form = ActiveForm::begin(['options' => ['class'=>'m-section m--margin-bottom-5']]) ?>
+                <?= $form->errorSummary($model); ?>
                 <div class="m-section__sub">
                 	<?=Yii::t('app', 'Task name') ?>
                 </div>

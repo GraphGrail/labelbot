@@ -62,6 +62,7 @@ class TaskController extends \yii\web\Controller
             $dataset = Dataset::find()
                 ->where(['id' => $model->dataset_id])
                 ->ownedByUser()
+                ->ready()
                 ->undeleted()
                 ->one();
             if ($dataset === null) throw new \Exception("Incorrect dataset_id");
@@ -78,10 +79,6 @@ class TaskController extends \yii\web\Controller
             $model->work_item_size = Yii::$app->params['workItemSize'];
             $model->total_work_items = (int) ($dataset->dataCount/$model->work_item_size);
 
-            if ($model->total_work_items == 0) {
-                 throw new \Exception("Very few data in dataset to create Task.");
-            }
-
             $model->status = Task::STATUS_CONTRACT_NOT_DEPLOYED;
             if ($model->save()) {
                 $this->redirect($model->id . '/smart-contract');
@@ -90,6 +87,7 @@ class TaskController extends \yii\web\Controller
 
         $datasets = Dataset::find()
             ->ownedByUser()
+            ->ready()
             ->undeleted()
             ->orderBy(['created_at' => SORT_DESC])
             ->all();
