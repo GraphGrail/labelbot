@@ -2,38 +2,45 @@
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
+
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
-use common\components\LabelsKeyboard;
-use common\models\Data;
-use common\models\Label;
+use common\models\Moderator;
+use common\models\Task;
+use common\domain\ethereum\Address;
+
 
 /**
- * User "/getdata" command
- *
- * Display message with Data and inline keyboard with a Labels buttons.
+ * Get command
  */
-class GetdataCommand extends AuthenticatedUserCommand
+class GetCommand extends AuthenticatedUserCommand
 {
     /**
      * @var string
      */
-    protected $name = 'getdata';
+    protected $name = 'select';
 
     /**
      * @var string
      */
-    protected $description = 'Get data for label assignment';
+    protected $description = 'Get command';
 
     /**
      * @var string
      */
-    protected $usage = '/getdata';
+    protected $usage = '/Get <contract_address>';
 
     /**
      * @var string
      */
     protected $version = '0.1.0';
+
+    /**
+     * @var bool
+     */
+    protected $private_only = true;
+
+    public $hidden = true;
 
     /**
      * Command execute method
@@ -43,13 +50,28 @@ class GetdataCommand extends AuthenticatedUserCommand
      */
     public function execute()
     {
-        // TODO: We can delete previous message from bot to clear screen.
-        /*Request::deleteMessage([
-            'chat_id'    => $this->chat_id,
-            'message_id' => $this->message_id - 1
-        ]);*/
+ 		$message = $this->getMessage();
 
-        $data = Data::getForLabelAssignment(1, $this->moderator->id);
+        $contract_address = $command !== 'get' 
+        				  ? substr($command, 4)
+        				  : trim($message->getText(true));
+
+        // $contract_address ethereum address validation  
+
+        $task = Task::find()
+        	->where(['contract_address'=>$contract_address])
+        	->active()
+        	->one();
+
+        if ($task === null) {
+            $req_data = [
+                    'chat_id' => $this->chat_id,
+                    'text'    => 'Inactive task. Please try to get data for this tsk later.',
+                ];
+            return Request::sendMessage($req_data);        	
+        }
+
+        $data = $task->getDataForLabelAssignment($this->moderator->id); //Data::getForLabelAssignment(1, $this->moderator->id);
         if ($data === null) {
             $req_data = [
                     'chat_id' => $this->chat_id,
@@ -63,12 +85,9 @@ class GetdataCommand extends AuthenticatedUserCommand
         if (!trim($data->data)) {
             $data->data = 'no data';
         }
-        // TODO: For now, we just get the first labelGroup for dataset.
-        // This should be changed in the future.
-        $labelGroup = $data->dataset->labelGroups[0];
 
         $rootLabel = Label::findOne([
-            'label_group_id'  => $labelGroup->id,
+            'label_group_id'  => $task->label_group_id,
             'parent_label_id' => 0
         ]);
 
@@ -88,4 +107,11 @@ class GetdataCommand extends AuthenticatedUserCommand
 
         return Request::sendMessage($req_data);
     }
+
 }
+
+
+
+
+
+
