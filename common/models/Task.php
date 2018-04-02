@@ -173,4 +173,10 @@ class Task extends ActiveRecord
         return $this->contract_address ? new Address($this->contract_address) : null;
     }
 
+
+    public function getDataForLabelAssignment(int $moderator_id)
+    {
+
+    }
+
 }

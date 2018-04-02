@@ -17,6 +17,14 @@ use Yii;
 class AssignedLabel extends \yii\db\ActiveRecord
 {
     /**
+     * Statuses
+     */
+    const STATUS_IN_HAND  = 1;
+    const STATUS_READY    = 2;
+    const STATUS_APPROVED = 3;
+    const STATUS_DECLINED = 4;
+
+    /**
      * @inheritdoc
      */
     public static function tableName()
@@ -56,6 +64,7 @@ class AssignedLabel extends \yii\db\ActiveRecord
             'task_id' => 'Task ID',
             'label_id' => 'Label ID',
             'moderator_id' => 'Moderator ID',
+            'status' => 'Status',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At'
         ];
