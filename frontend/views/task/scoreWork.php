@@ -141,7 +141,6 @@ $this->registerJs('
                     </div>
                 </div>
                 <div class="col-xl-4 order-1 order-xl-2 m--align-right">
-                    <input type="hidden" name="<?=Yii::$app->request->csrfParam ?>" value="<?=Yii::$app->request->getCsrfToken() ?>" />
                     <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work">
                         Send results to blockchain
                     </button>
