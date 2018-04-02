@@ -77,18 +77,21 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
         ]);
 
         if ($assignedLabel === null) {
-            $assignedLabel = new AssignedLabel;
+            return $this->telegram->executeCommand('get');
+
+/*            $assignedLabel = new AssignedLabel;
             $assignedLabel->data_id      = $this->data_id;
-            $assignedLabel->moderator_id = $this->moderator->id;            
+            $assignedLabel->moderator_id = $this->moderator->id;     */       
         }
 
+        $assignedLabel->status = AssignedLabel::STATUS_READY;            
         $assignedLabel->label_id = $this->label_id;
 
         if (!$assignedLabel->save()) {
             // TODO: log error
         }
 
-        return $this->telegram->executeCommand('getdata');
+        return $this->telegram->executeCommand('get');
     }
 
     /**
@@ -138,7 +141,7 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
                 'cache_time'        => 0,
             ];
             Request::answerCallbackQuery($req_data);
-            $this->telegram->executeCommand('getdata');
+            $this->telegram->executeCommand('get');
             return true;
         }
         return false;      

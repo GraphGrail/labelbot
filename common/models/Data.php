@@ -73,9 +73,9 @@ class Data extends \yii\db\ActiveRecord
      * @param type $moderator_id 
      * @return Data
      */
-    public static function getForLabelAssignment($dataset_id, $moderator_id)
+/*    public static function getForLabelAssignment($dataset_id, $moderator_id)
     {
-        self::deleteUnassignedLabels();
+        AssignedLabel::deleteUnassignedLabels();
 
         $data = self::getUnlabeledData($dataset_id) 
              ?: self::getSkippedData($dataset_id, $moderator_id)
@@ -83,29 +83,17 @@ class Data extends \yii\db\ActiveRecord
 
         if ($data === null) return null;
 
-        // We create AssignedLabel instance with label_id=NULL 
+        // We create AssignedLabel instance with STATUS_IN_HAND
         // to prevent moderators getting same data at one moment.
         $assigned_label = new AssignedLabel;
         $assigned_label->data_id = $data->id;
         $assigned_label->moderator_id = $moderator_id;
+        $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
         $assigned_label->save();
 
         return $data;
-    }
+    }*/
 
-    /**
-     * Deletes AssignedLabels that weren't assigned in 5 min
-     * 
-     * @return int
-     */
-    private static function deleteUnassignedLabels()
-    {
-        $expired_time = time() - 5 * 60;
-        return AssignedLabel::deleteAll(
-            'label_id IS NULL AND created_at < :expired_at',
-            [':expired_at' => $expired_time]
-        );
-    }
 
     /**
      * Returns first unlabeled Data from data from specified dataset
@@ -113,7 +101,7 @@ class Data extends \yii\db\ActiveRecord
      * @param int $dataset_id 
      * @return Data
      */
-    private static function getUnlabeledData(int $dataset_id)
+/*    private static function getUnlabeledData(int $dataset_id)
     {
         $unlabeled_data_id = Yii::$app->db->createCommand("
                 SELECT `data`.id 
@@ -125,7 +113,7 @@ class Data extends \yii\db\ActiveRecord
             ")->query();
 
         return self::findOne($unlabeled_data_id);
-    }
+    }*/
 
     /**
      * Returns first Data that was skipped by any moderator except specified
@@ -134,7 +122,7 @@ class Data extends \yii\db\ActiveRecord
      * @param int $moderator_id 
      * @return Data
      */
-    private static function getSkippedData(int $dataset_id,  int $moderator_id)
+/*    private static function getSkippedData(int $dataset_id,  int $moderator_id)
     {
         $skipped_data_id = Yii::$app->db->createCommand("
                 SELECT data_id 
@@ -153,7 +141,7 @@ class Data extends \yii\db\ActiveRecord
             ")->query();
 
         return self::findOne($skipped_data_id);
-    }
+    }*/
 
     /**
      * Returns first least labeled Data that was labeled by any moderator except specified
@@ -162,7 +150,7 @@ class Data extends \yii\db\ActiveRecord
      * @param int $moderator_id 
      * @return Data
      */
-    private static function getLeastLabeledData(int $dataset_id, int $moderator_id)
+/*    private static function getLeastLabeledData(int $dataset_id, int $moderator_id)
     {
         $data = Yii::$app->db->createCommand("
                 SELECT data_id, COUNT(data_id) as assigns_count 
@@ -181,5 +169,5 @@ class Data extends \yii\db\ActiveRecord
             ")->queryOne();
 
         return self::findOne($data['data_id']);
-    }
+    }*/
 }

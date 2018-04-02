@@ -2,9 +2,12 @@
 
 namespace common\models;
 
+use common\components\EthereumGateway;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use common\models\BlockchainCallback;
+use common\models\AssignedLabel;
+use common\models\Data;
 use common\interfaces\BlockchainGatewayInterface;
 use Yii;
 
@@ -165,7 +168,7 @@ class Task extends ActiveRecord
         if ($this->contract === null) return null;
 
         $contract = json_decode($this->contract);
-        return bcmul($contract->totalWorkItems, bcmul($contract->workItemPrice, 1 + Yii::$app->params['approvalCommissionFraction']));
+        return bcmul($contract->totalWorkItems, $contract->workItemPrice /*bcmul($contract->workItemPrice, 1 + Yii::$app->params['approvalCommissionFraction'])*/);
     }
 
     public function contractAddress() : Address
@@ -174,9 +177,98 @@ class Task extends ActiveRecord
     }
 
 
+
     public function getDataForLabelAssignment(int $moderator_id)
     {
+        AssignedLabel::deleteUnassignedLabels();
 
+        // Are moderator start new workItem or not?
+        if ($this->isGettingNewWorkItem($moderator_id)) {
+            $blockchain      = new EthereumGateway;
+            $contractAddress = new Address($this->contract_address);
+            $contractStatus  = $blockchain->contractStatus($contractAddress);
+
+            // If there is no workItems, all of them are already in work
+            if ($contractStatus->workItemsLeft <= $this->currentWorkItemsCount()) {
+                return null;
+            }
+            // If we haven't balance to pay new workItem 
+            if ($contractStatus->workItemsBalance < 1) {
+                $this->status = Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
+                $this->save();
+                return null;
+            }
+        }
+        // if moderator continue work on workItem
+        else {
+            if ($this->work_item_size <= $this->workItemAssignsCount($moderator_id)) {
+                return null;
+            }
+        }
+
+        $data = self::getUnlabeledData($this->dataset_id);
+
+        if ($data === null) return null;
+
+        // We create AssignedLabel instance with STATUS_IN_HAND
+        // to prevent other moderators to get same data at one moment.
+        $assigned_label = new AssignedLabel;
+        $assigned_label->task_id = $this->id;
+        $assigned_label->data_id = $data->id;
+        $assigned_label->moderator_id = $moderator_id;
+        $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
+        $assigned_label->save();
+
+        return $data;
     }
 
+    private static function getUnlabeledData(int $dataset_id)
+    {
+        $unlabeled_data_id = Yii::$app->db->createCommand("
+                SELECT `data`.id 
+                FROM `data` 
+                LEFT JOIN `assigned_label` on `data`.id = `assigned_label`.data_id 
+                WHERE `data`.dataset_id = $dataset_id 
+                    AND `assigned_label`.id IS NULL
+                LIMIT 1
+            ")->query();
+
+        return Data::findOne($unlabeled_data_id);
+    }
+
+    private function isGettingNewWorkItem(int $moderator_id) : bool
+    {
+        // If there is not approved or declined AssignedLabel for moderator
+        $assignedLabel = AssignedLabel::find()
+            ->where(['task_id' => $this->id])
+            ->andWhere(['moderator_id' => $moderator_id])
+            ->andWhere(['OR', ['status' => AssignedLabel::STATUS_IN_HAND], ['status' => AssignedLabel::STATUS_READY]])
+            ->one();
+
+        return $assignedLabel === null ? true : false;
+    }
+
+    private function workItemAssignsCount(int $moderator_id) : int
+    {
+        $count = AssignedLabel::find()
+            ->select('count')
+            ->where(['task_id' => $this->id])
+            ->andWhere(['moderator_id' => $moderator_id])
+            ->andWhere(['OR', ['status' => AssignedLabel::STATUS_IN_HAND], ['status' => AssignedLabel::STATUS_READY]])
+            ->count();
+
+        return $count;
+    }
+
+    private function currentWorkItemsCount(): int
+    {
+        $count = AssignedLabel::find()
+            ->select('moderator_id')
+            ->where(['task_id' => $this->id])
+            ->andWhere(['OR', ['status' => AssignedLabel::STATUS_IN_HAND], ['status' => AssignedLabel::STATUS_READY]])
+            ->groupBy('moderator_id')
+            ->count();
+
+        return $count;
+    }
 }

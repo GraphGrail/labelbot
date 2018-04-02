@@ -105,4 +105,22 @@ class AssignedLabel extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Moderator::className(), ['id' => 'moderator_id']);
     }
+
+
+    /**
+     * Deletes AssignedLabels that weren't assigned in $seconds 
+     * 
+     * @var $seconds
+     * @return int
+     */
+    public static function deleteUnassignedLabels($seconds=300)
+    {
+        $expired_time = time() - $seconds;
+        return self::deleteAll(
+            'label_id IS NULL AND created_at < :expired_at',
+            [':expired_at' => $expired_time]
+        );
+    }
+
+    
 }

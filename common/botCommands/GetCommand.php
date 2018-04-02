@@ -7,7 +7,9 @@ use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
 use common\models\Moderator;
 use common\models\Task;
+use common\models\Label;
 use common\domain\ethereum\Address;
+use common\components\labelsKeyboard;
 
 
 /**
@@ -23,12 +25,12 @@ class GetCommand extends AuthenticatedUserCommand
     /**
      * @var string
      */
-    protected $description = 'Get command';
+    protected $description = 'Get data for labeling command';
 
     /**
      * @var string
      */
-    protected $usage = '/Get <contract_address>';
+    protected $usage = '/Get';
 
     /**
      * @var string
@@ -50,32 +52,38 @@ class GetCommand extends AuthenticatedUserCommand
      */
     public function execute()
     {
- 		$message = $this->getMessage();
+ 		$command = $this->message->getCommand();
 
-        $contract_address = $command !== 'get' 
-        				  ? substr($command, 4)
-        				  : trim($message->getText(true));
+ 		if (substr($command, 0, 6) === 'get_0x') {
+ 			$contract_address = substr($command, 4);
 
-        // $contract_address ethereum address validation  
+        	// TODO: $contract_address ethereum address validation  
+ 			$this->moderator->current_task = $contract_address;
+ 			$this->moderator->save();
+ 		}
+
+ 		if (!$this->moderator->current_task) {
+ 			return $this->telegram->executeCommand('tasks');
+ 		}
 
         $task = Task::find()
-        	->where(['contract_address'=>$contract_address])
+        	->where(['contract_address'=>$this->moderator->current_task])
         	->active()
         	->one();
 
         if ($task === null) {
             $req_data = [
                     'chat_id' => $this->chat_id,
-                    'text'    => 'Inactive task. Please try to get data for this tsk later.',
+                    'text'    => 'Inactive task. Please, try to get data for this task later.',
                 ];
             return Request::sendMessage($req_data);        	
         }
 
-        $data = $task->getDataForLabelAssignment($this->moderator->id); //Data::getForLabelAssignment(1, $this->moderator->id);
+        $data = $task->getDataForLabelAssignment($this->moderator->id);
         if ($data === null) {
             $req_data = [
                     'chat_id' => $this->chat_id,
-                    'text'    => 'Сurrently, there is no data to markup',
+                    'text'    => 'Сurrently, there is no data to markup in this task. Please, try to get data for this task later.',
                 ];
             return Request::sendMessage($req_data);
         }
