@@ -3,6 +3,7 @@
 use frontend\assets\pages\ScoreWorkAsset;
 use yii\helpers\Html;
 use frontend\assets\EthGatewayAsset;
+use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
@@ -82,7 +83,6 @@ $this->registerJs('
 <?php $form = ActiveForm::begin([
         'options' => [
             'class'=>'m-section m--margin-bottom-5 score-work-form',
-            'action' => \yii\helpers\Url::toRoute('task/preview-work', ['id' => $task->id]),
         ],
     ]);
 
@@ -92,6 +92,17 @@ $this->registerJs('
             'value' => '',
         ])
     ->label(false);
+
+
+    foreach ($contractStatus->workers as $addr => $worker) {
+        printf('<input type="hidden" class="workers-preview-url-%s" disabled="disabled" value="%s" />',
+            $addr,
+            Url::to(['task/preview-work',
+                'id' => $task->id,
+                'addr' => $addr,
+            ])
+        );
+    }
 ?>
 <input type="hidden" class="form-control m-input js-workers-source" disabled="disabled" value="<?=htmlspecialchars(json_encode($contractStatus->workers))?>" />
 <div class="m-portlet m-portlet--mobile">
@@ -171,6 +182,31 @@ $this->registerJs('
                 <button type="button" class="btn btn-danger confirm-decline-link">
                     <i class="fa fa-trash-o"></i>
                     Yes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="preview_modal" tabindex="-1" role="dialog" aria-labelledby="preview_modal2" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                    Preview
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">
+                        &times;
+                    </span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    Close
                 </button>
             </div>
         </div>

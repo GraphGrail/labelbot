@@ -3,12 +3,15 @@
 namespace frontend\controllers;
 
 use common\components\EthereumGateway;
+use common\models\AssignedLabel;
 use common\models\Dataset;
 use common\models\LabelGroup;
+use common\models\Moderator;
 use common\models\Task;
 use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
+use common\models\view\PreviewScoreWorkView;
 use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
@@ -317,10 +320,38 @@ class TaskController extends \yii\web\Controller
         ]);
     }
 
-    public function actionPreviewWork($id)
+    /**
+     * @param $id
+     * @param $addr
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     */
+    public function actionPreviewWork($id, $addr)
     {
+        /** @var Task $task */
+        if (!$task = Task::findOne($id)) {
+            throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
+        }
+
+        /** @var Moderator $moderator */
+        if (!$moderator = Moderator::find()->where(['eth_addr' => $addr])->one()) {
+            throw new NotFoundHttpException(sprintf('Moderator with address `%s` not found', $addr));
+        }
+
+        $limit = 10;
+        $list = $task
+            ->getAssignedLabels()
+            ->andWhere('[[status]] = ' . AssignedLabel::STATUS_READY)
+            ->andWhere('[[moderator_id]] = ' . $moderator->id)
+            ->addOrderBy(['id' => SORT_DESC])
+            ->limit($limit)
+            ->all()
+        ;
+
         return $this->asJson([
-            'success' => 'ok'
+            'list' => array_map(function (AssignedLabel $assignedLabel) {
+                return (new PreviewScoreWorkView($assignedLabel))->toArray();
+            }, $list),
         ]);
     }
 

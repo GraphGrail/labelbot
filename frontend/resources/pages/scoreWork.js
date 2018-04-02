@@ -70,6 +70,49 @@ var ScoreWorkTable = function() {
         this.reloadTable();
     };
 
+    this.preview = function (id) {
+        var data = JSON.parse(source.val());
+        var row = data[id];
+        if (!row) {
+            return;
+        }
+        var url = $('.workers-preview-url-' + id).val();
+        if (!url) {
+            return;
+        }
+
+        var modal = $('#preview_modal');
+
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            success: function (data) {
+                if (!data.list) {
+                    return;
+                }
+                var body = modal.find('.modal-body');
+                body.html('');
+                $.each(data.list, function (_, item) {
+                    obj.createPreviewElement(item).appendTo(body);
+                });
+            }
+        });
+    };
+
+    this.createPreviewElement = function (data) {
+        var container = $('<div/>');
+        var text = $('<textarea class="form-control m-input" disabled>');
+        var label = $('<textarea class="form-control m-input" disabled>');
+
+        text.html(data.text);
+        label.html(data.label);
+
+        text.appendTo(container);
+        container.append('<br>');
+        label.appendTo(container);
+        return container;
+    };
+
     this.renderTable = function () {
         if (rendered) {
             return;
@@ -152,13 +195,19 @@ var ScoreWorkTable = function() {
                         }
 
                         return '\
-                        <a href="#" class="m-portlet__nav-link btn m-btn m-btn--hover-accent m-btn--icon m-btn--icon-only m-btn--pill" title="Preview">\
+                        <a href="javascript:void(0);" \
+                            class="js-worker-preview m-portlet__nav-link btn m-btn m-btn--hover-accent m-btn--icon m-btn--icon-only m-btn--pill" \
+                            title="Preview"\
+                            data-id="' + row.id + '"\
+                            data-toggle="modal"\
+                            data-target="#preview_modal"\
+                        >\
                             <i class="la la-picture-o"></i>\
                         </a>\
 						<a href="javascript:void(0);" \
 						    class="js-worker-approve m-portlet__nav-link btn m-btn m-btn--hover-success m-btn--icon m-btn--icon-only m-btn--pill"\
 						    title="Approve"\
-						    data-id=' + row.id + '\
+						    data-id="' + row.id + '"\
 						    data-field="approvedItems"\
                         >\
 							<i class="la la-check-circle-o"></i>\
@@ -166,7 +215,7 @@ var ScoreWorkTable = function() {
 						<a href="javascript:void(0);" \
 						    class="js-worker-decline m-portlet__nav-link btn m-btn m-btn--hover-danger m-btn--icon m-btn--icon-only m-btn--pill" \
 						    title="Decline"\
-						    data-id=' + row.id + '\
+						    data-id="' + row.id + '"\
 						    data-field="declinedItems"\
 						    data-toggle="modal" data-target="#delete_score_work_modal"\
                         >\
@@ -202,6 +251,10 @@ var ScoreWorkTable = function() {
         $('.break-decline-link').click(function () {
             $(this).data('id', '');
             $(this).data('field', '');
+        });
+
+        $('.js-worker-preview').click(function () {
+            obj.preview($(this).data('id'));
         });
 
         rendered = true;

@@ -72,7 +72,7 @@ class AssignedLabel extends \yii\db\ActiveRecord
 
     /**
      * Returns related Data model
-     * @return common\models\Task
+     * @return \common\models\Task
      */
     public function getTask()
     {
@@ -81,7 +81,7 @@ class AssignedLabel extends \yii\db\ActiveRecord
 
     /**
      * Returns related Data model
-     * @return common\models\Data
+     * @return \common\models\Data
      */
     public function getData()
     {
@@ -90,7 +90,7 @@ class AssignedLabel extends \yii\db\ActiveRecord
 
     /**
      * Returns related Label model
-     * @return common\models\Label
+     * @return \common\models\Label
      */
     public function getLabel()
     {
@@ -99,7 +99,7 @@ class AssignedLabel extends \yii\db\ActiveRecord
 
     /**
      * Returns related Modertor model
-     * @return common\models\Moderator
+     * @return \common\models\Moderator
      */
     public function getModerator()
     {
