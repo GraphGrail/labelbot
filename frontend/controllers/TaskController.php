@@ -224,11 +224,12 @@ class TaskController extends \yii\web\Controller
             $contractStatus = $blockchain->contractStatus($task->contractAddress());
         } catch (\Exception $e) {
             $contractStatus = new \StdClass();
-            $contractStatus->workers = [
-                '0x13fb25c0e3c3a2c4bd84388cc1d36648f921e151'=>['totalItems'=>5,'approvedItems'=>2,'declinedItems'=>1],
-                '0x23fb25c0e3c3a2c4bd84388cc1d36648f921e152'=>['totalItems'=>2,'approvedItems'=>2,'declinedItems'=>0],
-                '0x33fb25c0e3c3a2c4bd84388cc1d36648f921e153'=>['totalItems'=>8,'approvedItems'=>2,'declinedItems'=>3]
-            ];
+            $contractStatus->workers = [];
+//            $contractStatus->workers = [
+//                '0x13fb25c0e3c3a2c4bd84388cc1d36648f921e151'=>['totalItems'=>5,'approvedItems'=>2,'declinedItems'=>1],
+//                '0x23fb25c0e3c3a2c4bd84388cc1d36648f921e152'=>['totalItems'=>2,'approvedItems'=>2,'declinedItems'=>0],
+//                '0x33fb25c0e3c3a2c4bd84388cc1d36648f921e153'=>['totalItems'=>8,'approvedItems'=>2,'declinedItems'=>3]
+//            ];
         }
 
 
