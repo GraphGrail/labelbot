@@ -1,9 +1,16 @@
 <?php
 
+use frontend\assets\pages\ScoreWorkAsset;
 use yii\helpers\Html;
 use frontend\assets\EthGatewayAsset;
+use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
+/* @var $task \common\models\Task */
+/* @var $sendingForm \frontend\models\SendScoreWorkForm */
+
+ScoreWorkAsset::register($this);
+
 /*EthGatewayAsset::register($this);
 
 $this->registerJs("
@@ -67,56 +74,105 @@ $this->registerJs("
 
 $this->registerJs('
 
-let workers = {
-    "0x13fb25c0e3c3a2c4bd84388cc1d36648f921e151":{"totalItems":5,"approvedItems":2,"declinedItems":1},
-    "0x23fb25c0e3c3a2c4bd84388cc1d36648f921e152":{"totalItems":2,"approvedItems":2,"declinedItems":0},
-    "0x33fb25c0e3c3a2c4bd84388cc1d36648f921e153":{"totalItems":8,"approvedItems":2,"declinedItems":3}
-  }
-
-
-
-
 ');
 ?>
 <h1>Jobs scoring</h1>
 
-<div class="row">
-  <div class="col-lg-8">
-    <div class="m-portlet m-portlet--tab">
-      <div class="m-portlet__body m-portlet__body--no-padding">
-        <div class="row m-row--no-padding m-row--col-separator-xl">
-          <div class="col-md-12">
-            <div class="m-widget1">
-              <div class="m--padding-bottom-5"></div>
-              <h5 class="m-widget5__title m--margin-bottom-25">
-              	<?=Yii::t('app', "Sending data about jobs at \"$task->name\" task to blockchain.") ?>
-              </h5>
-      			  <form class="m-section m--margin-bottom-5 js-form" method="post" action="">
-      			  	<input type="hidden" name="<?=Yii::$app->request->csrfParam ?>" value="<?=Yii::$app->request->getCsrfToken() ?>" />
-                <input type="hidden" class="form-control m-input" name="action" value="sendTokens">
-                <div class="form-group m-form__group">
-                  <div class="m-section__sub">
-                    <?=Yii::t('app', 'Smart contract address') ?>
-                  </div>
-                  <div class="form-group field-task-label_group_id required">
-                    <input type="text" id="address" class="form-control m-input js-contract-address" name="address" value="<?/*=$task->contract_address*/ ?>" disabled="disabled">
-                    <input type="hidden" class="form-control m-input js-workers" disabled="disabled"><?/*=json_encode($contractStatus->workers)*/ ?></input>
-                    <div class="help-block"></div>
-                  </div>                  
-                </div>
-                <div class="form-group m-form__group">
-                  <input class="form-control m-input js-workers" name="score"><?/*=json_encode($contractStatus->workers)*/ ?></input>
-                </div>
-      			    <div class="form-group m-form__group m--padding-top-20">                  
-                  <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work" disabled="disabled">Send results to blockchain</button>                  
-      			      <div class="clearfix"></div>
-      			    </div>
-              </form>
-              <div class="m--padding-bottom-20"></div>
+
+<?php $form = ActiveForm::begin([
+        'options' => [
+            'class'=>'m-section m--margin-bottom-5 score-work-form',
+            'action' => \yii\helpers\Url::toRoute('task/preview-work', ['id' => $task->id]),
+        ],
+    ]);
+
+    echo $form->field($sendingForm, 'workers')
+        ->hiddenInput([
+            'class' => 'form-control m-input js-workers',
+            'value' => '',
+        ])
+    ->label(false);
+?>
+<input type="hidden" class="form-control m-input js-workers-source" disabled="disabled" value="<?=htmlspecialchars(json_encode($contractStatus->workers))?>" />
+<div class="m-portlet m-portlet--mobile">
+    <div class="m-portlet__head">
+        <div class="m-portlet__head-caption">
+            <div class="m-portlet__head-title">
+                <h3 class="m-portlet__head-text">
+                    <?=Yii::t('app', "Sending data about jobs at \"$task->name\" task to blockchain.") ?>
+                </h3>
             </div>
-          </div>
         </div>
-      </div>
+        <div class="m-portlet__head-tools">
+        </div>
     </div>
-  </div>
+    <div class="m-portlet__body">
+        <!--begin: Search Form -->
+        <div class="m-form m-form--label-align-right m--margin-top-20 m--margin-bottom-30">
+            <div class="row align-items-center">
+                <div class="col-xl-8 order-2 order-xl-1">
+                    <div class="form-group m-form__group row align-items-center">
+                        <div class="col-md-8">
+                            <div class="m-form__group m-form__group--inline">
+                                <div class="m-form__label">
+                                    <label>
+                                        <small>
+                                            <?=Yii::t('app', 'Smart contract address') ?>:
+                                        </small>
+                                    </label>
+                                </div>
+                                <div class="m-form__control">
+                                    <input type="text" id="address" class="form-control m-input js-contract-address" name="address" value="<?=$task->contract_address?>" disabled="disabled" />
+                                </div>
+                            </div>
+                            <div class="d-md-none m--margin-bottom-10"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-4 order-1 order-xl-2 m--align-right">
+                    <input type="hidden" name="<?=Yii::$app->request->csrfParam ?>" value="<?=Yii::$app->request->getCsrfToken() ?>" />
+                    <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work">
+                        Send results to blockchain
+                    </button>
+                    <div class="m-separator m-separator--dashed d-xl-none"></div>
+                </div>
+            </div>
+        </div>
+        <!--end: Search Form -->
+        <!--begin: Datatable -->
+        <div class="m_datatable" id="ajax_data"></div>
+        <!--end: Datatable -->
+    </div>
+</div>
+<?php ActiveForm::end() ?>
+
+<div class="modal fade" id="delete_score_work_modal" tabindex="-1" role="dialog" aria-labelledby="delete_score_work_modal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                    Decline
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">
+                        &times;
+                    </span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Are you sure?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary break-decline-link" data-dismiss="modal">
+                    No
+                </button>
+                <button type="button" class="btn btn-danger confirm-decline-link">
+                    <i class="fa fa-trash-o"></i>
+                    Yes
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

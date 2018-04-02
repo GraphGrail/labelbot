@@ -9,6 +9,7 @@ use common\models\Task;
 use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
+use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
 use yii\web\NotFoundHttpException;
@@ -195,6 +196,7 @@ class TaskController extends \yii\web\Controller
     {
         $blockchain  = new EthereumGateway;
 
+        /** @var Task $task */
         $task = Task::find()
             ->where(['id'=>$id])
             ->ownedByUser() // task must belongs to user
@@ -214,12 +216,23 @@ class TaskController extends \yii\web\Controller
             // TODO: remove that
             throw new \Exception("Task must be paused for scoring.");
         }
+        //todo remove dev data
+        try {
+            $contractStatus = $blockchain->contractStatus($task->contractAddress());
+        } catch (\Exception $e) {
+            $contractStatus = new \StdClass();
+            $contractStatus->workers = [
+                '0x13fb25c0e3c3a2c4bd84388cc1d36648f921e151'=>['totalItems'=>5,'approvedItems'=>2,'declinedItems'=>1],
+                '0x23fb25c0e3c3a2c4bd84388cc1d36648f921e152'=>['totalItems'=>2,'approvedItems'=>2,'declinedItems'=>0],
+                '0x33fb25c0e3c3a2c4bd84388cc1d36648f921e153'=>['totalItems'=>8,'approvedItems'=>2,'declinedItems'=>3]
+            ];
+        }
 
-        $contractStatus = $blockchain->contractStatus($task->contractAddress());
 
         return $this->render('scoreWork', [
             'task' => $task,
-            'contractStatus' => $contractStatus
+            'contractStatus' => $contractStatus,
+            'sendingForm' => new SendScoreWorkForm(),
         ]);
 
     }
@@ -301,6 +314,13 @@ class TaskController extends \yii\web\Controller
         $model->delete();
         return $this->asJson([
             'success' => $model->deleted,
+        ]);
+    }
+
+    public function actionPreviewWork($id)
+    {
+        return $this->asJson([
+            'success' => 'ok'
         ]);
     }
 
