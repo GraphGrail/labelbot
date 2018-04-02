@@ -3,12 +3,16 @@
 namespace frontend\controllers;
 
 use common\components\EthereumGateway;
+use common\models\AssignedLabel;
 use common\models\Dataset;
 use common\models\LabelGroup;
+use common\models\Moderator;
 use common\models\Task;
 use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
+use common\models\view\PreviewScoreWorkView;
+use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
 use yii\web\NotFoundHttpException;
@@ -195,6 +199,7 @@ class TaskController extends \yii\web\Controller
     {
         $blockchain  = new EthereumGateway;
 
+        /** @var Task $task */
         $task = Task::find()
             ->where(['id'=>$id])
             ->ownedByUser() // task must belongs to user
@@ -214,12 +219,24 @@ class TaskController extends \yii\web\Controller
             // TODO: remove that
             throw new \Exception("Task must be paused for scoring.");
         }
+        //todo remove dev data
+        try {
+            $contractStatus = $blockchain->contractStatus($task->contractAddress());
+        } catch (\Exception $e) {
+            $contractStatus = new \StdClass();
+            $contractStatus->workers = [];
+//            $contractStatus->workers = [
+//                '0x13fb25c0e3c3a2c4bd84388cc1d36648f921e151'=>['totalItems'=>5,'approvedItems'=>2,'declinedItems'=>1],
+//                '0x23fb25c0e3c3a2c4bd84388cc1d36648f921e152'=>['totalItems'=>2,'approvedItems'=>2,'declinedItems'=>0],
+//                '0x33fb25c0e3c3a2c4bd84388cc1d36648f921e153'=>['totalItems'=>8,'approvedItems'=>2,'declinedItems'=>3]
+//            ];
+        }
 
-        $contractStatus = $blockchain->contractStatus($task->contractAddress());
 
         return $this->render('scoreWork', [
             'task' => $task,
-            'contractStatus' => $contractStatus
+            'contractStatus' => $contractStatus,
+            'sendingForm' => new SendScoreWorkForm(),
         ]);
 
     }
@@ -301,6 +318,41 @@ class TaskController extends \yii\web\Controller
         $model->delete();
         return $this->asJson([
             'success' => $model->deleted,
+        ]);
+    }
+
+    /**
+     * @param $id
+     * @param $addr
+     * @return \yii\web\Response
+     * @throws NotFoundHttpException
+     */
+    public function actionPreviewWork($id, $addr)
+    {
+        /** @var Task $task */
+        if (!$task = Task::findOne($id)) {
+            throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
+        }
+
+        /** @var Moderator $moderator */
+        if (!$moderator = Moderator::find()->where(['eth_addr' => $addr])->one()) {
+            throw new NotFoundHttpException(sprintf('Moderator with address `%s` not found', $addr));
+        }
+
+        $limit = 10;
+        $list = $task
+            ->getAssignedLabels()
+            ->andWhere('[[status]] = ' . AssignedLabel::STATUS_READY)
+            ->andWhere('[[moderator_id]] = ' . $moderator->id)
+            ->addOrderBy(['id' => SORT_DESC])
+            ->limit($limit)
+            ->all()
+        ;
+
+        return $this->asJson([
+            'list' => array_map(function (AssignedLabel $assignedLabel) {
+                return (new PreviewScoreWorkView($assignedLabel))->toArray();
+            }, $list),
         ]);
     }
 
