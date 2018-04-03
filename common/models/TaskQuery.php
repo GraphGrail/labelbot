@@ -18,6 +18,16 @@ class TaskQuery extends UserEntityQuery
         return $this->andWhere('[[status]]='. Task::STATUS_CONTRACT_ACTIVE);
     }
 
+    public function contractActive()
+    {
+        return $this->andWhere(['in', 'status', [
+            Task::STATUS_CONTRACT_ACTIVE,
+            Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS,
+            Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE,
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED
+        ]]);
+    }
+
     /**
      * @inheritdoc
      * @return Task[]|array

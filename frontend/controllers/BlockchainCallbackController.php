@@ -106,6 +106,24 @@ class BlockchainCallbackController extends \yii\web\Controller
 
     public function actionUpdateCompletedWork()
     {
+        $task = Task::findOne($this->params['task_id']);
+
+        if ($task === null) {
+            throw new \Exception("Can't find Task");
+        }
+        
+        if (!$this->data['payload']['success']) {
+            // TODO: Handle errors
+
+            Yii::$app->end();
+        }
+
+        if ($task->status === Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE) {
+            $task->status = Task::STATUS_CONTRACT_ACTIVE_PAUSED;
+            if (!$task->save()) {
+                throw new \Exception("Can't save Task");
+            } 
+        }
 
         Yii::$app->end();
     }

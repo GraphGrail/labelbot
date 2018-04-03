@@ -21,9 +21,8 @@ class BlockchainController extends \yii\console\Controller
     {
         try {
             $finder = Task::find()
-                ->active()
-                ->notInDeliveringQueue()
-                ->undeleted();
+                ->contractActive()
+                ->notInDeliveringQueue();
 
             $this->taskId && $finder->andWhere(['id' => $this->taskId]);
 
