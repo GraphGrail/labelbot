@@ -380,10 +380,10 @@ class TaskController extends \yii\web\Controller
         $view = new TaskDetailView($task);
         $view
             ->setContractStatus($contractStatus)
-            ->setAssignedCount(
+            ->setApprovedCount(
                 $task
                 ->getAssignedLabels()
-                ->andWhere('[[status]] = ' . AssignedLabel::STATUS_READY)
+                ->andWhere('[[status]] = ' . AssignedLabel::STATUS_APPROVED)
                 ->count()
             )
             ->setFullCount(

@@ -61,7 +61,7 @@ TaskDetailPage::register($this);
                     Complete percent: <strong><?=$view->getCompletedPercent()?></strong>
                     <div class="m-separator m-separator--dashed d-xl-none"></div>
                     <p class="m--font-metal">
-                        completed/all <?=$view->getAssignedCount()?>/<?=$view->getFullCount()?>
+                        completed/all <?=$view->getApprovedCount()?>/<?=$view->getFullCount()?>
                     </p>
                 </div>
             </div>

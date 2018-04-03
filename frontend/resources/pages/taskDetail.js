@@ -79,19 +79,8 @@ var TaskDetailTable = function() {
                 {
                     field: 'totalItems',
                     title: 'Total',
-                    // sortable: 'asc', // default sort
                     filterable: false, // disable or enable filtering
                     width: 60,
-                    // basic templating support for column rendering,
-                    // template: '{{OrderID}} - {{ShipCountry}}',
-                },
-                {
-                    field: 'assigned',
-                    title: 'Assigned',
-                    sortable: false,
-                    width: 60,
-                    selector: false,
-                    textAlign: 'center',
                 },
                 {
                     field: 'approvedItems',
@@ -110,12 +99,14 @@ var TaskDetailTable = function() {
                     textAlign: 'center',
                 },
                 {
-                    field: 'percent',
-                    width: 110,
-                    title: 'Percent',
+                    field: 'current',
+                    title: 'Current',
                     sortable: false,
-                    overflow: 'visible',
-                }],
+                    width: 60,
+                    selector: false,
+                    textAlign: 'center',
+                },
+            ],
         });
 
         rendered = true;

@@ -13,7 +13,7 @@ class TaskDetailView
 
     protected $task;
     protected $contractStatus;
-    protected $assignedCount = 0;
+    protected $approvedCount = 0;
     protected $fullCount;
 
     protected $moderatorAssignedCount = [];
@@ -24,18 +24,26 @@ class TaskDetailView
     }
 
     /**
-     * @param mixed $assignedCount
+     * @param mixed $approvedCount
      * @return TaskDetailView
      */
-    public function setAssignedCount($assignedCount)
+    public function setApprovedCount($approvedCount)
     {
-        $this->assignedCount = $assignedCount;
+        $this->approvedCount = $approvedCount;
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getApprovedCount()
+    {
+        return $this->approvedCount;
     }
 
     public function getCompletedPercent()
     {
-        return \Yii::$app->getFormatter()->asPercent($this->getAssignedCount() / $this->getFullCount());
+        return \Yii::$app->getFormatter()->asPercent($this->getApprovedCount() / $this->getFullCount());
     }
 
     /**
@@ -71,8 +79,7 @@ class TaskDetailView
             if (!array_key_exists($moderatorId, $data)) {
                 continue;
             }
-            $data[$moderatorId]['percent'] = \Yii::$app->getFormatter()->asPercent($count / (int)$data[$moderatorId]['totalItems']);
-            $data[$moderatorId]['assigned'] = $count;
+            $data[$moderatorId]['current'] = sprintf('%s/%s(%s)', $count, $this->task->work_item_size, \Yii::$app->getFormatter()->asPercent($count / $this->task->work_item_size));
         }
 
         $json = json_encode($data);
@@ -85,14 +92,6 @@ class TaskDetailView
     public function getName()
     {
         return $this->task->name;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAssignedCount()
-    {
-        return $this->assignedCount;
     }
 
     public function getWorkSize()
