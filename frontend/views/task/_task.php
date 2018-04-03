@@ -10,6 +10,7 @@ $formatter = \Yii::$app->formatter;
 
 
 $smartContractUrl = Url::toRoute(['task/smart-contract', 'id' => $task->id]);
+$detailUrl = Url::toRoute(['task/detail', 'id' => $task->id]);
 $contractActions = [
     Task::STATUS_CONTRACT_NOT_DEPLOYED => [
         'label' => 'Create Smart-contract...',
@@ -39,7 +40,7 @@ $contractActions = [
     </div>
     <div class="m-widget4__info">
         <span class="m-widget4__title">
-            <?=$task->name ?>
+            <a href="<?=$detailUrl?>" style="color: #575962"><?=$task->name ?></a>
         </span>
         <br>
         <span class="m-widget4__sub">
@@ -78,6 +79,14 @@ $contractActions = [
                                         <div class="m-dropdown__body">
                                             <div class="m-dropdown__content">
                                                 <ul class="m-nav">
+                                                    <li class="m-nav__item">
+                                                        <a href="<?=$detailUrl?>" class="m-nav__link">
+                                                            <i class="m-nav__link-icon fa fa-pencil-square-o"></i>
+                                                            <span class="m-nav__link-text">
+                                                                Detail
+                                                            </span>
+                                                        </a>
+                                                    </li>
                                                     <li class="m-nav__item">
                                                         <a href="javascript:void(0)" class="m-nav__link task-delete-link" data-id="<?=$task->id?>" data-toggle="modal" data-target="#delete_task_modal">
                                                             <i class="m-nav__link-icon fa fa-trash-o m--font-danger"></i>
