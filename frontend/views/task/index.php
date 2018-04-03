@@ -11,9 +11,9 @@ TaskPageAsset::register($this);
 $this->title = 'Tasks';
 ?>
 <div class="row">
-    <div class="col-xl-8">
+    <div class="col-xl-12">
         <!--begin:: Widgets/Support Tickets -->
-        <div class="m-portlet m-portlet--full-height ">
+        <div class="m-portlet m-portlet--full-height  ">
             <div class="m-portlet__head">
                 <div class="m-portlet__head-caption">
                     <div class="m-portlet__head-title">
