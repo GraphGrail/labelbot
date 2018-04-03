@@ -4,6 +4,7 @@ namespace frontend\controllers;
 
 use common\components\EthereumGateway;
 use common\models\AssignedLabel;
+use common\models\Data;
 use common\models\Dataset;
 use common\models\LabelGroup;
 use common\models\Moderator;
@@ -12,6 +13,7 @@ use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use common\models\view\PreviewScoreWorkView;
+use common\models\view\TaskDetailView;
 use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
@@ -367,9 +369,70 @@ class TaskController extends \yii\web\Controller
         if (!$task = Task::findOne($id)) {
             throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
         }
+        $blockchain  = new EthereumGateway;
+        try {
+            $contractStatus = $blockchain->contractStatus($task->contractAddress());
+        } catch (\Exception $e) {
+            $contractStatus = new \StdClass();
+            $contractStatus->workers = [];
+        }
+
+        $view = new TaskDetailView($task);
+        $view
+            ->setContractStatus($contractStatus)
+            ->setAssignedCount(
+                $task
+                ->getAssignedLabels()
+                ->andWhere('[[status]] = ' . AssignedLabel::STATUS_READY)
+                ->count()
+            )
+            ->setFullCount(
+                Data::find()
+                ->where(['dataset_id' => $task->dataset_id])
+                ->count()
+            )
+        ;
+
+        $moderatorCountAssignedLabels = $this->getModeratorCountAssignedLabels($task, $contractStatus);
+        foreach ($contractStatus->workers as $moderatorAddr => $worker) {
+            if (!array_key_exists($moderatorAddr, $moderatorCountAssignedLabels)) {
+                $moderatorCountAssignedLabels[$moderatorAddr] = 0;
+            }
+            $view->addModeratorAssignedCount($moderatorAddr, $moderatorCountAssignedLabels[$moderatorAddr]);
+        }
+
         return $this->render('detail', [
-            'task' => $task
+            'view' => $view,
+            'task' => $task,
+            'contractStatus' => $contractStatus,
         ]);
+    }
+
+    /**
+     * @param Task $task
+     * @param $contractStatus
+     * @return array
+     */
+    private function getModeratorCountAssignedLabels(Task $task, $contractStatus): array
+    {
+        /** @var AssignedLabel[] $assigned */
+        $assigned = $task
+            ->getAssignedLabels()
+            ->andWhere('[[status]] = ' . AssignedLabel::STATUS_READY)
+            ->all()
+        ;
+        $counts = [];
+        foreach ($assigned as $assignedLabel) {
+            $addr = $assignedLabel->getModerator()->one()->eth_addr;
+            if (!array_key_exists($addr, $contractStatus->workers)) {
+                continue;
+            }
+            if (!array_key_exists($addr, $counts)) {
+                $counts[$addr] = 0;
+            }
+            $counts[$addr]++;
+        }
+        return $counts;
     }
 
 }
