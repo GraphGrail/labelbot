@@ -171,7 +171,7 @@ class Task extends ActiveRecord
         return bcmul($contract->totalWorkItems, $contract->workItemPrice /*bcmul($contract->workItemPrice, 1 + Yii::$app->params['approvalCommissionFraction'])*/);
     }
 
-    public function contractAddress() : Address
+    public function contractAddress() : ?Address
     {
         return $this->contract_address ? new Address($this->contract_address) : null;
     }
