@@ -157,7 +157,7 @@ class TaskController extends \yii\web\Controller
             Task::STATUS_CONTRACT_NEW_NEED_TOKENS    => 'smartContract_sendTokens',
             Task::STATUS_CONTRACT_NEW                => 'smartContract_activation',
         ];
-        return $this->render($views[$task->status] ?: 'smartContract', [
+        return $this->render(array_key_exists($task->status, $views) ? $views[$task->status]: 'smartContract', [
             'task' => $task
         ]);
     }
@@ -353,6 +353,22 @@ class TaskController extends \yii\web\Controller
             'list' => array_map(function (AssignedLabel $assignedLabel) {
                 return (new PreviewScoreWorkView($assignedLabel))->toArray();
             }, $list),
+        ]);
+    }
+
+    /**
+     * @param $id
+     * @return string
+     * @throws NotFoundHttpException
+     */
+    public function actionDetail($id)
+    {
+        /** @var Task $task */
+        if (!$task = Task::findOne($id)) {
+            throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
+        }
+        return $this->render('detail', [
+            'task' => $task
         ]);
     }
 
