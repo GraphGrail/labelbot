@@ -210,6 +210,9 @@ class TaskController extends \yii\web\Controller
         if ($task === null) {
             throw new \Exception("Can't find Task");
         }
+        if ($task->status === Task::STATUS_CONTRACT_ACTIVE) {
+            return $this->redirect(['stop', 'id' => $id]);
+        }
 
         if ($task->status === Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE) {
             return $this->render('scoreWork_waitingPause', [
