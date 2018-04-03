@@ -21,17 +21,29 @@ $this->registerJs("
 				case 'ALREADY_INITIALIZED':
 					return ggEth.getClientAddress()
 				// TODO: обработка всех вариантов ошибок
+				case 'NO_ACCOUNTS':
+				    return showEthClientError('Oops! Ethereum client has no accounts set')
+				case 'NO_ETHEREUM_CLIENT':
+				    return showEthClientError('Oops! Ethereum client was not found')
+				case 'INSUFFICIENT_TOKEN_BALANCE':
+				    return showEthClientError('Oops! Not enough tokens')
 				default:
-					alert(err)
+					return showEthClientError(err)
 			}
 		})
 		.then(address => {
+			if (!address) {
+			    return
+			}
 			console.log('User wallet address: ' + address)
 			clientAddress = address
 			$('.js-address').val(address)
 			return ggEth.checkBalances(address)
 		})
 		.then(balances => {
+		    if (!balances) {
+		        return;
+		    }
 			// $('.js-btn-create').attr('disabled', false) // on testing
 			console.log('Ether: ' + balances.ether + ', tokens: ' + balances.ether)
 			if (balances.ether == 0 || balances.token == 0) {
@@ -55,6 +67,11 @@ $this->registerJs("
 
 <div class="row">
   <div class="col-lg-8">
+
+    <div class="m-alert m-alert--icon alert alert-danger eth-errors" role="alert" style="display:none">
+      <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
+      <div class="m-alert__text"></div>
+    </div>
 
   	<div class="m-alert m-alert--icon alert alert-danger js-credit-invitation" role="alert" style="display:none">
 	  <div class="m-alert__icon">

@@ -23,8 +23,14 @@ $this->registerJs("
         case 'ALREADY_INITIALIZED':
           return ggEth.getClientAddress()
         // TODO: обработка всех вариантов ошибок
+        case 'NO_ACCOUNTS':
+            return showEthClientError('Oops! Ethereum client has no accounts set')
+        case 'NO_ETHEREUM_CLIENT':
+            return showEthClientError('Oops! Ethereum client was not found')
+        case 'INSUFFICIENT_TOKEN_BALANCE':
+            return showEthClientError('Oops! Not enough tokens')
         default:
-          alert(err)
+          return showEthClientError(err)
       }
     })
     .then(address => {
@@ -66,6 +72,12 @@ $this->registerJs("
 
 <div class="row">
   <div class="col-lg-8">
+
+      <div class="m-alert m-alert--icon alert alert-danger eth-errors" role="alert" style="display:none">
+          <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
+          <div class="m-alert__text"></div>
+      </div>
+
     <div class="m-portlet m-portlet--tab">
       <div class="m-portlet__body m-portlet__body--no-padding">
         <div class="row m-row--no-padding m-row--col-separator-xl">
