@@ -7,6 +7,7 @@ use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use yii\httpclient\Client;
 use Yii;
+use yii\log\Logger;
 
 /**
  * EthereumGateway component
@@ -83,6 +84,7 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
             ->get($api_method . $param . $otherParams)
             ->send();
         if (!$res->isOk) {
+            Yii::getLogger()->log($res->getContent(), Logger::LEVEL_ERROR);
             throw new \Exception("Can't call " . $api_method);
         }
         return json_decode($res->content);
@@ -114,6 +116,7 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
                     ->send();
 
         if (!$res->isOk) {
+            Yii::getLogger()->log($res->getContent(), Logger::LEVEL_ERROR);
             throw new \Exception("Can't call " . $api_method);
         }
 
