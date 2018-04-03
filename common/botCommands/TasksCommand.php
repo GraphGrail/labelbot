@@ -45,14 +45,14 @@ class TasksCommand extends AuthenticatedUserCommand
         $text = '';
         
         $availbleTasks = Task::find()
-            ->active()
+            ->where(['status'=>Task::STATUS_CONTRACT_ACTIVE])
             ->all();
 
         foreach ($availbleTasks as $task) {
             $text .= "/get_{$task->contract_address} - {$task->name}\n{$task->description}\n\n";
         }
 
-        if ($availbleTasks === null) {
+        if ($availbleTasks === []) {
             $text = 'There is no tasks for now. Please try later.';
         }
 
