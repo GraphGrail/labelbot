@@ -27,6 +27,8 @@ use Yii;
  * @property int $updated_at
  * @property bool $deleted
  * @property string $delivering_job_id
+ * @property int $work_item_size
+ * @property int $total_work_items
  */
 class Task extends ActiveRecord
 {
