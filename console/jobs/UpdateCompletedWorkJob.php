@@ -37,13 +37,14 @@ class UpdateCompletedWorkJob extends \yii\base\BaseObject implements \yii\queue\
 
         $payload = [];
 
-        $currentWorks = Yii::$app->db->createCommand("
-            SELECT `assigned_label`.moderator_id, `moderator`.eth_addr, COUNT(`assigned_label`.moderator_id) AS count
-            FROM `assigned_label` 
-            LEFT JOIN `moderator` on `assigned_label`.moderator_id = `moderator`.id 
-            WHERE (`assigned_label`.status IN (".AssignedLabel::STATUS_READY.", ".AssignedLabel::STATUS_APPROVED.", ".AssignedLabel::STATUS_DECLINED."))
-            GROUP BY `assigned_label`.moderator_id
-        ")->queryAll();
+        $currentWorks = (new \yii\db\Query)
+            ->select(['moderator_id', 'moderator.eth_addr', 'COUNT(moderator_id) AS count'])
+            ->from(AssignedLabel::tableName())
+            ->join('JOIN', 'moderator', 'moderator.id = moderator_id')
+            ->where(['task_id'=>$this->task->id])
+            ->andWhere(['in', 'status', [AssignedLabel::STATUS_READY, AssignedLabel::STATUS_APPROVED, AssignedLabel::STATUS_DECLINED]])
+            ->groupBy(['moderator_id'])
+            ->all();
 
         foreach ($currentWorks as $work) {
             $readyWorkItems = (int) $work['count'] / $this->task->work_item_size;
@@ -52,6 +53,8 @@ class UpdateCompletedWorkJob extends \yii\base\BaseObject implements \yii\queue\
 
             $payload[$work['eth_addr']] = $readyWorkItems;
         }
+
+        if ($payload === []) return;
 
         $blockchain = new EthereumGateway;
         $callback_id = $blockchain->updateCompletedWork($this->task->contractAddress(), $payload);
