@@ -35,17 +35,18 @@ class Task extends ActiveRecord
     /**
      * Statuses
      */
-    const STATUS_CONTRACT_NOT_DEPLOYED         = 1;
-    const STATUS_CONTRACT_DEPLOYMENT_PROCESS   = 2;
-    const STATUS_CONTRACT_DEPLOYMENT_ERROR     = 3;
-    const STATUS_CONTRACT_NEW_NEED_TOKENS      = 4;
-    const STATUS_CONTRACT_NEW                  = 5;
-    const STATUS_CONTRACT_ACTIVE               = 6;
-    const STATUS_CONTRACT_ACTIVE_NEED_TOKENS   = 7;
-    const STATUS_CONTRACT_ACTIVE_WAITING_PAUSE = 8;
-    const STATUS_CONTRACT_ACTIVE_PAUSED        = 9;
-    const STATUS_CONTRACT_FORCE_FINALIZING     = 10;
-    const STATUS_CONTRACT_FINALIZED            = 11;
+    const STATUS_CONTRACT_NOT_DEPLOYED         = 10;
+    const STATUS_CONTRACT_DEPLOYMENT_PROCESS   = 20;
+    const STATUS_CONTRACT_DEPLOYMENT_ERROR     = 30;
+    const STATUS_CONTRACT_NEW_NEED_TOKENS      = 40;
+    const STATUS_CONTRACT_NEW                  = 50;
+    const STATUS_CONTRACT_ACTIVE               = 60;
+    const STATUS_CONTRACT_ACTIVE_NEED_TOKENS   = 70;
+    const STATUS_CONTRACT_ACTIVE_WAITING_PAUSE = 80;
+    const STATUS_CONTRACT_ACTIVE_PAUSED        = 90;
+    const STATUS_CONTRACT_ACTIVE_COMPLETED     = 100;
+    const STATUS_CONTRACT_FORCE_FINALIZING     = 110;
+    const STATUS_CONTRACT_FINALIZED            = 120;
 
     /**
      * @inheritdoc
