@@ -10,7 +10,7 @@ $formatter = \Yii::$app->formatter;
 
 
 $smartContractUrl = Url::toRoute(['task/smart-contract', 'id' => $task->id]);
-$detailUrl = Url::toRoute(['task/detail', 'id' => $task->id]);
+$detailUrl = Url::toRoute(['task/view', 'id' => $task->id]);
 $contractActions = [
     Task::STATUS_CONTRACT_NOT_DEPLOYED => [
         'label' => 'Create Smart-contract...',

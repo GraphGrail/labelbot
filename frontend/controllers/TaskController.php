@@ -363,7 +363,7 @@ class TaskController extends \yii\web\Controller
      * @return string
      * @throws NotFoundHttpException
      */
-    public function actionDetail($id)
+    public function actionView($id)
     {
         /** @var Task $task */
         if (!$task = Task::findOne($id)) {

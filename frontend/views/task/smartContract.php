@@ -9,7 +9,7 @@ use yii\helpers\Url;
 EthGatewayAsset::register($this);
 
 $this->registerJs("
-    setTimeout(function(){ window.location = '" . Url::toRoute(['task/detail', 'id' => $task->id]) . "' }, 2000);
+    setTimeout(function(){ window.location = '" . Url::toRoute(['task/view', 'id' => $task->id]) . "' }, 2000);
 ");
 ?>
 <?php
