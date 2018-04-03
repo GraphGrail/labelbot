@@ -67,7 +67,7 @@ class Task extends ActiveRecord
             [['description', 'contract'], 'string'],
             [['name', 'delivering_job_id'], 'string', 'max' => 255],
             [['contract_address'], 'string', 'max' => 42],
-            [['total_work_items'], 'integer', 'min' => 1,  'message' => 'Very few data in dataset to create Task.'],
+            [['total_work_items'], 'integer', 'min' => 1,  'tooSmall' => 'Very few data in dataset to create Task.'],
             [['deleted'], 'boolean'],
         ];
     }
