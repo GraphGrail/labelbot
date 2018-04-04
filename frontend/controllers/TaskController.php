@@ -198,6 +198,104 @@ class TaskController extends \yii\web\Controller
     }
 
 
+    public function actionRelease($id)
+    {
+        $blockchain  = new EthereumGateway;
+
+        $task = Task::find()
+            ->where(['id'=>$id])
+            ->ownedByUser() // task must belongs to user
+            ->one();
+
+        if ($task === null) {
+            throw new \Exception("Can't find Task");
+        }
+
+        if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED) {
+            // TODO: remove that
+            throw new \Exception("Task must be paused for activtion.");            
+        }
+
+        try {
+            $contractStatus = $blockchain->contractStatus($task->contractAddress());
+        } catch (\Exception $e) {
+             throw new \Exception("Cant get Task contract status."); 
+        }
+
+
+        $workItemsInBlockchain = json_decode(json_encode($contractStatus->workers), true);
+        $workItemsInDb = [];
+
+        $approvedWorks = (new \yii\db\Query)
+            ->select(['moderator_id', 'moderator.eth_addr', 'COUNT(moderator_id) AS count'])
+            ->from(AssignedLabel::tableName())
+            ->join('JOIN', 'moderator', 'moderator.id = moderator_id')
+            ->where(['task_id'=>$task->id])
+            ->andWhere(['status'=>AssignedLabel::STATUS_APPROVED])
+            ->groupBy(['moderator_id'])
+            ->all();
+
+        foreach ($approvedWorks as $work) {
+            $approvedWorkItems = (int) ($work['count']/$task->work_item_size);
+            // We don't get not completed workItems
+            if ($approvedWorkItems === 0) continue;
+
+            $workItemsInDb[$work['eth_addr']]['approvedItems'] = $approvedWorkItems;
+        }
+
+        $declinedWorks = (new \yii\db\Query)
+            ->select(['moderator_id', 'moderator.eth_addr', 'COUNT(moderator_id) AS count'])
+            ->from(AssignedLabel::tableName())
+            ->join('JOIN', 'moderator', 'moderator.id = moderator_id')
+            ->where(['task_id'=>$task->id])
+            ->andWhere(['status'=>AssignedLabel::STATUS_DECLINED])
+            ->groupBy(['moderator_id'])
+            ->all();
+
+        foreach ($declinedWorks as $work) {
+            $declinedWorkItems = (int) $work['count'] / $task->work_item_size;
+            // We don't get not completed workItems
+            if ($declinedWorkItems === 0) continue;
+
+            $workItemsInDb[$work['eth_addr']]['declinedItems'] = $declinedWorkItems;
+        }
+
+        $approvedWorksToUpdate = [];
+        $declinedWorksToUpdate = [];
+        // Find number of workItems that we must update in db
+        foreach ($workItemsInBlockchain as $address => $workItems) {
+            $numOfApprovedInDb = isset($workItemsInDb[$address]['approvedItems']) ? $workItemsInDb[$address]['approvedItems'] : 0;
+            $numOfDeclinedInDb = isset($workItemsInDb[$address]['declinedItems']) ? $workItemsInDb[$address]['declinedItems'] : 0;
+
+            if ($numOfApprovedInDb < $workItems['approvedItems']) {
+                $approvedWorksToUpdate[$address] = $workItems['approvedItems'] - $numOfApprovedInDb;
+            }
+            if ($workItemsInDb[$address]['declinedItems'] < $workItems['declinedItems']) {
+                $declinedWorksToUpdate[$address] = $workItems['declinedItems'] - $numOfDeclinedInDb;
+            }
+        }
+
+        foreach ($approvedWorksToUpdate as $address => $num) {
+            $moderator = Moderator::findOne(['eth_addr' => $address]);
+            if ($moderator === null) continue;
+            $task->approveWorkItems($moderator, $num);
+        }
+
+        foreach ($declinedWorksToUpdate as $address => $num) {
+            $moderator = Moderator::findOne(['eth_addr' => $address]);
+            if ($moderator === null) continue;
+            $task->declineWorkItems($moderator, $num);
+        }
+
+        $task->status = Task::STATUS_CONTRACT_ACTIVE;
+        //$task->status = Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
+        //$task->status = Task::STATUS_CONTRACT_ACTIVE_COMPLETED;
+        $task->save();
+
+        $this->redirect('view');
+    }
+
+
     /**
      * Moderators' work scoring
      * @param int $id Task id
@@ -225,9 +323,9 @@ class TaskController extends \yii\web\Controller
             ]);
         }
 
-        if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED) {
+        if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED && $task->status !== Task::STATUS_CONTRACT_ACTIVE_COMPLETED) {
             // TODO: remove that
-            throw new \Exception("Task must be paused for scoring.");
+            throw new \Exception("Task must be paused or completed for scoring.");
         }
 
         try {
