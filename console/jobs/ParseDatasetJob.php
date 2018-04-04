@@ -45,7 +45,17 @@ class ParseDatasetJob extends \yii\base\BaseObject implements \yii\queue\JobInte
 	    	$data = new Data;
             $data->dataset_id = $dataset->id;
             // For now, we get last column from .csv file as data
-            $data->data_raw = end($dataArr);
+            $string = end($dataArr);
+            $toEncoding = 'UTF-8';
+            if(!mb_check_encoding($string, $toEncoding)) {
+                $fromEncoding = mb_detect_encoding($string);
+                if ($fromEncoding === $toEncoding) {
+                    $fromEncoding = 'Windows-1251';
+                }
+                $string = mb_convert_encoding($string, $toEncoding, $fromEncoding);
+            }
+
+            $data->data_raw = $string;
             // and don't filter data yet
             $data->data = $data->data_raw;
 
