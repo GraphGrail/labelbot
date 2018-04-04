@@ -7,5 +7,8 @@ return [
             'class' => 'yii\web\User',
             'identityClass' => 'common\models\User',
         ],
+        'db' => [
+            'dsn' => getenv('DB_TEST_DSN'),
+        ]
     ],
 ];
