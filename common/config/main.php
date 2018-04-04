@@ -38,5 +38,17 @@ return [
             'class' => \yii\queue\file\Queue::class,
             'path' => '@console/runtime/queue',
         ],
+        'fileStorage' => [
+            'class' => \yii2tech\filestorage\local\Storage::class,
+            'basePath' => '@resources/files',
+            'dirPermission' => 0775,
+            'filePermission' => 0755,
+            'buckets' => [
+                'result' => [
+                    'baseSubPath' => 'result',
+                    'fileSubDirTemplate' => '{^name}/{^^name}',
+                ],
+            ]
+        ],
     ],
 ];
