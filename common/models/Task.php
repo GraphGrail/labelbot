@@ -29,6 +29,7 @@ use Yii;
  * @property string $delivering_job_id
  * @property int $work_item_size
  * @property int $total_work_items
+ * @property string $result_file
  */
 class Task extends ActiveRecord
 {
