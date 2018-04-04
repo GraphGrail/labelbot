@@ -457,7 +457,12 @@ class TaskController extends \yii\web\Controller
                 if (!$label = $model->getLabel()->one()) {
                     continue;
                 }
+                /** @var Data $data */
+                if (!$data = $model->getData()->one()) {
+                    continue;
+                }
                 $path = $label->buildPath();
+                array_unshift($path, $data->data);
                 fputcsv($resource, $path, ';');
             }
             fclose($resource);
