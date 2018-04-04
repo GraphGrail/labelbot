@@ -12,11 +12,13 @@ use common\models\Task;
 use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
+use common\models\view\ActionView;
 use common\models\view\PreviewScoreWorkView;
 use common\models\view\TaskDetailView;
 use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
+use yii\helpers\Url;
 use yii\web\NotFoundHttpException;
 
 class TaskController extends \yii\web\Controller
@@ -232,13 +234,23 @@ class TaskController extends \yii\web\Controller
             $contractStatus->workers = [];
         }
 
+        $actions = [
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED =>
+            (new ActionView('Continue task <i class="la la-play"></i>', Url::toRoute(['task/release', 'id' => $task->id])))
+                ->setOptions(['class' => 'btn btn-success']),
+
+            Task::STATUS_CONTRACT_ACTIVE_COMPLETED =>
+                (new ActionView('Finalize task <i class="la la-check"></i>'))
+                    ->setOptions(['class' => 'btn btn-success finalize-task-btn']),
+        ];
+
 
         return $this->render('scoreWork', [
             'task' => $task,
             'contractStatus' => $contractStatus,
             'sendingForm' => new SendScoreWorkForm(),
+            'actions' => $actions,
         ]);
-
     }
 
 

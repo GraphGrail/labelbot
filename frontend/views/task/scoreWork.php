@@ -9,6 +9,7 @@ use yii\widgets\ActiveForm;
 /* @var $this yii\web\View */
 /* @var $task \common\models\Task */
 /* @var $sendingForm \frontend\models\SendScoreWorkForm */
+/* @var $actions \common\models\view\ActionView[] */
 
 ScoreWorkAsset::register($this);
 
@@ -76,6 +77,15 @@ $this->registerJs("
 $this->registerJs('
 
 ');
+
+
+$action = null;
+if (array_key_exists($task->status, $actions)) {
+    $action = $actions[$task->status];
+}
+
+
+
 ?>
 <h1>Jobs scoring</h1>
 
@@ -140,9 +150,18 @@ $this->registerJs('
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4 order-1 order-xl-2 m--align-right">
-                    <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work">
-                        Send results to blockchain
+                <div class="col-xl-4 order-1 m--align-right">
+                    <?php
+                        if ($action) {
+                            ?>
+                            <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?> m-btn--pill m-btn--air js-btn-release" style="margin-right: 10px;">
+                                <?=$action->getLabel()?>
+                            </a>
+                            <?php
+                        }
+                    ?>
+                    <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work <?=!$task->isPaused() ? 'disabled' : ''?>">
+                        Send results to blockchain <i class="la la-send"></i>
                     </button>
                     <div class="m-separator m-separator--dashed d-xl-none"></div>
                 </div>

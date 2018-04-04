@@ -274,4 +274,9 @@ class Task extends ActiveRecord
 
         return $count;
     }
+
+    public function isPaused()
+    {
+        return $this->status == self::STATUS_CONTRACT_ACTIVE_PAUSED;
+    }
 }

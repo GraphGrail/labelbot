@@ -17,7 +17,6 @@ TaskDetailPage::register($this);
 ?>
 
 <input type="hidden" class="form-control m-input js-workers-source" disabled="disabled" value="<?=$view->getTableSourceAsJson()?>" />
-<input type="hidden" class="input-percent" value="<?//=$view->getCompletedPercent()?>" />
 <div class="m-portlet m-portlet--mobile">
     <div class="m-portlet__head">
         <div class="m-portlet__head-caption">
