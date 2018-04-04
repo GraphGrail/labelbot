@@ -205,4 +205,50 @@ class TaskDetailView
         }
         return $action;
     }
+
+    public function getStatusColor()
+    {
+        $map = [
+            Task::STATUS_CONTRACT_NOT_DEPLOYED         => 'primary',
+            Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS   => 'primary',
+            Task::STATUS_CONTRACT_DEPLOYMENT_ERROR     => 'danger',
+            Task::STATUS_CONTRACT_NEW_NEED_TOKENS      => 'danger',
+            Task::STATUS_CONTRACT_NEW                  => 'primary',
+            Task::STATUS_CONTRACT_ACTIVE               => 'primary',
+            Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS   => 'danger',
+            Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE => 'warning',
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED        => 'warning',
+            Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => 'primary',
+            Task::STATUS_CONTRACT_FORCE_FINALIZING     => 'primary',
+            Task::STATUS_CONTRACT_FINALIZED            => 'success',
+        ];
+        if (!array_key_exists($this->task->status, $map)) {
+            return 'info';
+        }
+
+        return $map[$this->task->status];
+    }
+
+    public function getStatusLabel()
+    {
+        $map = [
+            Task::STATUS_CONTRACT_NOT_DEPLOYED         => 'Not deployed',
+            Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS   => 'Deployment process',
+            Task::STATUS_CONTRACT_DEPLOYMENT_ERROR     => 'Deployment error',
+            Task::STATUS_CONTRACT_NEW_NEED_TOKENS      => 'Need tokens',
+            Task::STATUS_CONTRACT_NEW                  => 'New contract',
+            Task::STATUS_CONTRACT_ACTIVE               => 'Active',
+            Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS   => 'Need tokens',
+            Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE => 'Pausing',
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED        => 'Paused',
+            Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => 'Completed',
+            Task::STATUS_CONTRACT_FORCE_FINALIZING     => 'Finalizing',
+            Task::STATUS_CONTRACT_FINALIZED            => 'Finalize',
+        ];
+        if (!array_key_exists($this->task->status, $map)) {
+            return '';
+        }
+
+        return $map[$this->task->status];
+    }
 }

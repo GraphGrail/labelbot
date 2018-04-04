@@ -28,6 +28,9 @@ $detailUrl = Url::toRoute(['task/view', 'id' => $task->id]);
         </span>
     </div>
     <div class="m-widget4__progress">
+        <div class="m--font-<?=$view->getStatusColor()?>">
+			<?=$view->getStatusLabel()?>
+        </div>
         <?php
         if ($dataset = $task->getDataset()) {
             printf('%s: %s<br>', $task->getAttributeLabel('dataset_id'), $dataset);

@@ -23,6 +23,9 @@ TaskDetailPage::register($this);
             <div class="m-portlet__head-title">
                 <h3 class="m-portlet__head-text">
                     <?=Yii::t('app', "Detail data for \"{$view->getName()}\" task.") ?>
+                    <span class="m--font-<?=$view->getStatusColor()?>">
+                        <?=$view->getStatusLabel()?>
+                    </span>
                 </h3>
             </div>
         </div>
