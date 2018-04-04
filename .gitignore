@@ -3,6 +3,9 @@
 /yii_test
 /yii_test.bat
 
+# Configuration params
+.env
+
 # phpstorm project files
 .idea
 
