@@ -22,13 +22,12 @@ $this->registerJs("
       switch(err.code) {
         case 'ALREADY_INITIALIZED':
           return ggEth.getClientAddress()
-        // TODO: обработка всех вариантов ошибок
         case 'NO_ACCOUNTS':
-            return showEthClientError('Oops! Ethereum client has no accounts set')
+            return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
         case 'NO_ETHEREUM_CLIENT':
-            return showEthClientError('Oops! Ethereum client was not found')
-        case 'INSUFFICIENT_TOKEN_BALANCE':
-            return showEthClientError('Oops! Not enough tokens')
+            return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
+        case 'WRONG_NETWORK':
+            return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')       
         default:
           return showEthClientError(err)
       }
@@ -54,11 +53,16 @@ $this->registerJs("
       .catch(err => {
         console.log(err.code + ' ' + err)
         switch(err.code) {
-          case 'TEST_ERROR':
-            alert('error')
-          // TODO: обработка всех вариантов ошибок
+          case 'NOT_INITIALIZED':
+            return showEthClientError('Oops! Etherium client was not initialized. Please reload page')
+          case 'TRANSACTION_ALREADY_RUNNING':
+            return showEthClientError('Oops! Transaction already running. Reload page')
+          case 'INSUFFICIENT_ETHER_BALANCE':
+            return showEthClientError('Oops! Not enough ether')
+          case 'INSUFFICIENT_TOKEN_BALANCE':
+            return showEthClientError('Oops! Not enough tokens')
           default:
-            alert(err)
+            return showEthClientError(err)
         }
       })
       .then(_ => {

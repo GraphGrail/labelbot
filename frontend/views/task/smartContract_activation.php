@@ -21,15 +21,14 @@ $this->registerJs("
       switch(err.code) {
         case 'ALREADY_INITIALIZED':
           return ggEth.getClientAddress()
-        // TODO: обработка всех вариантов ошибок
         case 'NO_ACCOUNTS':
-            return showEthClientError('Oops! Ethereum client has no accounts set')
+          return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
         case 'NO_ETHEREUM_CLIENT':
-            return showEthClientError('Oops! Ethereum client was not found')
-        case 'INSUFFICIENT_TOKEN_BALANCE':
-            return showEthClientError('Oops! Not enough tokens')
+          return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
+        case 'WRONG_NETWORK':
+          return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
         default:
-            return showEthClientError(err)
+          return showEthClientError(err)
       }
     })
     .then(address => {
@@ -52,11 +51,24 @@ $this->registerJs("
       .catch(err => {
         console.log(err.code + ' ' + err)
         switch(err.code) {
-          case 'INVALID_CONTRACT_STATE':
-            return true;
-          // TODO: обработка всех вариантов ошибок
+//          case 'INVALID_CONTRACT_STATE':
+//            return true;          
           case 'INSUFFICIENT_TOKEN_BALANCE':
             return showEthClientError('Oops! Not enough tokens')
+          case 'NOT_INITIALIZED':
+            return  showEthClientError('Oops! Etherium client was not initialized. Please reload page')
+          case 'TRANSACTION_ALREADY_RUNNING':
+            return showEthClientError('Oops! Transaction already running. Reload page') 
+          case 'CONTRACT_NOT_FOUND':
+            return showEthClientError('Oops! Contract not found') 
+          case 'INSUFFICIENT_ETHER_BALANCE':
+            return showEthClientError('Oops! Not enough ether') 
+          case 'INVALID_CONTRACT_STATE':
+            return showEthClientError('Oops! Invalid contract state') 
+          case 'UNAUTHORIZED':
+            return showEthClientError('Oops! Unauthorized. Check permissions') 
+          case 'TRANSACTION_FAILED':
+            return showEthClientError('Oops! Transaction failed')
           default:
             return showEthClientError(err)
         }
