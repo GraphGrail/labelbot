@@ -170,7 +170,7 @@ class TaskController extends \yii\web\Controller
     }
 
 
-    public function actionStop($id)
+    public function actionPause($id)
     {
         $task = Task::find()
             ->where(['id'=>$id])
@@ -216,7 +216,7 @@ class TaskController extends \yii\web\Controller
             throw new \Exception("Can't find Task");
         }
         if ($task->status === Task::STATUS_CONTRACT_ACTIVE) {
-            return $this->redirect(['stop', 'id' => $id]);
+            return $this->redirect(['pause', 'id' => $id]);
         }
 
         if ($task->status === Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE) {
