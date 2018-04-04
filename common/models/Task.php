@@ -279,4 +279,9 @@ class Task extends ActiveRecord
     {
         return $this->status == self::STATUS_CONTRACT_ACTIVE_PAUSED;
     }
+
+    public function isFinalized()
+    {
+        return $this->status == self::STATUS_CONTRACT_FINALIZED;
+    }
 }

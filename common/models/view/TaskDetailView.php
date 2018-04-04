@@ -202,6 +202,15 @@ class TaskDetailView
                     'class' => 'btn btn-accent m-btn--pill m-btn--air',
                 ]);
                 break;
+            case Task::STATUS_CONTRACT_FINALIZED:
+                $action = new ActionView(
+                    Yii::t('app', 'Download result') . ' <i class="la la-download"></i>',
+                    Url::toRoute(['task/download-result', 'id' => $this->task->id])
+                );
+                $action->setOptions([
+                    'class' => 'btn btn-accent m-btn--pill m-btn--air',
+                ]);
+                break;
         }
         return $action;
     }

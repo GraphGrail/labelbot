@@ -409,6 +409,30 @@ class TaskController extends \yii\web\Controller
     }
 
     /**
+     * @param $id
+     * @throws NotFoundHttpException
+     * @throws \yii\base\ExitException
+     */
+    public function actionDownloadResult($id)
+    {
+        /** @var Task $task */
+        if (!$task = Task::findOne($id)) {
+            throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
+        }
+        if ($task->user_id != Yii::$app->user->identity->id) {
+            throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
+        }
+        if (!$task->isFinalized()) {
+            throw new NotFoundHttpException(sprintf('Task with id `%s` not finalized', $id));
+        }
+
+        //todo
+
+
+        Yii::$app->end();
+    }
+
+    /**
      * @param Task $task
      * @param $contractStatus
      * @return array
