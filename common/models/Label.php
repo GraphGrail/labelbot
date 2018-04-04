@@ -9,6 +9,7 @@ use Yii;
  *
  * @property int $id
  * @property int $label_group_id
+ * @property int $parent_label_id
  * @property string $text
  * @property int $next_label_group_id
  * @property int $ordering
@@ -71,4 +72,20 @@ class Label extends \yii\db\ActiveRecord
         return self::findAll(['parent_label_id' => $this->id]);
     }
 
+    public function getParent(): ?Label
+    {
+        if (!$this->parent_label_id) {
+            return null;
+        }
+        return self::findOne($this->parent_label_id);
+    }
+
+    public function buildPath()
+    {
+        $res = [[$this->text]];
+        if ($parent = $this->getParent()) {
+            $res[] = array_reverse($parent->buildPath());
+        }
+        return array_reverse(array_merge(...$res));
+    }
 }

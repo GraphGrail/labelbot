@@ -6,6 +6,7 @@ use common\components\EthereumGateway;
 use common\models\AssignedLabel;
 use common\models\Data;
 use common\models\Dataset;
+use common\models\Label;
 use common\models\LabelGroup;
 use common\models\Moderator;
 use common\models\Task;
@@ -20,6 +21,7 @@ use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
 use yii\helpers\Url;
+use yii\log\Logger;
 use yii\web\NotFoundHttpException;
 
 class TaskController extends \yii\web\Controller
@@ -426,10 +428,53 @@ class TaskController extends \yii\web\Controller
             throw new NotFoundHttpException(sprintf('Task with id `%s` not finalized', $id));
         }
 
-        //todo
-
-
+        if (!$name = $task->result_file ?: $this->createCsvFile($task)) {
+            Yii::$app->end();
+        }
+        $bucket = $this->getResultFileBucket();
+        try {
+            return Yii::$app->response->sendFile($bucket->getFullFileName($name), $name);
+        } catch (\Exception $e) {
+            Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
+        }
         Yii::$app->end();
+    }
+
+    protected function createCsvFile(Task $task)
+    {
+        try {
+            /** @var AssignedLabel[] $models */
+            $models = $task->getAssignedLabels()
+                ->andWhere(['status' => AssignedLabel::STATUS_APPROVED])
+                ->all();
+
+            /** @var \yii2tech\filestorage\local\Storage $fileStorage */
+            $bucket = $this->getResultFileBucket();
+
+            $resource = $bucket->openFile($this->createTaskResultFileName($task), 'w');
+            foreach ($models as $model) {
+                /** @var Label $label */
+                if (!$label = $model->getLabel()->one()) {
+                    continue;
+                }
+                $path = $label->buildPath();
+                fputcsv($resource, $path, ';');
+            }
+            fclose($resource);
+
+            $task->result_file = $this->createTaskResultFileName($task);
+            $task->save(false, ['result_file']);
+
+            return $task->result_file;
+        } catch (\Exception $e) {
+            Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
+        }
+        return false;
+    }
+
+    private function createTaskResultFileName(Task $task)
+    {
+        return sprintf('task_%s_result.csv', $task->id);
     }
 
     /**
@@ -457,6 +502,16 @@ class TaskController extends \yii\web\Controller
             $counts[$addr]++;
         }
         return $counts;
+    }
+
+    /**
+     * @return \yii2tech\filestorage\local\Bucket
+     */
+    protected function getResultFileBucket(): \yii2tech\filestorage\local\Bucket
+    {
+        /** @var \yii2tech\filestorage\local\Storage $fileStorage */
+        $fileStorage = Yii::$app->fileStorage;
+        return $fileStorage->getBucket('result');
     }
 
 }
