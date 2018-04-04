@@ -15,6 +15,11 @@ $detailUrl = Url::toRoute([$task->status < Task::STATUS_CONTRACT_ACTIVE ? 'task/
 ?>
 <div class="m-widget4__item task-item" data-id="<?=$task->id?>" data-delete-url="<?= Url::toRoute(sprintf('task/%s/delete', $task->id))?>" >
     <div class="m-widget4__img m-widget4__img--pic">
+        <div class="m-demo-icon" style="margin-bottom: 0px;">
+            <div class="m-demo-icon__preview">
+                <i class="flaticon-notes"></i>
+            </div>
+        </div>
     </div>
     <div class="m-widget4__info">
         <span class="m-widget4__title">

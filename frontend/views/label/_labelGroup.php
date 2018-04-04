@@ -6,6 +6,11 @@ $formatter = \Yii::$app->formatter;
 ?>
 <div class="m-widget4__item label-item" data-id="<?=$labelGroup->id?>" data-delete-url="<?=\yii\helpers\Url::toRoute(sprintf('label/%s/delete', $labelGroup->id))?>" >
     <div class="m-widget4__img m-widget4__img--pic">
+        <div class="m-demo-icon" style="margin-bottom: 0px;">
+            <div class="m-demo-icon__preview">
+                <i class="flaticon-network"></i>
+            </div>
+        </div>
     </div>
     <div class="m-widget4__info">
         <span class="m-widget4__title">

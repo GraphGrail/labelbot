@@ -47,9 +47,6 @@ $('.js-save').on('click', function(e) {
         'LabelGroup[name]': {
             required: true,
         },
-        'LabelGroup[description]': {
-            required: true
-        },
         'LabelGroup[labels_tree]': {
             required: true
         }

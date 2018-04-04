@@ -5,7 +5,11 @@ $formatter = \Yii::$app->formatter;
 ?>
 <div class="m-widget4__item dataset-item" data-id="<?=$dataset->id?>" data-delete-url="<?=\yii\helpers\Url::toRoute(sprintf('dataset/%s/delete', $dataset->id))?>" >
     <div class="m-widget4__img m-widget4__img--pic">
-        <img class="m-widget3__img" src="/images/logo/graphgrail.png" alt="">
+        <div class="m-demo-icon" style="margin-bottom: 0px;">
+            <div class="m-demo-icon__preview">
+                <i class="flaticon-tabs"></i>
+            </div>
+        </div>
     </div>
     <div class="m-widget4__info">
         <span class="m-widget4__title">
