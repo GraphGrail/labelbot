@@ -44,6 +44,12 @@ var ScoreWorkTable = function() {
 
             this.updateSource(formatted);
         }
+        $.each(formatted, function (_, element) {
+            if (element.totalItems != (element.approvedItems + element.declinedItems)) {
+                return;
+            }
+            processed[element.id]= true;
+        });
 
         return formatted;
     };
@@ -154,7 +160,7 @@ var ScoreWorkTable = function() {
             columns: [
                 {
                     field: 'id',
-                    title: 'ID',
+                    title: 'Worker',
                     sortable: false, // disable sort for this column
                     width: 320,
                     selector: false,
