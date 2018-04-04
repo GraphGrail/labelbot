@@ -1,5 +1,6 @@
 <?php
 
+use common\models\view\TaskDetailView;
 use frontend\assets\pages\TaskPageAsset;
 use yii\helpers\Url;
 
@@ -66,7 +67,8 @@ $this->title = 'Tasks';
                     <?php
                     foreach ($tasks as $task) {
                         echo $this->render('_task', [
-                            'task' => $task
+                            'task' => $task,
+                            'view' => new TaskDetailView($task),
                         ]);
                     }
 

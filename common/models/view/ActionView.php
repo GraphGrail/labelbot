@@ -44,9 +44,10 @@ class ActionView
     }
 
     /**
-     * @param mixed $options
+     * @param array $options
+     * @return ActionView
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         $this->options = $options;
         return $this;

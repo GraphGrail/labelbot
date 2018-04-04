@@ -54,7 +54,13 @@ TaskDetailPage::register($this);
                 </div>
                 <div class="col-xl-4 order-1 order-xl-2 m--align-right">
                     <div>
-                        <a href="<?= Url::toRoute(['task/score-work', 'id' => $task->id])?>" class="btn btn-accent">Score work</a>
+                        <?php
+                            if ($action = $view->getNextAction()) {
+                                ?>
+                                    <a href="<?=$action->getUrl()?>" class="<?=$action->getOptions()['class']?>"><?=$action->getLabel()?></a>
+                                <?php
+                            }
+                        ?>
                     </div>
                     <div class="m--margin-bottom-10"></div>
                     Complete percent: <strong><?=$view->getCompletedPercent()?></strong>

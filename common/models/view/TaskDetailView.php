@@ -7,6 +7,8 @@ namespace common\models\view;
 
 
 use common\models\Task;
+use Yii;
+use yii\helpers\Url;
 
 class TaskDetailView
 {
@@ -129,5 +131,78 @@ class TaskDetailView
     {
         $this->fullCount = $fullCount;
         return $this;
+    }
+
+    public function getNextAction(): ?ActionView {
+        $action = null;
+        $status = $this->task->status;
+        switch ($status) {
+            case Task::STATUS_CONTRACT_ACTIVE:
+            case Task::STATUS_CONTRACT_ACTIVE_PAUSED:
+                $action = new ActionView(\
+                    Yii::t('app', 'Score work') . ' <i class="la la-pause"></i>',
+                    Url::toRoute(['task/score-work', 'id' => $this->task->id]));
+                $action->setOptions([
+                    'class' => 'btn btn-accent m-btn--pill m-btn--air',
+                ]);
+                break;
+            case Task::STATUS_CONTRACT_NEW_NEED_TOKENS:
+                $action = new ActionView(
+                    Yii::t('app', 'Add tokens') . ' <i class="la la-plus-circle"></i>',
+                    Url::toRoute(['task/smart-contract', 'id' => $this->task->id])
+                );
+                $action->setOptions([
+                    'class' => 'btn btn-danger m-btn--pill m-btn--air',
+                ]);
+                break;
+            case Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS:
+                $action = new ActionView(
+                    Yii::t('app', 'Add tokens') . ' <i class="la la-plus-circle"></i>',
+                    Url::toRoute(['task/smart-contract', 'id' => $this->task->id])
+                );
+                $action->setOptions([
+                    'class' => 'btn btn-danger m-btn--pill m-btn--air',
+                ]);
+                break;
+            case Task::STATUS_CONTRACT_ACTIVE_COMPLETED:
+                $action = new ActionView(
+                    Yii::t('app', 'Finalize task') . ' <i class="la la-check"></i>'
+                );
+                $action->setOptions([
+                    'class' => 'btn btn-danger m-btn--pill m-btn--air finalize-task-btn',
+                ]);
+                break;
+
+            case Task::STATUS_CONTRACT_NOT_DEPLOYED:
+                $action = new ActionView(
+                    Yii::t('app', 'Create Smart-contract') . ' <i class="la la-plus-circle"></i>',
+                    Url::toRoute(['task/smart-contract', 'id' => $this->task->id])
+                );
+                $action->setOptions([
+                    'class' => 'btn btn-success m-btn--pill m-btn--air',
+                ]);
+                break;
+
+            case Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS:
+                $action = new ActionView(
+                    Yii::t('app', 'On deployment') . ' <i class="la la-plane"></i>',
+                    Url::toRoute(['task/smart-contract', 'id' => $this->task->id])
+                );
+                $action->setOptions([
+                    'class' => 'btn btn-success m-btn--pill m-btn--air',
+                ]);
+                break;
+
+            case Task::STATUS_CONTRACT_NEW:
+                $action = new ActionView(
+                    Yii::t('app', 'Activate smart contract') . ' <i class="la la-play"></i>',
+                    Url::toRoute(['task/smart-contract', 'id' => $this->task->id])
+                );
+                $action->setOptions([
+                    'class' => 'btn btn-accent m-btn--pill m-btn--air',
+                ]);
+                break;
+        }
+        return $action;
     }
 }

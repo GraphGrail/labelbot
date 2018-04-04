@@ -2,37 +2,15 @@
 /* @var $this yii\web\View */
 
 use common\models\Task;
+use common\models\view\TaskDetailView;
 use yii\helpers\Url;
 
 /* @var $task Task */
+/* @var $view TaskDetailView */
 
 $formatter = \Yii::$app->formatter;
 
-
-$smartContractUrl = Url::toRoute(['task/smart-contract', 'id' => $task->id]);
 $detailUrl = Url::toRoute(['task/view', 'id' => $task->id]);
-$contractActions = [
-    Task::STATUS_CONTRACT_NOT_DEPLOYED => [
-        'label' => 'Create Smart-contract...',
-        'color' => 'success',
-        'url' => $smartContractUrl,
-    ],
-    Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS => [
-        'label' => 'On deployment',
-        'color' => 'success',
-        'url' => $smartContractUrl,
-    ],
-    Task::STATUS_CONTRACT_NEW_NEED_TOKENS    => [
-        'label' => 'You need to send tokens...',
-        'color' => 'danger',
-        'url' => $smartContractUrl,
-    ],
-    Task::STATUS_CONTRACT_NEW                => [
-        'label' => 'Activate smart contract...',
-        'color' => 'accent',
-        'url' => $smartContractUrl,
-    ],
-];
 
 ?>
 <div class="m-widget4__item task-item" data-id="<?=$task->id?>" data-delete-url="<?= Url::toRoute(sprintf('task/%s/delete', $task->id))?>" >
@@ -62,9 +40,12 @@ $contractActions = [
     <div class="m-widget4__ext">
         <span style="overflow: visible; display: block; width: 179px; text-align: right">
             <?php
-                if (array_key_exists($task->status, $contractActions)) {
-                    $contractAction = $contractActions[$task->status];
-                    printf('<a href="%s" class="btn btn-%s">%s</a>', $contractAction['url'], $contractAction['color'], $contractAction['label']);
+                if ($action = $view->getNextAction()) {
+                    ?>
+                    <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>  js-btn-release" style="margin-right: 10px;">
+                        <?=$action->getLabel()?>
+                    </a>
+                    <?php
                 } else {
                     ?>
                     <div class="dropdown ">
