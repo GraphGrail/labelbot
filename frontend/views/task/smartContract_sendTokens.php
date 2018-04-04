@@ -111,7 +111,7 @@ $this->registerJs("
                     <?=Yii::t('app', 'Tokens to send') ?>
                   </div>
                   <div class="form-group field-task-label_group_id required">
-                    <input type="text" id="tokensValue" class="form-control m-input js-tokens-value" name="tokensValue" value="<?=$task->tokensNeededForContractActivation() ?>" disabled="disabled">
+                    <input type="text" id="tokensValue" class="form-control m-input js-tokens-value" name="tokensValue" value="<?=$tokensValue ?>" disabled="disabled">
                     <div class="help-block"></div>
                   </div>                  
                 </div>

@@ -158,14 +158,33 @@ class TaskController extends \yii\web\Controller
             }
         }
 
+        // Contract reactivation payment
+        if ($task->status === Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS && Yii::$app->request->isPost) {
+            // We need to check that contract tokenBalance enough for workItemsLeft will be payed
+            $contractStatus = $blockchain->contractStatus($task->contractAddress());
+            if ($contractStatus->workItemsBalance >= $contractStatus->workItemsLeft) {
+                $task->status = Task::STATUS_CONTRACT_ACTIVE;
+                $task->save();
+            }
+        }
+
+        // Contract needTokens views
+        if ($task->status === Task::STATUS_CONTRACT_NEW_NEED_TOKENS || $task->status === Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS) {
+            // We need to check that contract tokenBalance enough for workItemsLeft will be payed
+            $contractStatus = $blockchain->contractStatus($task->contractAddress());
+            $tokensValue = bcmul(($contractStatus->workItemsLeft - $contractStatus->workItemsBalance), $contractStatus->workItemPrice);
+        }       
+
         $views = [
             Task::STATUS_CONTRACT_NOT_DEPLOYED       => 'smartContract_deployment',
             Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS => 'smartContract_deploymentProcess',
             Task::STATUS_CONTRACT_NEW_NEED_TOKENS    => 'smartContract_sendTokens',
             Task::STATUS_CONTRACT_NEW                => 'smartContract_activation',
+            Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS => 'smartContract_sendTokens',
         ];
         return $this->render(array_key_exists($task->status, $views) ? $views[$task->status]: 'smartContract', [
-            'task' => $task
+            'task' => $task,
+            'tokensValue' => $tokensValue ?? 0
         ]);
     }
 
@@ -287,11 +306,19 @@ class TaskController extends \yii\web\Controller
             $task->declineWorkItems($moderator, $num);
         }
 
-        $task->status = Task::STATUS_CONTRACT_ACTIVE;
-        //$task->status = Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
-        //$task->status = Task::STATUS_CONTRACT_ACTIVE_COMPLETED;
-        $task->save();
+        if ($contractStatus->workItemsLeft > 0 && $contractStatus->workItemsBalance === 0) {
+            $task->status = Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
+        }
 
+        if ($contractStatus->workItemsLeft > 0 && $contractStatus->workItemsBalance > 0) {
+            $task->status = Task::STATUS_CONTRACT_ACTIVE;
+        }
+        // TODO: use canFinalize if it works
+        if ($contractStatus->workItemsLeft === 0) {
+            $task->status = Task::STATUS_CONTRACT_ACTIVE_COMPLETED;
+        }
+
+        $task->save();
         $this->redirect('view');
     }
 
@@ -313,6 +340,7 @@ class TaskController extends \yii\web\Controller
         if ($task === null) {
             throw new \Exception("Can't find Task");
         }
+
         if ($task->status === Task::STATUS_CONTRACT_ACTIVE) {
             return $this->redirect(['pause', 'id' => $id]);
         }

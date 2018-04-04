@@ -167,20 +167,11 @@ class Task extends ActiveRecord
         }
     }
 
-    public function tokensNeededForContractActivation()
-    {
-        if ($this->contract === null) return null;
-
-        $contract = json_decode($this->contract);
-        return bcmul($contract->totalWorkItems, $contract->workItemPrice /*bcmul($contract->workItemPrice, 1 + Yii::$app->params['approvalCommissionFraction'])*/);
-    }
-
     public function contractAddress() : ?Address
     {
         return $this->contract_address ? new Address($this->contract_address) : null;
     }
-
-
+    
 
     public function getDataForLabelAssignment(int $moderator_id)
     {
