@@ -22,7 +22,8 @@
         "longman/telegram-bot": "^0.52.0",
         "yiisoft/yii2-queue": "^2.0",
         "yiisoft/yii2-httpclient": "*",
-        "omnilight/yii2-scheduling": "dev-process"
+        "omnilight/yii2-scheduling": "dev-process",
+        "yii2tech/file-storage": "^1.1"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
