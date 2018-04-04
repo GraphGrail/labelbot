@@ -66,6 +66,9 @@ $this->registerJs("
         }
       })
       .then(_ => {
+        if (_ === false) {
+            return
+        }
         $('.js-form').submit();
       })
   })
