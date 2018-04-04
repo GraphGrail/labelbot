@@ -10,7 +10,7 @@ use yii\helpers\Url;
 
 $formatter = \Yii::$app->formatter;
 
-$detailUrl = Url::toRoute(['task/view', 'id' => $task->id]);
+$detailUrl = Url::toRoute([$task->status < Task::STATUS_CONTRACT_ACTIVE ? 'task/smart-contract' : 'task/view', 'id' => $task->id]);
 
 ?>
 <div class="m-widget4__item task-item" data-id="<?=$task->id?>" data-delete-url="<?= Url::toRoute(sprintf('task/%s/delete', $task->id))?>" >
