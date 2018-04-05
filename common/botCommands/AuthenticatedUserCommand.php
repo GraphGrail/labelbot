@@ -26,7 +26,7 @@ abstract class AuthenticatedUserCommand extends UserCommand
     protected $callback_query_data;
 
     /**
-     * @var common\models\Moderator;
+     * @var \common\models\Moderator;
      */
 	protected $moderator;
 
@@ -53,10 +53,14 @@ abstract class AuthenticatedUserCommand extends UserCommand
         $this->chat_id           = $this->chat->getId();
 
         $this->moderator = Moderator::findOne(['tg_id'=>$this->chat_id]);
+    }
 
+    public function preExecute()
+    {
         if ($this->moderator === null) {
-            return $this->telegram->executeCommand('login');
+            $this->telegram->executeCommand('login');
         }
+        return parent::preExecute();
     }
 
 

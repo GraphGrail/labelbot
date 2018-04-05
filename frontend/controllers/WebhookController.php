@@ -78,7 +78,7 @@ class WebhookController extends \yii\web\Controller
             //$telegram->setCommandConfig('date', ['google_api_key' => 'your_google_api_key_here']);
 
             // Botan.io integration
-            $telegram->enableBotan(Yii::$app->params['telegram_bot_appmetrica_key']);
+            Yii::$app->params['telegram_bot_appmetrica_key'] && $telegram->enableBotan(Yii::$app->params['telegram_bot_appmetrica_key']);
 
             // Requests Limiter (tries to prevent reaching Telegram API limits)
             $telegram->enableLimiter();

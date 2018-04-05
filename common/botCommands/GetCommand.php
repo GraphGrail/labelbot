@@ -2,6 +2,7 @@
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
+require_once 'AuthenticatedUserCommand.php';
 
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
@@ -9,7 +10,7 @@ use common\models\Moderator;
 use common\models\Task;
 use common\models\Label;
 use common\domain\ethereum\Address;
-use common\components\labelsKeyboard;
+use common\components\LabelsKeyboard;
 
 
 /**
@@ -99,7 +100,7 @@ class GetCommand extends AuthenticatedUserCommand
             'parent_label_id' => 0
         ]);
 
-        $inline_keyboard = new labelsKeyboard($rootLabel, $data->id, $this->moderator);
+        $inline_keyboard = new LabelsKeyboard($rootLabel, $data->id, $this->moderator);
 
         $req_data = [
             'chat_id'                  => $this->chat_id,

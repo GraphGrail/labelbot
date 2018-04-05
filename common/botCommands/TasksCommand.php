@@ -2,6 +2,8 @@
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
+require_once 'AuthenticatedUserCommand.php';
+
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
 use common\components\LabelsKeyboard;
