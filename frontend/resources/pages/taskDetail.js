@@ -102,7 +102,7 @@ var TaskDetailTable = function() {
                     field: 'current',
                     title: 'Current',
                     sortable: false,
-                    width: 60,
+                    width: 120,
                     selector: false,
                     textAlign: 'center',
                 },

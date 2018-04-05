@@ -525,12 +525,9 @@ class TaskController extends \yii\web\Controller
             )
         ;
 
-        $moderatorCountAssignedLabels = $this->getModeratorCountAssignedLabels($task, $contractStatus);
-        foreach ($contractStatus->workers as $moderatorAddr => $worker) {
-            if (!array_key_exists($moderatorAddr, $moderatorCountAssignedLabels)) {
-                $moderatorCountAssignedLabels[$moderatorAddr] = 0;
-            }
-            $view->addModeratorAssignedCount($moderatorAddr, $moderatorCountAssignedLabels[$moderatorAddr]);
+        $moderatorCountAssignedLabels = $this->getModeratorCountAssignedLabels($task);
+        foreach ($moderatorCountAssignedLabels as $moderatorAddr =>  $moderatorCountAssignedLabel) {
+            $view->addModeratorAssignedCount($moderatorAddr, $moderatorCountAssignedLabel);
         }
 
         return $this->render('detail', [
@@ -617,7 +614,7 @@ class TaskController extends \yii\web\Controller
      * @param $contractStatus
      * @return array
      */
-    private function getModeratorCountAssignedLabels(Task $task, $contractStatus): array
+    private function getModeratorCountAssignedLabels(Task $task): array
     {
         /** @var AssignedLabel[] $assigned */
         $assigned = $task
@@ -628,9 +625,6 @@ class TaskController extends \yii\web\Controller
         $counts = [];
         foreach ($assigned as $assignedLabel) {
             $addr = $assignedLabel->getModerator()->one()->eth_addr;
-            if (!array_key_exists($addr, $contractStatus->workers)) {
-                continue;
-            }
             if (!array_key_exists($addr, $counts)) {
                 $counts[$addr] = 0;
             }

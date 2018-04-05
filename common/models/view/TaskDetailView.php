@@ -79,7 +79,11 @@ class TaskDetailView
         $data = json_decode(json_encode($this->getContractStatus()->workers), true);
         foreach ($this->moderatorAssignedCount as $moderatorId => $count) {
             if (!array_key_exists($moderatorId, $data)) {
-                continue;
+                $data[$moderatorId] = [
+                    'totalItems' => 0,
+                    'approvedItems' => 0,
+                    'declinedItems' => 0,
+                ];
             }
             $data[$moderatorId]['current'] = sprintf('%s/%s(%s)', $count, $this->task->work_item_size, \Yii::$app->getFormatter()->asPercent($count / $this->task->work_item_size));
         }
