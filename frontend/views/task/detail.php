@@ -82,7 +82,7 @@ TaskDetailPage::register($this);
 															</span>
                                                         </li>
                                                         <?php
-                                                        foreach ($view->getAdditionalActions() as $additionalAction) {
+                                                        foreach ($additionalActions as $additionalAction) {
                                                             ?>
                                                             <li class="m-nav__item">
                                                                 <a href="<?=$additionalAction->getUrl()?>" class="m-nav__link">

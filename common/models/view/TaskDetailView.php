@@ -222,15 +222,15 @@ class TaskDetailView
     {
         $actions = [];
 
-        if ($this->contractStatus && $this->contractStatus->canFinalize && !$this->task->isCompleted()) {
-            $action = new ActionView(
-                Yii::t('app', 'Finalize task')
-            );
-            $action->setOptions([
-                'class' => 'finalize-task-btn la la-check',
-            ]);
-            $actions[] = $action;
-        }
+//        if ($this->contractStatus && $this->contractStatus->canFinalize && !$this->task->isCompleted()) {
+//            $action = new ActionView(
+//                Yii::t('app', 'Finalize task')
+//            );
+//            $action->setOptions([
+//                'class' => 'finalize-task-btn la la-check',
+//            ]);
+//            $actions[] = $action;
+//        }
 
         return $actions;
     }
