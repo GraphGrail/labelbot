@@ -17,6 +17,7 @@ use common\models\view\ActionView;
 use common\models\view\PreviewScoreWorkView;
 use common\models\view\TaskDetailView;
 use common\models\view\TaskScoreWorkView;
+use console\jobs\SynchronizeTaskStatusJob;
 use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
@@ -573,6 +574,14 @@ class TaskController extends \yii\web\Controller
             Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
         }
         Yii::$app->end();
+    }
+
+    public function actionSyncStatus($id)
+    {
+        Yii::$app->queue->push(new SynchronizeTaskStatusJob([
+            'taskId' => $id,
+        ]));
+        return $this->asJson(['success' => true]);
     }
 
     protected function createCsvFile(Task $task)
