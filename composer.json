@@ -23,7 +23,8 @@
         "yiisoft/yii2-queue": "^2.0",
         "yiisoft/yii2-httpclient": "*",
         "omnilight/yii2-scheduling": "dev-process",
-        "yii2tech/file-storage": "^1.1"
+        "yii2tech/file-storage": "^1.1",
+        "vlucas/phpdotenv": "^2.4"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
