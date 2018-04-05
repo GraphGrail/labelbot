@@ -283,13 +283,17 @@ class TaskController extends \yii\web\Controller
         $declinedWorksToUpdate = [];
         // Find number of workItems that we must update in db
         foreach ($workItemsInBlockchain as $address => $workItems) {
-            $numOfApprovedInDb = isset($workItemsInDb[$address]['approvedItems']) ? $workItemsInDb[$address]['approvedItems'] : 0;
-            $numOfDeclinedInDb = isset($workItemsInDb[$address]['declinedItems']) ? $workItemsInDb[$address]['declinedItems'] : 0;
+            if (!array_key_exists($address, $workItemsInDb)) {
+                continue;
+            }
+            $addressInDb = $workItemsInDb[$address];
+            $numOfApprovedInDb = isset($addressInDb['approvedItems']) ? $addressInDb['approvedItems'] : 0;
+            $numOfDeclinedInDb = isset($addressInDb['declinedItems']) ? $addressInDb['declinedItems'] : 0;
 
             if ($numOfApprovedInDb < $workItems['approvedItems']) {
                 $approvedWorksToUpdate[$address] = $workItems['approvedItems'] - $numOfApprovedInDb;
             }
-            if ($workItemsInDb[$address]['declinedItems'] < $workItems['declinedItems']) {
+            if ($addressInDb['declinedItems'] < $workItems['declinedItems']) {
                 $declinedWorksToUpdate[$address] = $workItems['declinedItems'] - $numOfDeclinedInDb;
             }
         }
