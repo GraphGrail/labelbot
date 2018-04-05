@@ -173,9 +173,9 @@ class Task extends ActiveRecord
     }
     
 
-    public function getDataForLabelAssignment(int $moderator_id)
+    public function getDataForLabelAssignment(int $moderator_id) : ?Data
     {
-        AssignedLabel::deleteUnassignedLabels();
+        //AssignedLabel::deleteUnassignedLabels();
 
         // Are moderator start new workItem or not?
         if ($this->isGettingNewWorkItem($moderator_id)) {
@@ -201,34 +201,22 @@ class Task extends ActiveRecord
             }
         }
 
-        $data = self::getUnlabeledData($this->dataset_id);
+        $assigned_label = AssignedLabel::find()
+            ->where(['task_id'=>$this->id])
+            ->andWhere(['in', 'status', [AssignedLabel::STATUS_NEW, AssignedLabel::STATUS_SKIPPED]])
+            ->orderBy('status')
+            ->one();
 
-        if ($data === null) return null;
+        if ($assigned_label === null) return null;
 
-        // We create AssignedLabel instance with STATUS_IN_HAND
-        // to prevent other moderators to get same data at one moment.
-        $assigned_label = new AssignedLabel;
-        $assigned_label->task_id = $this->id;
-        $assigned_label->data_id = $data->id;
+        // We update AssignedLabel with STATUS_IN_HAND to prevent other moderators to get same data at one moment.
         $assigned_label->moderator_id = $moderator_id;
         $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
         $assigned_label->save();
 
+        $data = Data::findOne($assigned_label->data_id);
+
         return $data;
-    }
-
-    private static function getUnlabeledData(int $dataset_id)
-    {
-        $unlabeled_data_id = Yii::$app->db->createCommand("
-                SELECT `data`.id 
-                FROM `data` 
-                LEFT JOIN `assigned_label` on `data`.id = `assigned_label`.data_id 
-                WHERE `data`.dataset_id = $dataset_id 
-                    AND `assigned_label`.id IS NULL
-                LIMIT 1
-            ")->query();
-
-        return Data::findOne($unlabeled_data_id);
     }
 
     private function isGettingNewWorkItem(int $moderator_id) : bool

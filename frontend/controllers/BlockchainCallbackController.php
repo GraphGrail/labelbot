@@ -2,6 +2,7 @@
 
 namespace frontend\controllers;
 
+use console\jobs\CreateAssignedLabelsJob;
 use common\models\Task;
 use common\models\BlockchainCallback;
 use yii\web\Controller;
@@ -95,11 +96,14 @@ class BlockchainCallbackController extends \yii\web\Controller
         } 
 
         $task->contract_address = $this->data['payload']['contractAddress'];
-        $task->status = Task::STATUS_CONTRACT_NEW_NEED_TOKENS;
 
         if (!$task->save()) {
             throw new \Exception("Can't save Task");
         }
+
+        Yii::$app->queue->push(new CreateAssignedLabelsJob([
+            'task_id' => $task->id
+        ]));
 
         Yii::$app->end();
     }

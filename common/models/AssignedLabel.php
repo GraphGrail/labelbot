@@ -19,11 +19,12 @@ class AssignedLabel extends \yii\db\ActiveRecord
     /**
      * Statuses
      */
-    const STATUS_IN_HAND  = 1;
-    const STATUS_READY    = 2;
-    const STATUS_APPROVED = 3;
-    const STATUS_DECLINED = 4;
-    const STATUS_SKIPPED  = 5;
+    const STATUS_NEW      = 10;
+    const STATUS_IN_HAND  = 20;
+    const STATUS_SKIPPED  = 30;
+    const STATUS_READY    = 40;
+    const STATUS_APPROVED = 50;
+    const STATUS_DECLINED = 60;
 
     /**
      * @inheritdoc
@@ -39,8 +40,8 @@ class AssignedLabel extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['data_id', 'moderator_id'], 'required'],
-            [['data_id', 'label_id', 'moderator_id', 'created_at', 'updated_at'], 'integer'],
+            [['task_id', 'data_id'], 'required'],
+            [['task_id', 'data_id', 'label_id', 'moderator_id', 'created_at', 'updated_at'], 'integer'],
         ];
     }
 
@@ -116,11 +117,11 @@ class AssignedLabel extends \yii\db\ActiveRecord
      */
     public static function deleteUnassignedLabels($seconds=300)
     {
-        $expired_time = time() - $seconds;
+/*        $expired_time = time() - $seconds;
         return self::deleteAll(
             'label_id IS NULL AND created_at < :expired_at',
             [':expired_at' => $expired_time]
-        );
+        );*/
     }
 
     
