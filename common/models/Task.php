@@ -273,14 +273,33 @@ class Task extends ActiveRecord
         return $this->status == self::STATUS_CONTRACT_ACTIVE_PAUSED;
     }
 
+    public function isCompleted()
+    {
+        return $this->status == self::STATUS_CONTRACT_ACTIVE_COMPLETED;
+    }
+
     public function isFinalized()
     {
         return $this->status == self::STATUS_CONTRACT_FINALIZED;
     }
 
-    public function isCompleted()
+    public function setFinalized($save = true)
     {
-        return $this->status == self::STATUS_CONTRACT_ACTIVE_COMPLETED;
+        $this->status = self::STATUS_CONTRACT_FINALIZED;
+        $save && $this->save(false, ['status']);
+        return $this;
+    }
+
+    public function isForceFinalizing()
+    {
+        return $this->status == self::STATUS_CONTRACT_FORCE_FINALIZING;
+    }
+
+    public function setForceFinalizing($save = true)
+    {
+        $this->status = self::STATUS_CONTRACT_FORCE_FINALIZING;
+        $save && $this->save(false, ['status']);
+        return $this;
     }
 
     public function readyWorkItemsNumber(Moderator $moderator) : int
