@@ -80,6 +80,9 @@ class Label extends \yii\db\ActiveRecord
         return self::findOne($this->parent_label_id);
     }
 
+    /**
+     * @return array
+     */
     public function buildPath()
     {
         $res = [[$this->text]];

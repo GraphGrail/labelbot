@@ -7,6 +7,7 @@ namespace common\models\view;
 
 
 use common\models\AssignedLabel;
+use common\models\Label;
 
 class PreviewScoreWorkView
 {
@@ -17,6 +18,9 @@ class PreviewScoreWorkView
         $this->label = $label;
     }
 
+    /**
+     * @return Label
+     */
     public function getLabel()
     {
         return $this->label->getLabel()->one();
@@ -44,7 +48,7 @@ class PreviewScoreWorkView
     {
         return [
             'text' => $this->getText(),
-            'label' => $this->getLabel()->text,
+            'label' => $this->getLabel()->buildPath(),
         ];
     }
 }

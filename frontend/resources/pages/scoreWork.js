@@ -106,17 +106,26 @@ var ScoreWorkTable = function() {
     };
 
     this.createPreviewElement = function (data) {
-        var container = $('<div/>');
-        var text = $('<textarea class="form-control m-input" disabled>');
-        var label = $('<textarea class="form-control m-input" disabled>');
+        var section = $('<div class="m-section"/>');
+        var container = $('<div class="m-section__content"/>');
 
+        var text = $('<strong class="">');
+        var label = $('<div class="">');
+
+        var path = '';
+        if (data.label) {
+            path = data.label.join(' -> ');
+        }
+        label.html(path);
         text.html(data.text);
-        label.html(data.label);
 
-        text.appendTo(container);
-        container.append('<br>');
-        label.appendTo(container);
-        return container;
+        container
+            .append(text)
+            .append('<br>')
+            .append(label)
+            .appendTo(section)
+        ;
+        return section;
     };
 
     this.renderTable = function () {
