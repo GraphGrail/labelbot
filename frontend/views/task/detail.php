@@ -3,6 +3,7 @@
  * @author Juriy Panasevich <u.panasevich@graphgrail.com>
  */
 
+use frontend\assets\EthGatewayAsset;
 use frontend\assets\pages\TaskDetailPage;
 use yii\helpers\Url;
 
@@ -13,9 +14,95 @@ use yii\helpers\Url;
 /* @var $assignedCount int */
 
 TaskDetailPage::register($this);
+EthGatewayAsset::register($this);
+
+$this->registerJs("
+  const finalizeInit = function() {
+      const syncStatus = function() {
+        $.post('". Url::toRoute(['task/sync-status', 'id' => $task->id]) . "', (response) => {
+            console.log(response);
+        })
+      }
+    
+      const ggEth = graphGrailEther
+      const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
+      const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
+      const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'  
+       
+    
+      let clientAddress
+      const contractAddress = $('.js-contract-address').val();
+      
+      ggEth.init(tokenContractAddress, expectedNetworkId, internalApi)
+        .catch(err => {
+            console.log(err.code + ' ' + err);
+            switch(err.code) {
+                case 'ALREADY_INITIALIZED':
+                    return ggEth.getClientAddress();
+                case 'INVALID_ETHEREUM_ADDRESS':
+                    return showEthClientError(err);
+                case 'NO_ACCOUNTS':
+                    return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
+                case 'NO_ETHEREUM_CLIENT':
+                    return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
+                case 'WRONG_NETWORK':
+                    return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
+                default:
+                    return showEthClientError(err)
+            }
+        })
+        .then(address => {
+             clientAddress = address
+        })
+        .catch(err => {
+            console.log(err);
+            showEthClientError(err)
+        })
+    
+  
+      $('.finalize-task-btn').on('click', e => {
+        e.preventDefault();
+    
+        if (!clientAddress) {
+            return;
+        }
+        $('.finalize-task-btn').attr('disabled', true)
+        ggEth.activeTransactionFinishedPromise()
+          .then(_ => {
+            return ggEth.finalizeContract(contractAddress)
+          })
+          .catch(err => {
+            console.log(err.code + ' ' + err)
+            switch(err.code) {
+              case 'NOT_INITIALIZED':
+                return showEthClientError('Oops! Etherium client was not initialized. Please reload page')
+              case 'TRANSACTION_ALREADY_RUNNING':
+                return showEthClientError('Oops! Transaction already running. Reload page')
+              case 'INSUFFICIENT_ETHER_BALANCE':
+                return showEthClientError('Oops! Not enough ether')
+              case 'INSUFFICIENT_TOKEN_BALANCE':
+                return showEthClientError('Oops! Not enough tokens')
+              default:
+                return showEthClientError(err)
+            }
+          })
+          .then(_ => {
+            if (_ === false) {
+                return
+            }
+            syncStatus()
+            setTimeout(() => {window.location.reload()}, 2000);
+          })
+      })
+  }();
+
+");
 
 ?>
-
+<div class="m-alert m-alert--icon alert alert-danger eth-errors" role="alert" style="display:none">
+    <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
+    <div class="m-alert__text"></div>
+</div>
 <input type="hidden" class="form-control m-input js-workers-source" disabled="disabled" value="<?=$view->getTableSourceAsJson()?>" />
 <div class="m-portlet m-portlet--mobile">
     <div class="m-portlet__head">
@@ -60,7 +147,7 @@ TaskDetailPage::register($this);
                         <?php
                             if ($action = $view->getNextAction()) {
                                 ?>
-                                    <a href="<?=$action->getUrl()?>" class="<?=$action->getOptions()['class']?>"><?=$action->getLabel()?></a>
+                                    <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>"><?=$action->getLabel()?></a>
                                 <?php
                             }
                             if ($additionalActions = $view->getAdditionalActions()) {
@@ -85,8 +172,8 @@ TaskDetailPage::register($this);
                                                         foreach ($additionalActions as $additionalAction) {
                                                             ?>
                                                             <li class="m-nav__item">
-                                                                <a href="<?=$additionalAction->getUrl()?>" class="m-nav__link">
-                                                                    <i class="m-nav__link-icon <?=$additionalAction->getOptions()['class']?>"></i>
+                                                                <a href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>" class="m-nav__link <?=$additionalAction->getOptions()['class']?>">
+                                                                    <i class="m-nav__link-icon <?=$additionalAction->getOptions()['iconClass']?>"></i>
                                                                     <span class="m-nav__link-text">
 																	<?=$additionalAction->getLabel()?>
 																</span>

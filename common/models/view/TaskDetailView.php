@@ -231,7 +231,8 @@ class TaskDetailView
                 Yii::t('app', 'Finalize task')
             );
             $action->setOptions([
-                'class' => 'finalize-task-btn la la-check',
+                'class' => 'finalize-task-btn',
+                'iconClass' => 'la la-check',
             ]);
             $actions[] = $action;
         }
