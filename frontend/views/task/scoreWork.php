@@ -144,15 +144,17 @@ $this->registerJs("
                     </div>
                 </div>
                 <div class="col-xl-4 order-1 m--align-right">
-                    <?php
-                        if ($action = $view->getNextAction()) {
-                            ?>
-                            <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>  js-btn-release" style="margin-right: 10px;">
-                                <?=$action->getLabel()?>
-                            </a>
-                            <?php
-                        }
-                    ?>
+                    <span class="pull-right">
+                        <?php
+                            if ($action = $view->getNextAction()) {
+                                ?>
+                                <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>  js-btn-release" style="margin-left: 10px;">
+                                    <?=$action->getLabel()?>
+                                </a>
+                                <?php
+                            }
+                        ?>
+                    </span>
                     <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work <?=!$task->isPaused() ? 'disabled' : ''?>">
                         Send results to blockchain <i class="la la-send"></i>
                     </button>
