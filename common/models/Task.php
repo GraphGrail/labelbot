@@ -278,6 +278,10 @@ class Task extends ActiveRecord
         return $this->status == self::STATUS_CONTRACT_FINALIZED;
     }
 
+    public function isCompleted()
+    {
+        return $this->status == self::STATUS_CONTRACT_ACTIVE_COMPLETED;
+    }
 
     public function readyWorkItemsNumber(Moderator $moderator) : int
     {
@@ -297,14 +301,14 @@ class Task extends ActiveRecord
         if ($readyWorkItems < $num) return false;
 
         $updates = AssignedLabel::updateStatuses(
-            $this->id, 
-            AssignedLabel::STATUS_READY, 
-            AssignedLabel::STATUS_APPROVED, 
-            $moderator->id, 
+            $this->id,
+            AssignedLabel::STATUS_READY,
+            AssignedLabel::STATUS_APPROVED,
+            $moderator->id,
             $this->work_item_size * $num
         );
 
-        return $updates ? true : false; 
+        return $updates ? true : false;
     }
 
     public function declineWorkItems(Moderator $moderator, int $num=1) : bool
@@ -313,15 +317,14 @@ class Task extends ActiveRecord
         if ($readyWorkItems < $num) return false;
 
         $updates = AssignedLabel::updateStatuses(
-            $this->id, 
-            AssignedLabel::STATUS_READY, 
-            AssignedLabel::STATUS_DECLINED, 
-            $moderator->id, 
+            $this->id,
+            AssignedLabel::STATUS_READY,
+            AssignedLabel::STATUS_DECLINED,
+            $moderator->id,
             $this->work_item_size * $num
         );
 
-        return $updates ? true : false; 
+        return $updates ? true : false;
     }
-
 
 }
