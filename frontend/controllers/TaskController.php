@@ -217,10 +217,15 @@ class TaskController extends \yii\web\Controller
     }
 
 
+    /**
+     * @param $id
+     * @throws \Exception
+     */
     public function actionRelease($id)
     {
         $blockchain  = new EthereumGateway;
 
+        /** @var Task $task */
         $task = Task::find()
             ->where(['id'=>$id])
             ->ownedByUser() // task must belongs to user
@@ -284,11 +289,14 @@ class TaskController extends \yii\web\Controller
         // Find number of workItems that we must update in db
         foreach ($workItemsInBlockchain as $address => $workItems) {
             if (!array_key_exists($address, $workItemsInDb)) {
-                continue;
+                $workItemsInDb[$address] = [];
             }
             $addressInDb = $workItemsInDb[$address];
-            $numOfApprovedInDb = isset($addressInDb['approvedItems']) ? $addressInDb['approvedItems'] : 0;
-            $numOfDeclinedInDb = isset($addressInDb['declinedItems']) ? $addressInDb['declinedItems'] : 0;
+            $addressInDb = $this->initResultItemsData($addressInDb);
+            $workItems = $this->initResultItemsData($workItems);
+
+            $numOfApprovedInDb = $addressInDb['approvedItems'];
+            $numOfDeclinedInDb = $addressInDb['declinedItems'];
 
             if ($numOfApprovedInDb < $workItems['approvedItems']) {
                 $approvedWorksToUpdate[$address] = $workItems['approvedItems'] - $numOfApprovedInDb;
@@ -641,6 +649,24 @@ class TaskController extends \yii\web\Controller
         /** @var \yii2tech\filestorage\local\Storage $fileStorage */
         $fileStorage = Yii::$app->fileStorage;
         return $fileStorage->getBucket('result');
+    }
+
+    /**
+     * @param $array
+     * @return mixed
+     */
+    protected function initResultItemsData($array)
+    {
+        if (!array_key_exists('approvedItems', $array)) {
+            $array['approvedItems'] = 0;
+        }
+        if (!array_key_exists('declinedItems', $array)) {
+            $array['declinedItems'] = 0;
+        }
+        if (!array_key_exists('totalItems', $array)) {
+            $array['totalItems'] = 0;
+        }
+        return $array;
     }
 
 }
