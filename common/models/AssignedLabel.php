@@ -23,6 +23,7 @@ class AssignedLabel extends \yii\db\ActiveRecord
     const STATUS_READY    = 2;
     const STATUS_APPROVED = 3;
     const STATUS_DECLINED = 4;
+    const STATUS_SKIPPED  = 5;
 
     /**
      * @inheritdoc

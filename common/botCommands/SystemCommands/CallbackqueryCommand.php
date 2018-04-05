@@ -50,7 +50,7 @@ class CallbackqueryCommand extends SystemCommand
                 $this->telegram->executeCommand('backkeycallback');
                 break;
             case CallbackData::NEXT_KEY_PRESSED:
-                $this->telegram->executeCommand('labelkeycallback');
+                $this->telegram->executeCommand('nextkeycallback');
                 break;
             default:
                 throw new HttpException(400, 'Error checking callback_data type');

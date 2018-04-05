@@ -75,15 +75,18 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
         $assignedLabel = AssignedLabel::findOne([
             'data_id'       => $this->data_id,
             'moderator_id'  => $this->moderator->id,
-            'label_id'      => null
+            'status'        => AssignedLabel::STATUS_IN_HAND
         ]);
 
         if ($assignedLabel === null) {
+            $req_data = [
+                'callback_query_id' => $this->callback_query_id,
+                'text'              => 'Error: label was not confirmed',
+                'show_alert'        => false,
+                'cache_time'        => 0,
+            ];
+            Request::answerCallbackQuery($req_data);
             return $this->telegram->executeCommand('get');
-
-/*            $assignedLabel = new AssignedLabel;
-            $assignedLabel->data_id      = $this->data_id;
-            $assignedLabel->moderator_id = $this->moderator->id;     */       
         }
 
         $assignedLabel->status = AssignedLabel::STATUS_READY;            

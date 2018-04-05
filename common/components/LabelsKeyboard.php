@@ -81,7 +81,7 @@ class LabelsKeyboard extends yii\base\BaseObject
     private function labelKey(Label $label) : array
     {
         $callback_data = new CallbackData($this->moderator);
-        $callback_data->type = CallbackData::NEXT_KEY_PRESSED;
+        $callback_data->type = CallbackData::LABEL_KEY_PRESSED;
         $callback_data->data = $this->data_id .':'. $label->id;
 
         if (!$label->children) {
@@ -102,7 +102,7 @@ class LabelsKeyboard extends yii\base\BaseObject
     private function nextKey() : array
     {
         $callback_data = new CallbackData($this->moderator);
-        $callback_data->type = CallbackData::LABEL_KEY_PRESSED;
+        $callback_data->type = CallbackData::NEXT_KEY_PRESSED;
         $callback_data->data = $this->data_id .':'. 0;    
 
         return [
