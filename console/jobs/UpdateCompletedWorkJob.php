@@ -54,8 +54,6 @@ class UpdateCompletedWorkJob extends \yii\base\BaseObject implements \yii\queue\
             $payload[$work['eth_addr']] = $readyWorkItems;
         }
 
-        if ($payload === []) return;
-
         $blockchain = new EthereumGateway;
         $callback_id = $blockchain->updateCompletedWork($this->task->contractAddress(), $payload);
         // TODO: handle error
