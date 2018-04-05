@@ -49,6 +49,9 @@ $this->registerJs("
 				$('.js-credit-invitation').show()
 			} else {
 				$('.js-btn-create').attr('disabled', false)
+				$('.js-btn-create').click(_ => {
+				    $('.js-btn-create').addClass('m-loader m-loader--right')
+				})
 			}
 		})
 		.catch(err => {

@@ -24,7 +24,7 @@ $this->registerJs("
                             <h5 class="m-widget5__title m--margin-bottom-25">
                                 Smart-contract for task "<?=$task->name ?>"
                             </h5>
-                            <div>Smart-contract on deployment</div>
+                            <div class="m-loader m-loader--success">Smart-contract on deployment</div>
                             <div class="m--padding-bottom-20"></div>
                         </div>
                     </div>

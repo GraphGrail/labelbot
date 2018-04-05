@@ -42,7 +42,7 @@ $this->registerJs("
 
   $('.js-btn-activate').on('click', e => {
     e.preventDefault();
-    $('.js-btn-activate').attr('disabled', true)
+    $('.js-btn-activate').attr('disabled', true).addClass('m-loader m-loader--right')
 
     ggEth.activeTransactionFinishedPromise()
       .then(_ => {
@@ -74,6 +74,9 @@ $this->registerJs("
         }
       })
       .then(_ => {
+        if(_ === false) {
+          return;
+        } 
         $('.js-form').submit();
       })
   })

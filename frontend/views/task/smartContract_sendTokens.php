@@ -44,7 +44,7 @@ $this->registerJs("
 
   $('.js-btn-transfer').on('click', e => {
     e.preventDefault();
-    $('.js-btn-transfer').attr('disabled', true)
+    $('.js-btn-transfer').attr('disabled', true).addClass('m-loader m-loader--right')
 
     ggEth.activeTransactionFinishedPromise()
       .then(_ => {
