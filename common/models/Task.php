@@ -167,20 +167,11 @@ class Task extends ActiveRecord
         }
     }
 
-    public function tokensNeededForContractActivation()
-    {
-        if ($this->contract === null) return null;
-
-        $contract = json_decode($this->contract);
-        return bcmul($contract->totalWorkItems, $contract->workItemPrice /*bcmul($contract->workItemPrice, 1 + Yii::$app->params['approvalCommissionFraction'])*/);
-    }
-
     public function contractAddress() : ?Address
     {
         return $this->contract_address ? new Address($this->contract_address) : null;
     }
-
-
+    
 
     public function getDataForLabelAssignment(int $moderator_id)
     {
@@ -276,6 +267,7 @@ class Task extends ActiveRecord
         return $count;
     }
 
+
     public function isPaused()
     {
         return $this->status == self::STATUS_CONTRACT_ACTIVE_PAUSED;
@@ -285,4 +277,51 @@ class Task extends ActiveRecord
     {
         return $this->status == self::STATUS_CONTRACT_FINALIZED;
     }
+
+
+    public function readyWorkItemsNumber(Moderator $moderator) : int
+    {
+        $readyCount = AssignedLabel::find()
+            ->where(['task_id' => $this->id])
+            ->andWhere(['moderator_id'=>$moderator->id])
+            ->andWhere(['status' => AssignedLabel::STATUS_READY])
+            ->count();
+
+        $readyWorkItems = (int) ($readyCount/$this->work_item_size);
+        return $readyWorkItems;
+    }
+
+    public function approveWorkItems(Moderator $moderator, int $num=1) : bool
+    {
+        $readyWorkItems = $this->readyWorkItemsNumber($moderator);
+        if ($readyWorkItems < $num) return false;
+
+        $updates = AssignedLabel::updateStatuses(
+            $this->id, 
+            AssignedLabel::STATUS_READY, 
+            AssignedLabel::STATUS_APPROVED, 
+            $moderator->id, 
+            $this->work_item_size * $num
+        );
+
+        return $updates ? true : false; 
+    }
+
+    public function declineWorkItems(Moderator $moderator, int $num=1) : bool
+    {
+        $readyWorkItems = $this->readyWorkItemsNumber($moderator);
+        if ($readyWorkItems < $num) return false;
+
+        $updates = AssignedLabel::updateStatuses(
+            $this->id, 
+            AssignedLabel::STATUS_READY, 
+            AssignedLabel::STATUS_DECLINED, 
+            $moderator->id, 
+            $this->work_item_size * $num
+        );
+
+        return $updates ? true : false; 
+    }
+
+
 }

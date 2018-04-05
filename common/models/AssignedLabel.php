@@ -123,4 +123,22 @@ class AssignedLabel extends \yii\db\ActiveRecord
     }
 
     
+    public static function updateStatuses(int $task_id, int $from_status, int $to_status, int $moderator_id, int $limit) : int
+    {
+        $updates = Yii::$app->db->createCommand('
+            UPDATE assigned_label 
+                SET status=:new_status
+                WHERE task_id=:task_id
+                    AND moderator_id=:moderator_id
+                    AND status=:old_status
+                ORDER BY id ASC 
+                LIMIT ' . $limit)
+            ->bindParam(':new_status',   $to_status)
+            ->bindParam(':task_id',      $task_id)
+            ->bindParam(':moderator_id', $moderator_id)
+            ->bindParam(':old_status',   $from_status)
+            ->execute();
+
+        return $updates;       
+    }
 }

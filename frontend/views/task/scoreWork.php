@@ -12,8 +12,7 @@ use yii\widgets\ActiveForm;
 /* @var $view \common\models\view\TaskDetailView */
 
 ScoreWorkAsset::register($this);
-
-/*EthGatewayAsset::register($this);
+EthGatewayAsset::register($this);
 
 $this->registerJs("
   const ggEth = graphGrailEther
@@ -47,6 +46,12 @@ $this->registerJs("
 
   $('.js-btn-score-work').on('click', e => {
     e.preventDefault();
+
+    if (!$('.js-workers').val()) {
+        alert('Score work to send results to blockchain')
+        return false;
+    }
+
     $('.js-btn-score-work').attr('disabled', true)
 
     let workers = JSON.parse($('.js-workers').val())
@@ -68,15 +73,11 @@ $this->registerJs("
         }
       })
       .then(_ => {
-      //  $('.js-form').submit();
+        $('.js-form').submit();
       })
   })
 
-");*/
-
-$this->registerJs('
-
-');
+");
 
 ?>
 <h1>Jobs scoring</h1>
@@ -84,13 +85,13 @@ $this->registerJs('
 
 <?php $form = ActiveForm::begin([
         'options' => [
-            'class'=>'m-section m--margin-bottom-5 score-work-form',
+            'class'=>'m-section m--margin-bottom-5 score-work-form js-form',
         ],
     ]);
 
     echo $form->field($sendingForm, 'workers')
         ->hiddenInput([
-            'class' => 'form-control m-input js-workers',
+            'class' => 'js-workers',
             'value' => '',
         ])
     ->label(false);
@@ -106,7 +107,7 @@ $this->registerJs('
         );
     }
 ?>
-<input type="hidden" class="form-control m-input js-workers-source" disabled="disabled" value="<?=htmlspecialchars(json_encode($contractStatus->workers))?>" />
+<input type="hidden" class="js-workers-source" disabled="disabled" value="<?=htmlspecialchars(json_encode($contractStatus->workers))?>" />
 <div class="m-portlet m-portlet--mobile">
     <div class="m-portlet__head">
         <div class="m-portlet__head-caption">
