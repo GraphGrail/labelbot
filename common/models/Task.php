@@ -349,15 +349,23 @@ class Task extends ActiveRecord
         $readyWorkItems = $this->readyWorkItemsNumber($moderator);
         if ($readyWorkItems < $num) return false;
 
-        $updates = AssignedLabel::updateStatuses(
-            $this->id,
-            AssignedLabel::STATUS_READY,
-            AssignedLabel::STATUS_DECLINED,
-            $moderator->id,
-            $this->work_item_size * $num
-        );
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            AssignedLabel::updateStatuses(
+                $this->id,
+                AssignedLabel::STATUS_READY,
+                AssignedLabel::STATUS_DECLINED,
+                $moderator->id,
+                $this->work_item_size * $num
+            );
+            AssignedLabel::copyDeclinedToNew($this->id, $moderator->id, $this->work_item_size * $num);
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return false;
+        }
 
-        return $updates ? true : false;
+        return true;
     }
 
 }
