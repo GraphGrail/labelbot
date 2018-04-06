@@ -376,11 +376,14 @@ class TaskController extends \yii\web\Controller
             $contractStatus->workers = [];
         }
 
+        $view = new TaskScoreWorkView($task);
+        $view->setContractStatus($contractStatus);
+
         return $this->render('scoreWork', [
             'task' => $task,
             'contractStatus' => $contractStatus,
             'sendingForm' => new SendScoreWorkForm(),
-            'view' => new TaskScoreWorkView($task),
+            'view' => $view,
         ]);
     }
 

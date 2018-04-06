@@ -93,11 +93,8 @@ $this->registerJs("
       }
     
       const ggEth = graphGrailEther
-         
-      let clientAddress
       const contractAddress = $('.js-contract-address').val();
     
-  
       $('.finalize-task-btn').on('click', function(e) {
         e.preventDefault();
     
@@ -105,8 +102,10 @@ $this->registerJs("
             return;
         }
         $(this).attr('disabled', true)
+        $('.m-portlet__head-caption').addClass('m-loader m-loader--success')
+        
         ggEth.activeTransactionFinishedPromise()
-          .then(_ => {
+          .then(_ => {           
             return ggEth.finalizeContract(contractAddress)
           })
           .catch(err => {
@@ -129,7 +128,7 @@ $this->registerJs("
                 return
             }
             syncStatus()
-            setTimeout(() => {window.location.reload()}, 2000);
+            setTimeout(() => {window.location = '". Url::toRoute(['task/view', 'id' => $task->id]) . "' }, 3000);
           })
       })
   }();
@@ -205,6 +204,47 @@ $this->registerJs("
                     </div>
                 </div>
                 <div class="col-xl-4 order-1 m--align-right">
+                    <?php if ($additionalActions = $view->getAdditionalActions()) {
+                        ?>
+                        <div class="pull-right m-dropdown m-dropdown--inline m-dropdown--arrow m-dropdown--align-right m-dropdown--align-push m--margin-left-10" data-dropdown-toggle="hover" aria-expanded="true">
+                            <a href="#" class="m-portlet__nav-link btn btn-lg btn-secondary  m-btn m-btn--outline-2x m-btn--air m-btn--icon m-btn--icon-only m-btn--pill  m-dropdown__toggle">
+                                <i class="la la-plus m--hide"></i>
+                                <i class="la la-ellipsis-h"></i>
+                            </a>
+                            <div class="m-dropdown__wrapper">
+                                <span class="m-dropdown__arrow m-dropdown__arrow--right m-dropdown__arrow--adjust" style="left: auto; right: 21.5px;"></span>
+                                <div class="m-dropdown__inner">
+                                    <div class="m-dropdown__body">
+                                        <div class="m-dropdown__content">
+                                            <ul class="m-nav">
+                                                <li class="m-nav__section m-nav__section--first m--hide">
+                                                    <span class="m-nav__section-text">
+                                                        Quick Actions
+                                                    </span>
+                                                </li>
+                                                <?php
+                                                foreach ($additionalActions as $additionalAction) {
+                                                    ?>
+                                                    <li class="m-nav__item">
+                                                        <a href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>" class="m-nav__link <?=$additionalAction->getOptions()['class']?>">
+                                                            <i class="m-nav__link-icon <?=$additionalAction->getOptions()['iconClass']?>"></i>
+                                                            <span class="m-nav__link-text">
+                                                                <?=$additionalAction->getLabel()?>
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                    <?php
+                                                }
+                                                ?>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                    ?>
                     <span class="pull-right">
                         <?php
                             if ($action = $view->getNextAction()) {
