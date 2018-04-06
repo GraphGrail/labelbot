@@ -67,6 +67,8 @@ $this->registerJs("
             return;
         }
         $('.finalize-task-btn').attr('disabled', true)
+        $('.m-portlet__head-caption').addClass('m-loader m-loader--success')
+        
         ggEth.activeTransactionFinishedPromise()
           .then(_ => {
             return ggEth.finalizeContract(contractAddress)
@@ -91,7 +93,7 @@ $this->registerJs("
                 return
             }
             syncStatus()
-            setTimeout(() => {window.location.reload()}, 2000);
+            setTimeout(() => {window.location.reload()}, 3000);
           })
       })
   }();
