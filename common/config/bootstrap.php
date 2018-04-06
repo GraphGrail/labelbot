@@ -4,6 +4,7 @@ Yii::setAlias('@frontend', dirname(__DIR__, 2) . '/frontend');
 Yii::setAlias('@backend', dirname(__DIR__, 2) . '/backend');
 Yii::setAlias('@console', dirname(__DIR__, 2) . '/console');
 Yii::setAlias('@resources', dirname(__DIR__, 2) . '/frontend/resources');
+Yii::setAlias('@fileStorage', dirname(__DIR__, 2) . '/files');
 
 $dotenv = new Dotenv\Dotenv(dirname(__DIR__, 2));
 $dotenv->load();
