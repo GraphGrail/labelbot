@@ -115,13 +115,16 @@ class AssignedLabel extends \yii\db\ActiveRecord
      * @var $seconds
      * @return int
      */
-    public static function deleteUnassignedLabels($seconds=300)
+    public static function handleSkippedLabels($seconds=180)
     {
-/*        $expired_time = time() - $seconds;
-        return self::deleteAll(
-            'label_id IS NULL AND created_at < :expired_at',
-            [':expired_at' => $expired_time]
-        );*/
+        $expired_time = time() - $seconds;
+        return AssignedLabel::updateAll(
+            ['status' => AssignedLabel::STATUS_SKIPPED],
+            ['and', 
+                ['status' => AssignedLabel::STATUS_IN_HAND],
+                ['<', 'created_at', $expired_time]
+            ]
+        );
     }
 
     

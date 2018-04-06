@@ -5,6 +5,7 @@ namespace common\components;
 use Yii;
 use Longman\TelegramBot\Entities\InlineKeyboard;
 use common\models\Label;
+use common\models\AssignedLabel;
 use common\models\Moderator;
 use common\components\CallbackData;
 
@@ -23,7 +24,7 @@ class LabelsKeyboard extends yii\base\BaseObject
     /**
      * @var int
      */
-    protected $data_id;
+    protected $assigned_label_id;
 
     /**
      * @var common\models\Moderator
@@ -34,14 +35,14 @@ class LabelsKeyboard extends yii\base\BaseObject
      * Class constructor
      * 
      * @param Label $root_label 
-     * @param int $data_id 
+     * @param int $assigned_label_id 
      * @param Moderator $moderator 
      * @return type
      */
-    public function __construct(Label $root_label, int $data_id, Moderator $moderator)
+    public function __construct(Label $root_label, AssignedLabel $assigned_label, Moderator $moderator)
     {
         $this->root_label = $root_label;
-        $this->data_id = $data_id;
+        $this->assigned_label_id = $assigned_label->id;
         $this->moderator = $moderator;
 
         parent::__construct();
@@ -82,7 +83,7 @@ class LabelsKeyboard extends yii\base\BaseObject
     {
         $callback_data = new CallbackData($this->moderator);
         $callback_data->type = CallbackData::LABEL_KEY_PRESSED;
-        $callback_data->data = $this->data_id .':'. $label->id;
+        $callback_data->data = $this->assigned_label_id .':'. $label->id;
 
         if (!$label->children) {
             $label->text = '✅ ' . $label->text;
@@ -103,7 +104,7 @@ class LabelsKeyboard extends yii\base\BaseObject
     {
         $callback_data = new CallbackData($this->moderator);
         $callback_data->type = CallbackData::NEXT_KEY_PRESSED;
-        $callback_data->data = $this->data_id .':'. 0;    
+        $callback_data->data = $this->assigned_label_id .':'. 0;    
 
         return [
             'text' => 'Next data 👉🏻',
@@ -120,7 +121,7 @@ class LabelsKeyboard extends yii\base\BaseObject
     {
         $callback_data = new CallbackData($this->moderator);
         $callback_data->type = CallbackData::BACK_KEY_PRESSED;
-        $callback_data->data = $this->data_id .':'. $this->root_label->parent_label_id;    
+        $callback_data->data = $this->assigned_label_id .':'. $this->root_label->parent_label_id;    
 
         return [
             'text' => '👈🏻 Back',

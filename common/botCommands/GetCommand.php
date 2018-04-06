@@ -8,6 +8,7 @@ use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
 use common\models\Moderator;
 use common\models\Task;
+use common\models\Data;
 use common\models\Label;
 use common\domain\ethereum\Address;
 use common\components\LabelsKeyboard;
@@ -80,8 +81,9 @@ class GetCommand extends AuthenticatedUserCommand
             return Request::sendMessage($req_data);        	
         }
 
-        $data = $task->getDataForLabelAssignment($this->moderator->id);
-        if ($data === null) {
+        $assignedLabel = $task->getDataForLabelAssignment($this->moderator->id);
+
+        if ($assignedLabel === null) {
             $req_data = [
                     'chat_id' => $this->chat_id,
                     'text'    => 'Сurrently, there is no data to markup in this task. Please, try to get data for this task later.',
@@ -89,6 +91,7 @@ class GetCommand extends AuthenticatedUserCommand
             return Request::sendMessage($req_data);
         }
 
+        $data = Data::findOne($assignedLabel->data_id);
         // TODO: We need to delete data with empty texts on Dataset upload,
         // because Telegram don't send/edit message with empty text!!
         if (!trim($data->data)) {
@@ -100,7 +103,7 @@ class GetCommand extends AuthenticatedUserCommand
             'parent_label_id' => 0
         ]);
 
-        $inline_keyboard = new LabelsKeyboard($rootLabel, $data->id, $this->moderator);
+        $inline_keyboard = new LabelsKeyboard($rootLabel, $assignedLabel, $this->moderator);
 
         $req_data = [
             'chat_id'                  => $this->chat_id,
