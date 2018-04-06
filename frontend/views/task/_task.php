@@ -50,7 +50,13 @@ $detailUrl = Url::toRoute([$task->status < Task::STATUS_CONTRACT_ACTIVE ? 'task/
             <?php
                 if ($action = $view->getNextAction()) {
                     ?>
-                    <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>  js-btn-release" style="margin-right: 10px;">
+                    <a
+                        href="<?=$action->getUrl() ?: 'javascript:void(0);'?>"
+                        class="<?=$action->getOptions()['class']?>  js-btn-release"
+                        data-id="<?=$task->id?>"
+                        data-contract-address="<?=$task->contract_address?>"
+                        style="margin-right: 10px;"
+                    >
                         <?=$action->getLabel()?>
                     </a>
                     <?php
