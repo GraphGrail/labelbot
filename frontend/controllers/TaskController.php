@@ -326,9 +326,9 @@ class TaskController extends \yii\web\Controller
         if ($contractStatus->workItemsLeft > 0 && $contractStatus->workItemsBalance > 0) {
             $task->status = Task::STATUS_CONTRACT_ACTIVE;
         }
-        // TODO: use canFinalize if it works
-        if ($contractStatus->workItemsLeft === 0) {
-            $task->status = $contractStatus->canFinalize ? Task::STATUS_CONTRACT_ACTIVE_COMPLETED : Task::STATUS_CONTRACT_ACTIVE;
+
+        if ($contractStatus->workItemsLeft === 0 && $contractStatus->canFinalize === true) {
+            $task->status = Task::STATUS_CONTRACT_ACTIVE_COMPLETED;
         }
 
         $task->save();
