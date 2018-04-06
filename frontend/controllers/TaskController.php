@@ -319,12 +319,10 @@ class TaskController extends \yii\web\Controller
             $task->declineWorkItems($moderator, $num);
         }
 
+        $task->status = Task::STATUS_CONTRACT_ACTIVE;
+
         if ($contractStatus->workItemsLeft > 0 && $contractStatus->workItemsBalance === 0) {
             $task->status = Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
-        }
-
-        if ($contractStatus->workItemsLeft > 0 && $contractStatus->workItemsBalance > 0) {
-            $task->status = Task::STATUS_CONTRACT_ACTIVE;
         }
 
         if ($contractStatus->workItemsLeft === 0 && $contractStatus->canFinalize === true) {
