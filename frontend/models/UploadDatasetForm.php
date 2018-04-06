@@ -49,16 +49,13 @@ class UploadDatasetForm extends Model
             // TODO: add error to $model
             return false;
         }
+        $filePath = $dataset->id .'-'. $dataset->user_id .'.'. $this->datasetFile->extension;
 
-        $datasetsDir = Yii::getAlias(Yii::$app->params['datasetsUploadDir']);
+        /** @var \yii2tech\filestorage\local\Storage $fileStorage */
+        $fileStorage = Yii::$app->fileStorage;
+        $bucket = $fileStorage->getBucket('datasets');
 
-        if (!file_exists($datasetsDir)) {
-            mkdir($datasetsDir, 0777, true);
-        }
-
-        $filePath = $datasetsDir . $dataset->id .'-'. $dataset->user_id .'.'. $this->datasetFile->extension;
-        
-        if (!$this->datasetFile->saveAs($filePath)) {
+        if(!$bucket->moveFileIn($this->datasetFile->tempName, $filePath)) {
             $dataset->updateStatus(Dataset::STATUS_UPLOADING_ERROR);
             return false;
         }

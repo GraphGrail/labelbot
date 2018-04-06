@@ -626,7 +626,7 @@ class TaskController extends \yii\web\Controller
 
     private function createTaskResultFileName(Task $task)
     {
-        return sprintf('task_%s_result.csv', $task->id);
+        return sprintf('%s_task_result.csv', $task->id);
     }
 
     /**
