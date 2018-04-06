@@ -48,6 +48,7 @@ $this->registerJs("
 
     ggEth.activeTransactionFinishedPromise()
       .then(_ => {
+        notifyCheckEthClient()
         return ggEth.transferTokensTo(contractAddress, tokensValue)
       })
       .catch(err => {

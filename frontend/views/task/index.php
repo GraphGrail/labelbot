@@ -72,6 +72,7 @@ $this->registerJs("
         $(this).attr('disabled', true).addClass('m-loader m-loader--right')
         ggEth.activeTransactionFinishedPromise()
           .then(_ => {
+            notifyCheckEthClient()
             return ggEth.finalizeContract(contractAddress)
           })
           .catch(err => {

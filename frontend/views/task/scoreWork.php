@@ -65,6 +65,7 @@ $this->registerJs("
 
     ggEth.activeTransactionFinishedPromise()
       .then(_ => {
+        notifyCheckEthClient()
         return ggEth.scoreWork(contractAddress, workers)
       })
       .catch(err => {
@@ -112,7 +113,8 @@ $this->registerJs("
         $('.m-portlet__head-caption').addClass('m-loader m-loader--success')
         
         ggEth.activeTransactionFinishedPromise()
-          .then(_ => {           
+          .then(_ => {    
+            notifyCheckEthClient()       
             return ggEth.finalizeContract(contractAddress)
           })
           .catch(err => {

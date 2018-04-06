@@ -71,6 +71,7 @@ $this->registerJs("
         
         ggEth.activeTransactionFinishedPromise()
           .then(_ => {
+            notifyCheckEthClient()
             return ggEth.finalizeContract(contractAddress)
           })
           .catch(err => {

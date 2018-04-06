@@ -16,3 +16,12 @@ function showEthCreditAlert(taskId, contractAddress) {
     }
     container.show();
 }
+
+function notifyCheckEthClient() {
+    swal({
+        position: 'top-right',
+        title: '<span class="text-success"><i class="fa fa-check"></i> Check your Etherium client</span>',
+        showConfirmButton: false,
+        timer: 2500,
+    });
+}
