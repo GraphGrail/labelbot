@@ -253,6 +253,22 @@ class Task extends ActiveRecord
         return $count;
     }
 
+    public function isContractNew()
+    {
+        return $this->status == self::STATUS_CONTRACT_NEW;
+    }
+
+    public function isContractActive()
+    {
+        return $this->status == self::STATUS_CONTRACT_ACTIVE;
+    }
+
+    public function setContractActive($save = true)
+    {
+        $this->status = self::STATUS_CONTRACT_ACTIVE;
+        $save && $this->save(false, ['status']);
+        return $this;
+    }
 
     public function isPaused()
     {

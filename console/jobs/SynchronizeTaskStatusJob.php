@@ -45,6 +45,11 @@ class SynchronizeTaskStatusJob extends BaseObject implements JobInterface
         try {
             $ethStatus = $blockchain->contractStatus($this->task->contractAddress());
             switch ($ethStatus->state) {
+                case 'ACTIVE':
+                    if ($this->task->isContractNew()) {
+                        $this->markAsActive();
+                    }
+                    break;
                 case 'FINALIZED':
                     $this->markAsFinalized();
                     break;
@@ -73,5 +78,13 @@ class SynchronizeTaskStatusJob extends BaseObject implements JobInterface
             return;
         }
         $this->task->setForceFinalizing();
+    }
+
+    private function markAsActive()
+    {
+        if ($this->task->isContractActive()) {
+            return;
+        }
+        $this->task->setContractActive();
     }
 }
