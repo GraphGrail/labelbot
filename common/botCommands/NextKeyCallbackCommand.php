@@ -60,17 +60,11 @@ class NextKeyCallbackCommand extends AuthenticatedUserCommand
     {
         $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
         $verified_callback_data = $callback_data->getVerifiedData();
-        list($this->data_id, $this->label_id) = explode(':', $verified_callback_data);
+        list($assigned_label_id, $label_id) = explode(':', $verified_callback_data);
 
-        //if ($this->labelHasChildrenLabels() || $this->labelWasAssignedEalier()) return;
+        $assignedLabel = AssignedLabel::findOne($assigned_label_id);
 
-        $assignedLabel = AssignedLabel::findOne([
-            'data_id'       => $this->data_id,
-            'moderator_id'  => $this->moderator->id,
-            'status'        => AssignedLabel::STATUS_IN_HAND
-        ]);
-
-        if ($assignedLabel === null) {
+        if ($assignedLabel === null || $assignedLabel->status != AssignedLabel::STATUS_IN_HAND) {
             return $this->telegram->executeCommand('get');
         }
 

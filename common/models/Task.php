@@ -173,9 +173,9 @@ class Task extends ActiveRecord
     }
     
 
-    public function getDataForLabelAssignment(int $moderator_id) : ?Data
+    public function getDataForLabelAssignment(int $moderator_id) : ?AssignedLabel
     {
-        //AssignedLabel::deleteUnassignedLabels();
+        AssignedLabel::handleSkippedLabels();
 
         // Are moderator start new workItem or not?
         if ($this->isGettingNewWorkItem($moderator_id)) {
@@ -214,9 +214,7 @@ class Task extends ActiveRecord
         $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
         $assigned_label->save();
 
-        $data = Data::findOne($assigned_label->data_id);
-
-        return $data;
+        return $assigned_label;
     }
 
     private function isGettingNewWorkItem(int $moderator_id) : bool
@@ -248,7 +246,7 @@ class Task extends ActiveRecord
         $count = AssignedLabel::find()
             ->select('moderator_id')
             ->where(['task_id' => $this->id])
-            ->andWhere(['OR', ['status' => AssignedLabel::STATUS_IN_HAND], ['status' => AssignedLabel::STATUS_READY]])
+            ->andWhere(['in', 'status', [AssignedLabel::STATUS_IN_HAND, AssignedLabel::STATUS_READY, AssignedLabel::STATUS_SKIPPED]])
             ->groupBy('moderator_id')
             ->count();
 

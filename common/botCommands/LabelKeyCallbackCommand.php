@@ -46,7 +46,7 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
     /**
      * @var int
      */
-    protected $data_id;
+    protected $assigned_label;
 
     /**
      * @var int
@@ -68,17 +68,10 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
     {
         $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
         $verified_callback_data = $callback_data->getVerifiedData();
-        list($this->data_id, $this->label_id) = explode(':', $verified_callback_data);
-
-        if ($this->labelHasChildrenLabels() || $this->labelWasAssignedEalier()) return;
-
-        $assignedLabel = AssignedLabel::findOne([
-            'data_id'       => $this->data_id,
-            'moderator_id'  => $this->moderator->id,
-            'status'        => AssignedLabel::STATUS_IN_HAND
-        ]);
-
-        if ($assignedLabel === null) {
+        list($assigned_label_id, $this->label_id) = explode(':', $verified_callback_data);
+        
+        $this->assigned_label = AssignedLabel::findOne($assigned_label_id);
+        if ($this->assigned_label === null || $this->assigned_label->status !== AssignedLabel::STATUS_IN_HAND) {
             $req_data = [
                 'callback_query_id' => $this->callback_query_id,
                 'text'              => 'Error: label was not confirmed',
@@ -89,10 +82,12 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
             return $this->telegram->executeCommand('get');
         }
 
-        $assignedLabel->status = AssignedLabel::STATUS_READY;            
-        $assignedLabel->label_id = $this->label_id;
+        if ($this->labelHasChildrenLabels() || $this->labelWasAssignedEalier()) return;
 
-        if (!$assignedLabel->save()) {
+        $this->assigned_label->status = AssignedLabel::STATUS_READY;            
+        $this->assigned_label->label_id = $this->label_id;
+
+        if (!$this->assigned_label->save()) {
             // TODO: log error
         }
 
@@ -109,7 +104,7 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
         $root_label = Label::findOne($this->label_id);
 
         if ($root_label && $root_label->children) {
-            $inline_keyboard = new LabelsKeyboard($root_label, $this->data_id, $this->moderator);
+            $inline_keyboard = new LabelsKeyboard($root_label, $this->assigned_label, $this->moderator);
             $req_data = [
                 'chat_id'      => $this->chat_id,
                 'message_id'   => $this->message_id,
@@ -130,15 +125,7 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
      */
     private function labelWasAssignedEalier()
     {
-        $earlierAssignedLabel = AssignedLabel::find()
-            ->where([
-                'data_id'      => $this->data_id,
-                'moderator_id' => $this->moderator->id            
-            ])
-            ->andWhere(new \yii\db\Expression('label_id IS NOT NULL'))
-            ->one();
-
-        if ($earlierAssignedLabel) {
+        if (in_array($this->assigned_label->status, [AssignedLabel::STATUS_READY, AssignedLabel::STATUS_APPROVED, AssignedLabel::STATUS_DECLINED])) {
             $req_data = [
                 'callback_query_id' => $this->callback_query_id,
                 'text'              => 'This data was labeled already',
