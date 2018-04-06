@@ -81,7 +81,7 @@ $this->registerJs("
               case 'TRANSACTION_ALREADY_RUNNING':
                 return showEthClientError('Oops! Transaction already running. Reload page')
               case 'INSUFFICIENT_ETHER_BALANCE':
-                return showEthClientError('Oops! Not enough ether')
+                return showEthCreditAlert()
               case 'INSUFFICIENT_TOKEN_BALANCE':
                 return showEthClientError('Oops! Not enough tokens')
               default:
@@ -105,6 +105,9 @@ $this->registerJs("
     <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
     <div class="m-alert__text"></div>
 </div>
+
+<?=$this->render('_credit', ['task' => $task])?>
+
 <input type="hidden" class="form-control m-input js-workers-source" disabled="disabled" value="<?=$view->getTableSourceAsJson()?>" />
 <div class="m-portlet m-portlet--mobile">
     <div class="m-portlet__head">

@@ -81,17 +81,7 @@ $this->registerJs("
       <div class="m-alert__text"></div>
     </div>
 
-  	<div class="m-alert m-alert--icon alert alert-danger js-credit-invitation" role="alert" style="display:none">
-	  <div class="m-alert__icon">
-		<i class="flaticon-danger"></i>
-	  </div>
-	  <div class="m-alert__text">
-		<?=Yii::t('app', 'You haven\'t enough ethereum or tokens in your wallet. Please, get free credit.') ?>
-	  </div>
-	  <div class="m-alert__actions" style="width: 220px;">
-		<?=Html::tag('button', 'Get credit', ['class' => 'btn btn-link btn-outline-light btn-sm m-btn m-btn--hover-secondary js-get-credit']) ?>
-	  </div>
-	</div>
+      <?=$this->render('_credit', ['task' => $task])?>
 
     <div class="m-portlet m-portlet--tab">
       <div class="m-portlet__body m-portlet__body--no-padding">

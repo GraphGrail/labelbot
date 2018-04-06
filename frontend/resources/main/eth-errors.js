@@ -4,3 +4,7 @@ function showEthClientError(message) {
     container.show();
     return false;
 }
+
+function showEthCreditAlert() {
+    $('.js-credit-invitation').show();
+}
