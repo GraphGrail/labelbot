@@ -9,3 +9,7 @@
 $schedule
     ->command('blockchain/update-completed-work')
     ->hourly();
+
+$schedule
+    ->command('blockchain/sync-status')
+    ->everyFiveMinutes();

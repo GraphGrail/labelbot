@@ -8,6 +8,7 @@ namespace console\jobs;
 
 use common\components\EthereumGateway;
 use common\models\Task;
+use common\models\task\QueueTask;
 use yii\base\BaseObject;
 use yii\log\Logger;
 use yii\queue\JobInterface;
@@ -38,6 +39,8 @@ class SynchronizeTaskStatusJob extends BaseObject implements JobInterface
      */
     public function execute($queue)
     {
+        QueueTask::freeTask($this->task, $this);
+
         $blockchain = new EthereumGateway;
         try {
             $ethStatus = $blockchain->contractStatus($this->task->contractAddress());

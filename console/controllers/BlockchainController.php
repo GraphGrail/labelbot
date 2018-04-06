@@ -3,6 +3,8 @@
 namespace console\controllers;
 
 use common\models\Task;
+use common\models\task\QueueTask;
+use console\jobs\SynchronizeTaskStatusJob;
 use console\jobs\UpdateCompletedWorkJob;
 use yii\console\ExitCode;
 use yii\log\Logger;
@@ -31,7 +33,7 @@ class BlockchainController extends \yii\console\Controller
 
             foreach ($tasks as $task) {
                 try {
-                    $this->addToQueue($task);
+                    $this->addUpdateWorkJobToQueue($task);
                 } catch (\Exception $e) {
                     \Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
                 }
@@ -42,7 +44,7 @@ class BlockchainController extends \yii\console\Controller
         return ExitCode::OK;
     }
 
-    protected function addToQueue(Task $task)
+    protected function addUpdateWorkJobToQueue(Task $task)
     {
         $id = \Yii::$app->queue->push(new UpdateCompletedWorkJob([
             'taskId' => $task->id,
@@ -50,5 +52,36 @@ class BlockchainController extends \yii\console\Controller
 
         $task->delivering_job_id = $id;
         return $task->save(false, ['delivering_job_id']);
+    }
+
+    public function actionSyncStatus()
+    {
+        $tasks = Task::find()
+            ->contractActive()
+            ->all()
+        ;
+
+        foreach ($tasks as $task) {
+            try {
+                $this->addSyncStatusJobToQueue($task);
+            } catch (\Exception $e) {
+                \Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
+            }
+        }
+    }
+
+    protected function addSyncStatusJobToQueue(Task $task)
+    {
+        $job = new SynchronizeTaskStatusJob([
+            'taskId' => $task->id,
+        ]);
+        if (QueueTask::hasTask($task, $job)) {
+            return;
+        }
+        QueueTask::addTask($task, $job);
+
+
+        \Yii::$app->queue->push($job);
+
     }
 }
