@@ -204,7 +204,7 @@ class Task extends ActiveRecord
         $assigned_label = AssignedLabel::find()
             ->where(['task_id'=>$this->id])
             ->andWhere(['in', 'status', [AssignedLabel::STATUS_NEW, AssignedLabel::STATUS_SKIPPED]])
-            ->orderBy('status')
+            ->orderBy('updated_at')
             ->one();
 
         if ($assigned_label === null) return null;
@@ -246,7 +246,7 @@ class Task extends ActiveRecord
         $count = AssignedLabel::find()
             ->select('moderator_id')
             ->where(['task_id' => $this->id])
-            ->andWhere(['in', 'status', [AssignedLabel::STATUS_IN_HAND, AssignedLabel::STATUS_READY, AssignedLabel::STATUS_SKIPPED]])
+            ->andWhere(['in', 'status', [AssignedLabel::STATUS_IN_HAND, AssignedLabel::STATUS_READY]])
             ->groupBy('moderator_id')
             ->count();
 
