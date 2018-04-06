@@ -270,6 +270,18 @@ class Task extends ActiveRecord
         return $this;
     }
 
+    public function isContractDeploying()
+    {
+        return $this->status == self::STATUS_CONTRACT_DEPLOYMENT_PROCESS;
+    }
+
+    public function setContractDeploymentError($save = true)
+    {
+        $this->status = self::STATUS_CONTRACT_DEPLOYMENT_ERROR;
+        $save && $this->save(false, ['status']);
+        return $this;
+    }
+
     public function isPaused()
     {
         return $this->status == self::STATUS_CONTRACT_ACTIVE_PAUSED;
