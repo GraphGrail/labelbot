@@ -69,7 +69,7 @@ $this->registerJs("
             return;
         }        
        
-        $(this).attr('disabled', true)
+        $(this).attr('disabled', true).addClass('m-loader m-loader--right')
         ggEth.activeTransactionFinishedPromise()
           .then(_ => {
             return ggEth.finalizeContract(contractAddress)
@@ -94,7 +94,7 @@ $this->registerJs("
                 return
             }
             syncStatus(taskId)
-            setTimeout(() => {window.location.reload()}, 2000);
+            setTimeout(() => {window.location.reload()}, 3000);
           })
       })
   }();
