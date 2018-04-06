@@ -93,48 +93,18 @@ $this->registerJs("
       }
     
       const ggEth = graphGrailEther
-      const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
-      const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-      const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'  
-       
-    
+         
       let clientAddress
       const contractAddress = $('.js-contract-address').val();
-      
-      ggEth.init(tokenContractAddress, expectedNetworkId, internalApi)
-        .catch(err => {
-            console.log(err.code + ' ' + err);
-            switch(err.code) {
-                case 'ALREADY_INITIALIZED':
-                    return ggEth.getClientAddress();
-                case 'INVALID_ETHEREUM_ADDRESS':
-                    return showEthClientError(err);
-                case 'NO_ACCOUNTS':
-                    return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
-                case 'NO_ETHEREUM_CLIENT':
-                    return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
-                case 'WRONG_NETWORK':
-                    return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
-                default:
-                    return showEthClientError(err)
-            }
-        })
-        .then(address => {
-             clientAddress = address
-        })
-        .catch(err => {
-            console.log(err);
-            showEthClientError(err)
-        })
     
   
-      $('.finalize-task-btn').on('click', e => {
+      $('.finalize-task-btn').on('click', function(e) {
         e.preventDefault();
     
         if (!clientAddress) {
             return;
         }
-        $('.finalize-task-btn').attr('disabled', true)
+        $(this).attr('disabled', true)
         ggEth.activeTransactionFinishedPromise()
           .then(_ => {
             return ggEth.finalizeContract(contractAddress)
