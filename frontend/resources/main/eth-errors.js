@@ -5,6 +5,14 @@ function showEthClientError(message) {
     return false;
 }
 
-function showEthCreditAlert() {
-    $('.js-credit-invitation').show();
+function showEthCreditAlert(taskId, contractAddress) {
+    let container = $('.js-credit-invitation');
+
+    if (taskId) {
+        let link = container.find('.credit-action a');
+        let route = 'task/' + taskId + '/get-credit?address=' + contractAddress;
+
+        link.attr('href', route);
+    }
+    container.show();
 }

@@ -18,7 +18,7 @@ use yii\helpers\Url;
     <div class="m-alert__text">
         <?=Yii::t('app', 'You haven\'t enough ethereum or tokens in your wallet. Please, get free credit.') ?>
     </div>
-    <div class="m-alert__actions" style="width: 220px;">
+    <div class="m-alert__actions credit-action" style="width: 220px;">
         <?=Html::tag('a', 'Get credit', [
             'class' => 'btn btn-link btn-outline-light btn-sm m-btn m-btn--hover-secondary js-get-credit',
             'href' => isset($task) ? Url::toRoute(['task/get-credit', 'id' => $task->id, 'address' => $task->contract_address]) : 'javascript:void(0);',

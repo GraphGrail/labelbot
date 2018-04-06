@@ -67,7 +67,7 @@ $this->registerJs("
         }
         if (!clientAddress) {
             return;
-        }        
+        }
        
         $(this).attr('disabled', true).addClass('m-loader m-loader--right')
         ggEth.activeTransactionFinishedPromise()
@@ -82,7 +82,7 @@ $this->registerJs("
               case 'TRANSACTION_ALREADY_RUNNING':
                 return showEthClientError('Oops! Transaction already running. Reload page')
               case 'INSUFFICIENT_ETHER_BALANCE':
-                return showEthClientError('Oops! Not enough ether')
+                return showEthCreditAlert(taskId, contractAddress)
               case 'INSUFFICIENT_TOKEN_BALANCE':
                 return showEthClientError('Oops! Not enough tokens')
               default:
@@ -107,6 +107,9 @@ $this->registerJs("
             <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
             <div class="m-alert__text"></div>
         </div>
+
+        <?=$this->render('_credit')?>
+
         <!--begin:: Widgets/Support Tickets -->
         <div class="m-portlet m-portlet--full-height  ">
             <div class="m-portlet__head">
