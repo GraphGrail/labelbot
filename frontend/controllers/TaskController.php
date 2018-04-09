@@ -84,8 +84,7 @@ class TaskController extends \yii\web\Controller
                 ->ownedByUser()
                 ->undeleted()
                 ->one();
-            if ($labelGroup === null) $model->total_work_items;
-
+            if ($labelGroup === null) throw new \Exception("Incorrect labelGroup_id");
             // We must save actual workItemSize on the moment of Task creation and use it later 
             // in operations belong to this Task, coz workItemSize in config can be modified.
             $model->work_item_size = Yii::$app->params['workItemSize'];
