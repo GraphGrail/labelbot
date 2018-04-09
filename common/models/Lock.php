@@ -19,7 +19,7 @@ class Lock extends ActiveRecord
         $result = false;
         try {
             $lock = new static();
-            $lock->setAttributes($lock->createParams($object));
+            $lock->setAttributes($lock->createParams($object), false);
             $result = $lock->save();
         } catch (\Exception $e) {
             //Mysql duplicate key
