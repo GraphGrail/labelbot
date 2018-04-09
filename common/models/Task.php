@@ -210,6 +210,7 @@ class Task extends ActiveRecord
         if ($assigned_label === null) return null;
 
         // We update AssignedLabel with STATUS_IN_HAND to prevent other moderators to get same data at one moment.
+        //todo race condition. Need to use db table with uniq index
         $assigned_label->moderator_id = $moderator_id;
         $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
         $assigned_label->save();
