@@ -201,10 +201,10 @@ class Task extends ActiveRecord
             }
         }
 
-        if (!$work = $this->getFreeWork()) {
+        if (!$work = $this->getUndoneWork($moderator_id) ?: $this->getFreeWork()) {
             return null;
         }
-        if ($work->moderator_id) {
+        if ($work->moderator_id && $work->moderator_id != $moderator_id) {
             throw new \Exception('Work is not free');
         }
 
@@ -402,6 +402,26 @@ class Task extends ActiveRecord
             sleep(1);
         }
         return $locked;
+    }
+
+    public function getUndoneWork($moderatorId): ?WorkItem
+    {
+        /** @var WorkItem[] $works */
+        if (!$works = WorkItem::find()
+            ->where(['task_id' => $this->id])
+            ->andWhere(['moderator_id' => $moderatorId])
+            ->all()
+        ) {
+            return null;
+        }
+
+        foreach ($works as $work) {
+            if ($work->items == $work->getAssigned()->count()) {
+                continue;
+            }
+            return $work;
+        }
+        return null;
     }
 
 }

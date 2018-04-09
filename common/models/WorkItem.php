@@ -60,4 +60,9 @@ class WorkItem extends ActiveRecord
         Lock::free($this);
         return true;
     }
+
+    public function getAssigned()
+    {
+        return $this->hasMany(AssignedLabel::class, ['work_item_id' => 'id']);
+    }
 }

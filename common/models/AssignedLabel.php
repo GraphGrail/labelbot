@@ -11,6 +11,7 @@ use Yii;
  * @property int $data_id
  * @property int $label_id
  * @property int $moderator_id
+ * @property int $work_item_id
  * @property int $created_at
  * @property int $updated_at
  */
