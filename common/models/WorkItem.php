@@ -42,4 +42,14 @@ class WorkItem extends ActiveRecord
     {
 
     }
+
+    public function lock(): bool
+    {
+
+    }
+
+    public function free(): bool
+    {
+
+    }
 }
