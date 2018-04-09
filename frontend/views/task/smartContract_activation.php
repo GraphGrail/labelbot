@@ -15,7 +15,7 @@ $this->registerJs("
   let clientAddress
   const contractAddress = $('.js-contract-address').val();
 
-  ggEth.init(tokenContractAddress, expectedNetworkId, internalApi)
+  ggEth.init(tokenContractAddress, expectedNetworkId)
     .catch(err => {
       console.log(err.code + ' ' + err)
       switch(err.code) {
@@ -46,6 +46,7 @@ $this->registerJs("
 
     ggEth.activeTransactionFinishedPromise()
       .then(_ => {
+        notifyCheckEthClient()
         return ggEth.activateContract(contractAddress)
       })
       .catch(err => {

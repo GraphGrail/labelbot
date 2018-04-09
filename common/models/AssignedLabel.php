@@ -136,7 +136,7 @@ class AssignedLabel extends \yii\db\ActiveRecord
                 WHERE task_id=:task_id
                     AND moderator_id=:moderator_id
                     AND status=:old_status
-                ORDER BY id ASC 
+                ORDER BY updated_at ASC 
                 LIMIT ' . $limit)
             ->bindParam(':new_status',   $to_status)
             ->bindParam(':task_id',      $task_id)
@@ -145,5 +145,32 @@ class AssignedLabel extends \yii\db\ActiveRecord
             ->execute();
 
         return $updates;       
+    }
+
+    public static function copyDeclinedToNew(int $task_id, int $moderator_id, int $limit)
+    {
+        $declinedLabels = (new \yii\db\Query)
+            ->select(['data_id'])
+            ->from(AssignedLabel::tableName())
+            ->where([
+                'task_id' => $task_id,
+                'moderator_id' => $moderator_id,
+                'status' => AssignedLabel::STATUS_DECLINED
+            ])
+            ->orderBy('updated_at ASC') // !
+            ->limit($limit)
+            ->all();
+
+        $timestamp = time();
+        $dataToInsert = [];
+        foreach (array_reverse($declinedLabels) as $declinedLabel) {
+            $dataToInsert []= [$task_id, $declinedLabel['data_id'], AssignedLabel::STATUS_NEW, $timestamp, $timestamp];
+        }
+        Yii::$app->db->createCommand()->batchInsert(
+            AssignedLabel::tableName(), 
+            ['task_id', 'data_id', 'status', 'created_at', 'updated_at'], 
+            $dataToInsert
+        )->execute();
+              
     }
 }

@@ -23,7 +23,7 @@ $this->registerJs("
   let clientAddress
   const contractAddress = $('.js-contract-address').val();
 
-  ggEth.init(tokenContractAddress, expectedNetworkId, internalApi)  
+  ggEth.init(tokenContractAddress, expectedNetworkId)  
     .catch(err => {
       console.log(err.code + ' ' + err)
       switch(err.code) {
@@ -47,6 +47,10 @@ $this->registerJs("
     .catch(err => {
       showEthClientError(err)
     })
+    
+    $('.js-get-credit').on('click', e => {
+		window.location = 'get-credit/' + clientAddress; 
+	})
 
 
   $('.js-btn-score-work').on('click', e => {
@@ -65,16 +69,24 @@ $this->registerJs("
 
     ggEth.activeTransactionFinishedPromise()
       .then(_ => {
+        notifyCheckEthClient()
         return ggEth.scoreWork(contractAddress, workers)
       })
       .catch(err => {
         console.log(err.code + ' ' + err)
         switch(err.code) {
-          case 'TEST_ERROR':
-            alert('error')
-          // TODO: обработка всех вариантов ошибок
+          case 'ALREADY_INITIALIZED':
+            return ggEth.getClientAddress()
+          case 'NO_ACCOUNTS':
+            return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
+          case 'NO_ETHEREUM_CLIENT':
+            return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
+          case 'WRONG_NETWORK':
+            return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
+          case 'INSUFFICIENT_ETHER_BALANCE':
+            return showEthCreditAlert();
           default:
-            alert(err)
+            return showEthClientError(err)
         }
       })
       .then(_ => {
@@ -105,7 +117,8 @@ $this->registerJs("
         $('.m-portlet__head-caption').addClass('m-loader m-loader--success')
         
         ggEth.activeTransactionFinishedPromise()
-          .then(_ => {           
+          .then(_ => {    
+            notifyCheckEthClient()       
             return ggEth.finalizeContract(contractAddress)
           })
           .catch(err => {
@@ -116,7 +129,7 @@ $this->registerJs("
               case 'TRANSACTION_ALREADY_RUNNING':
                 return showEthClientError('Oops! Transaction already running. Reload page')
               case 'INSUFFICIENT_ETHER_BALANCE':
-                return showEthClientError('Oops! Not enough ether')
+                return showEthCreditAlert();
               case 'INSUFFICIENT_TOKEN_BALANCE':
                 return showEthClientError('Oops! Not enough tokens')
               default:
@@ -167,6 +180,9 @@ $this->registerJs("
     <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
     <div class="m-alert__text"></div>
 </div>
+
+<?=$this->render('_credit')?>
+
 <input type="hidden" class="js-workers-source" disabled="disabled" value="<?=htmlspecialchars(json_encode($contractStatus->workers))?>" />
 <div class="m-portlet m-portlet--mobile">
     <div class="m-portlet__head">

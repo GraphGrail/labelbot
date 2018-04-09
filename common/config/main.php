@@ -55,12 +55,16 @@ return [
         ],
         'fileStorage' => [
             'class' => \yii2tech\filestorage\local\Storage::class,
-            'basePath' => '@frontend/web/files',
-            'dirPermission' => 0775,
-            'filePermission' => 0755,
+            'basePath' => '@fileStorage',
+            'dirPermission' => 0777, //менять только если очередь работает от того же пользователя что и фронт
+            'filePermission' => 0777,
             'buckets' => [
                 'result' => [
                     'baseSubPath' => 'result',
+                    'fileSubDirTemplate' => '{^name}/{^^name}',
+                ],
+                'datasets' => [
+                    'baseSubPath' => 'datasets',
                     'fileSubDirTemplate' => '{^name}/{^^name}',
                 ],
             ]

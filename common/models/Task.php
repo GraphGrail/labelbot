@@ -210,6 +210,7 @@ class Task extends ActiveRecord
         if ($assigned_label === null) return null;
 
         // We update AssignedLabel with STATUS_IN_HAND to prevent other moderators to get same data at one moment.
+        //todo race condition. Need to use db table with uniq index
         $assigned_label->moderator_id = $moderator_id;
         $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
         $assigned_label->save();
@@ -349,15 +350,23 @@ class Task extends ActiveRecord
         $readyWorkItems = $this->readyWorkItemsNumber($moderator);
         if ($readyWorkItems < $num) return false;
 
-        $updates = AssignedLabel::updateStatuses(
-            $this->id,
-            AssignedLabel::STATUS_READY,
-            AssignedLabel::STATUS_DECLINED,
-            $moderator->id,
-            $this->work_item_size * $num
-        );
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            AssignedLabel::updateStatuses(
+                $this->id,
+                AssignedLabel::STATUS_READY,
+                AssignedLabel::STATUS_DECLINED,
+                $moderator->id,
+                $this->work_item_size * $num
+            );
+            AssignedLabel::copyDeclinedToNew($this->id, $moderator->id, $this->work_item_size * $num);
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            return false;
+        }
 
-        return $updates ? true : false;
+        return true;
     }
 
 }

@@ -319,15 +319,13 @@ class TaskController extends \yii\web\Controller
             $task->declineWorkItems($moderator, $num);
         }
 
+        $task->status = Task::STATUS_CONTRACT_ACTIVE;
+
         if ($contractStatus->workItemsLeft > 0 && $contractStatus->workItemsBalance === 0) {
             $task->status = Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
         }
 
-        if ($contractStatus->workItemsLeft > 0 && $contractStatus->workItemsBalance > 0) {
-            $task->status = Task::STATUS_CONTRACT_ACTIVE;
-        }
-        // TODO: use canFinalize if it works
-        if ($contractStatus->workItemsLeft === 0) {
+        if ($contractStatus->workItemsLeft === 0 && $contractStatus->canFinalize === true) {
             $task->status = Task::STATUS_CONTRACT_ACTIVE_COMPLETED;
         }
 
@@ -626,7 +624,7 @@ class TaskController extends \yii\web\Controller
 
     private function createTaskResultFileName(Task $task)
     {
-        return sprintf('task_%s_result.csv', $task->id);
+        return sprintf('%s_task_result.csv', $task->id);
     }
 
     /**
