@@ -15,6 +15,8 @@ use yii\behaviors\TimestampBehavior;
  * @property integer task_id
  * @property integer moderator_id
  * @property integer items
+ * @property integer created_at
+ * @property integer updated_at
  */
 class WorkItem extends ActiveRecord
 {
