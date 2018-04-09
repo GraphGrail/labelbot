@@ -40,7 +40,12 @@ class WorkItem extends ActiveRecord
 
     public function getData()
     {
-
+        //todo
+        return AssignedLabel::find()
+            ->where(['task_id'=>$this->task_id])
+            ->andWhere(['in', 'status', [AssignedLabel::STATUS_NEW, AssignedLabel::STATUS_SKIPPED]])
+            ->orderBy('updated_at')
+            ->one();
     }
 
     public function lock(): bool

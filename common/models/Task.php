@@ -201,16 +201,16 @@ class Task extends ActiveRecord
             }
         }
 
-        $assigned_label = AssignedLabel::find()
-            ->where(['task_id'=>$this->id])
-            ->andWhere(['in', 'status', [AssignedLabel::STATUS_NEW, AssignedLabel::STATUS_SKIPPED]])
-            ->orderBy('updated_at')
-            ->one();
+        if (!$work = $this->getFreeWork()) {
+            return null;
+        }
+
+        /** @var AssignedLabel $assigned_label */
+        $assigned_label = $work->getData();
 
         if ($assigned_label === null) return null;
 
         // We update AssignedLabel with STATUS_IN_HAND to prevent other moderators to get same data at one moment.
-        //todo race condition. Need to use db table with uniq index
         $assigned_label->moderator_id = $moderator_id;
         $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
         $assigned_label->save();
@@ -367,6 +367,33 @@ class Task extends ActiveRecord
         }
 
         return true;
+    }
+
+    public function getFreeWork(): ?WorkItem
+    {
+        $locked = null;
+        $stopTime = time() + 60;
+
+        while (!$locked) {
+            /** @var WorkItem $work */
+            if (!$work = WorkItem::find()
+                ->where(['task_id' => $this->id])
+                ->andWhere(['moderator_id' => null])
+                ->one()
+            ) {
+                return null;
+            }
+            if (Lock::create($work)) {
+                $locked = $work;
+                break;
+            }
+            if (time() >= $stopTime) {
+                return null;
+            }
+
+            sleep(1);
+        }
+        return $locked;
     }
 
 }
