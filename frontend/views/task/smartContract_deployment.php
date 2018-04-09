@@ -14,7 +14,7 @@ $this->registerJs("
 
 	let clientAddress
 
-	ggEth.init(tokenContractAddress, expectedNetworkId, internalApi)  
+	ggEth.init(tokenContractAddress, expectedNetworkId)  
 		.catch(err => {
 			console.log(err.code + ' ' + err)
 			switch(err.code) {

@@ -16,7 +16,7 @@ $this->registerJs("
   const contractAddress = $('.js-contract-address').val();
   const tokensValue = $('.js-tokens-value').val();
 
-  ggEth.init(tokenContractAddress, expectedNetworkId, internalApi)  
+  ggEth.init(tokenContractAddress, expectedNetworkId)  
     .catch(err => {
       console.log(err.code + ' ' + err)
       switch(err.code) {
