@@ -15,6 +15,7 @@ class CreateWorkItemsJob extends \yii\base\BaseObject implements \yii\queue\JobI
 
     /**
      * @inheritdoc
+     * @throws \Exception
      */
     public function execute($queue)
     {
@@ -52,9 +53,13 @@ class CreateWorkItemsJob extends \yii\base\BaseObject implements \yii\queue\JobI
                 $rest--;
             }
             $workItem->items = $itemCount;
-
-
             $workItem->save();
+
+            $createAssignedLabelsJob = new CreateAssignedLabelsJob([
+                'task_id' => $this->task_id,
+                'work_item_id' => $workItem->id,
+            ]);
+            $createAssignedLabelsJob->execute($queue);
         }
 
         $task->status = Task::STATUS_CONTRACT_NEW_NEED_TOKENS;
