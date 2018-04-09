@@ -204,6 +204,14 @@ class Task extends ActiveRecord
         if (!$work = $this->getFreeWork()) {
             return null;
         }
+        if ($work->moderator_id) {
+            throw new \Exception('Work is not free');
+        }
+
+        $work->moderator_id = $moderator_id;
+        if ($work->save()) {
+            Lock::free($work);
+        }
 
         /** @var AssignedLabel $assigned_label */
         $assigned_label = $work->getData();
