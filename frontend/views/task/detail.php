@@ -58,6 +58,10 @@ $this->registerJs("
             console.log(err);
             showEthClientError(err)
         })
+        
+        $('.js-get-credit').on('click', e => {
+            window.location = 'get-credit/' + clientAddress; 
+        })
     
   
       $('.finalize-task-btn').on('click', e => {
@@ -107,7 +111,7 @@ $this->registerJs("
     <div class="m-alert__text"></div>
 </div>
 
-<?=$this->render('_credit', ['task' => $task])?>
+<?=$this->render('_credit')?>
 
 <input type="hidden" class="form-control m-input js-workers-source" disabled="disabled" value="<?=$view->getTableSourceAsJson()?>" />
 <div class="m-portlet m-portlet--mobile">

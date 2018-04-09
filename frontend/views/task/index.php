@@ -83,7 +83,7 @@ $this->registerJs("
               case 'TRANSACTION_ALREADY_RUNNING':
                 return showEthClientError('Oops! Transaction already running. Reload page')
               case 'INSUFFICIENT_ETHER_BALANCE':
-                return showEthCreditAlert(taskId, contractAddress)
+                return showEthCreditAlert(taskId, clientAddress)
               case 'INSUFFICIENT_TOKEN_BALANCE':
                 return showEthClientError('Oops! Not enough tokens')
               default:
