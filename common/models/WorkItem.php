@@ -45,11 +45,12 @@ class WorkItem extends ActiveRecord
 
     public function lock(): bool
     {
-
+        return Lock::create($this);
     }
 
     public function free(): bool
     {
-
+        Lock::free($this);
+        return true;
     }
 }
