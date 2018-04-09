@@ -13,6 +13,7 @@ use Yii;
 class CreateAssignedLabelsJob extends \yii\base\BaseObject implements \yii\queue\JobInterface
 {
     public $task_id;
+    public $work_item_id;
 
     /**
      * @inheritdoc
