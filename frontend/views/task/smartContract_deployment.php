@@ -14,7 +14,7 @@ $this->registerJs("
 
 	let clientAddress
 
-	ggEth.init(tokenContractAddress, expectedNetworkId, internalApi)  
+	ggEth.init(tokenContractAddress, expectedNetworkId)  
 		.catch(err => {
 			console.log(err.code + ' ' + err)
 			switch(err.code) {
@@ -81,7 +81,7 @@ $this->registerJs("
       <div class="m-alert__text"></div>
     </div>
 
-      <?=$this->render('_credit', ['task' => $task])?>
+      <?=$this->render('_credit')?>
 
     <div class="m-portlet m-portlet--tab">
       <div class="m-portlet__body m-portlet__body--no-padding">
