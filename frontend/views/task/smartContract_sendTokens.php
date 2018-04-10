@@ -36,11 +36,24 @@ $this->registerJs("
       console.log('User wallet address: ' + address)
       clientAddress = address
       $('.js-btn-transfer').attr('disabled', false)
+      return ggEth.checkBalances(address)
+    })
+    .then(balances => {
+        if (!balances) {
+            return;
+        }      
+        console.log('Ether: ' + balances.ether + ', tokens: ' + balances.ether)
+        if (balances.ether == 0 || balances.token == 0) {
+            showEthCreditAlert()
+        }
     })
     .catch(err => {
       console.log(err)
     })
 
+    $('.js-get-credit').on('click', e => {
+		window.location = 'get-credit/' + clientAddress; 
+	})
 
   $('.js-btn-transfer').on('click', e => {
     e.preventDefault();
@@ -59,9 +72,9 @@ $this->registerJs("
           case 'TRANSACTION_ALREADY_RUNNING':
             return showEthClientError('Oops! Transaction already running. Reload page')
           case 'INSUFFICIENT_ETHER_BALANCE':
-            return showEthClientError('Oops! Not enough ether')
+            return showEthCreditAlert();
           case 'INSUFFICIENT_TOKEN_BALANCE':
-            return showEthClientError('Oops! Not enough tokens')
+            return showEthCreditAlert();
           default:
             return showEthClientError(err)
         }
@@ -85,6 +98,8 @@ $this->registerJs("
           <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
           <div class="m-alert__text"></div>
       </div>
+
+      <?=$this->render('_credit')?>
 
     <div class="m-portlet m-portlet--tab">
       <div class="m-portlet__body m-portlet__body--no-padding">
