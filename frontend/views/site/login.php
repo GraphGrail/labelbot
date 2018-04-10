@@ -46,6 +46,7 @@ $errorSummaryFooter = '</span></div></div>';
                                 ],
                             ],
                         ]);
+                        $form->enableClientValidation = false;
                         $form->errorSummaryCssClass = 'custom-error-summary';
 
                         echo $form->errorSummary($loginForm, [
@@ -55,11 +56,11 @@ $errorSummaryFooter = '</span></div></div>';
                     ?>
 
                         <div class="form-group m-form__group">
-                            <?= $form->field($loginForm, 'username', ['errorOptions' => ['class' => 'hidden'],])
+                            <?= $form->field($loginForm, 'email', ['errorOptions' => ['class' => 'hidden'],])
                                 ->textInput([
                                     'autofocus' => true,
                                     'class' => 'form-control m-input',
-                                    'placeholder' => $loginForm->getAttributeLabel('username'),
+                                    'placeholder' => $loginForm->getAttributeLabel('email'),
                                     'errorOptions' => ['tag' => null],
                                 ])
                                 ->error(['tag' => null])
