@@ -201,19 +201,34 @@ class Task extends ActiveRecord
             }
         }
 
-        $assigned_label = AssignedLabel::find()
-            ->where(['task_id'=>$this->id])
-            ->andWhere(['in', 'status', [AssignedLabel::STATUS_NEW, AssignedLabel::STATUS_SKIPPED]])
-            ->orderBy('updated_at')
-            ->one();
+        $assigned_label = null;
+        $endTime = time() + 60;
+        while(true) {
+            /** @var AssignedLabel $assigned_label */
+            $assigned_label = AssignedLabel::find()
+                ->where(['task_id'=>$this->id])
+                ->andWhere(['in', 'status', [AssignedLabel::STATUS_NEW, AssignedLabel::STATUS_SKIPPED]])
+                ->andWhere(['or', 'moderator_id is null', 'moderator_id' => $moderator_id])
+                ->orderBy('updated_at')
+                ->one();
 
-        if ($assigned_label === null) return null;
+            if ($assigned_label === null) return null;
+
+            if (Lock::create($assigned_label)) {
+                break;
+            }
+            if (time() > $endTime) {
+                return null;
+            }
+            sleep(1);
+        }
 
         // We update AssignedLabel with STATUS_IN_HAND to prevent other moderators to get same data at one moment.
-        //todo race condition. Need to use db table with uniq index
         $assigned_label->moderator_id = $moderator_id;
         $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
         $assigned_label->save();
+
+        Lock::free($assigned_label);
 
         return $assigned_label;
     }
