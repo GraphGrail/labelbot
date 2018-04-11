@@ -7,7 +7,6 @@ use frontend\assets\EthGatewayAsset;
 EthGatewayAsset::register($this);
 
 $this->registerJs("
-  const ggEth = graphGrailEther
   const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
   const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
   const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'
@@ -16,12 +15,12 @@ $this->registerJs("
   const contractAddress = $('.js-contract-address').val();
   const tokensValue = $('.js-tokens-value').val();
 
-  ggEth.init(tokenContractAddress, expectedNetworkId)  
+  graphGrailEther.init(tokenContractAddress, expectedNetworkId)  
     .catch(err => {
       console.log(err.code + ' ' + err)
       switch(err.code) {
         case 'ALREADY_INITIALIZED':
-          return ggEth.getClientAddress()
+          return graphGrailEther.getClientAddress()
         case 'NO_ACCOUNTS':
             return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
         case 'NO_ETHEREUM_CLIENT':
@@ -36,7 +35,7 @@ $this->registerJs("
       console.log('User wallet address: ' + address)
       clientAddress = address
       $('.js-btn-transfer').attr('disabled', false)
-      return ggEth.checkBalances(address)
+      return graphGrailEther.checkBalances(address)
     })
     .then(balances => {
         if (!balances) {
@@ -59,10 +58,10 @@ $this->registerJs("
     e.preventDefault();
     $('.js-btn-transfer').attr('disabled', true).addClass('m-loader m-loader--right')
 
-    ggEth.activeTransactionFinishedPromise()
+    graphGrailEther.activeTransactionFinishedPromise()
       .then(_ => {
         notifyCheckEthClient()
-        return ggEth.transferTokensTo(contractAddress, tokensValue)
+        return graphGrailEther.transferTokensTo(contractAddress, tokensValue)
       })
       .catch(err => {
         console.log(err.code + ' ' + err)

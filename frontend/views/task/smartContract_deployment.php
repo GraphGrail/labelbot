@@ -7,19 +7,17 @@ use frontend\assets\EthGatewayAsset;
 EthGatewayAsset::register($this);
 
 $this->registerJs("
-	const ggEth = graphGrailEther
 	const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
 	const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-	const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'
 
 	let clientAddress
 
-	ggEth.init(tokenContractAddress, expectedNetworkId)  
+	graphGrailEther.init(tokenContractAddress, expectedNetworkId)  
 		.catch(err => {
 			console.log(err.code + ' ' + err)
 			switch(err.code) {
 				case 'ALREADY_INITIALIZED':
-					return ggEth.getClientAddress()
+					return graphGrailEther.getClientAddress()
 				case 'NO_ACCOUNTS':
 				    return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
 				case 'NO_ETHEREUM_CLIENT':
@@ -37,7 +35,7 @@ $this->registerJs("
 			console.log('User wallet address: ' + address)
 			clientAddress = address
 			$('.js-address').val(address)
-			return ggEth.checkBalances(address)
+			return graphGrailEther.checkBalances(address)
 		})
 		.then(balances => {
 		    if (!balances) {

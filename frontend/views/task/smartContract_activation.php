@@ -7,7 +7,6 @@ use frontend\assets\EthGatewayAsset;
 EthGatewayAsset::register($this);
 
 $this->registerJs("
-  const ggEth = graphGrailEther
   const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
   const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
   const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'
@@ -15,12 +14,12 @@ $this->registerJs("
   let clientAddress
   const contractAddress = $('.js-contract-address').val();
 
-  ggEth.init(tokenContractAddress, expectedNetworkId)
+  graphGrailEther.init(tokenContractAddress, expectedNetworkId)
     .catch(err => {
       console.log(err.code + ' ' + err)
       switch(err.code) {
         case 'ALREADY_INITIALIZED':
-          return ggEth.getClientAddress()
+          return graphGrailEther.getClientAddress()
         case 'NO_ACCOUNTS':
           return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
         case 'NO_ETHEREUM_CLIENT':
@@ -44,10 +43,10 @@ $this->registerJs("
     e.preventDefault();
     $('.js-btn-activate').attr('disabled', true).addClass('m-loader m-loader--right')
 
-    ggEth.activeTransactionFinishedPromise()
+    graphGrailEther.activeTransactionFinishedPromise()
       .then(_ => {
         notifyCheckEthClient()
-        return ggEth.activateContract(contractAddress)
+        return graphGrailEther.activateContract(contractAddress)
       })
       .catch(err => {
         console.log(err.code + ' ' + err)

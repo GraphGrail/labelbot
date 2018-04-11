@@ -21,21 +21,18 @@ $this->registerJs("
     })
   }
   const finalizeInit = function() {
-    
-      const ggEth = graphGrailEther
       const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
       const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-      const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'  
     
       let clientAddress
       const contractAddress = $('.js-contract-address').val();
       
-      ggEth.init(tokenContractAddress, expectedNetworkId)
+      graphGrailEther.init(tokenContractAddress, expectedNetworkId)
         .catch(err => {
             console.log(err.code + ' ' + err);
             switch(err.code) {
                 case 'ALREADY_INITIALIZED':
-                    return ggEth.getClientAddress();
+                    return graphGrailEther.getClientAddress();
                 case 'INVALID_ETHEREUM_ADDRESS':
                     return showEthClientError(err);
                 case 'NO_ACCOUNTS':
@@ -70,10 +67,10 @@ $this->registerJs("
         }
        
         $(this).attr('disabled', true).addClass('m-loader m-loader--right')
-        ggEth.activeTransactionFinishedPromise()
+        graphGrailEther.activeTransactionFinishedPromise()
           .then(_ => {
             notifyCheckEthClient()
-            return ggEth.finalizeContract(contractAddress)
+            return graphGrailEther.finalizeContract(contractAddress)
           })
           .catch(err => {
             console.log(err.code + ' ' + err)

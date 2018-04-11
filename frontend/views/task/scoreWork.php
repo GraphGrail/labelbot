@@ -15,7 +15,6 @@ ScoreWorkAsset::register($this);
 EthGatewayAsset::register($this);
 
 $this->registerJs("
-  const ggEth = graphGrailEther
   const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
   const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
   const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'
@@ -23,12 +22,12 @@ $this->registerJs("
   let clientAddress
   const contractAddress = $('.js-contract-address').val();
 
-  ggEth.init(tokenContractAddress, expectedNetworkId)  
+  graphGrailEther.init(tokenContractAddress, expectedNetworkId)  
     .catch(err => {
       console.log(err.code + ' ' + err)
       switch(err.code) {
         case 'ALREADY_INITIALIZED':
-          return ggEth.getClientAddress()
+          return graphGrailEther.getClientAddress()
         case 'NO_ACCOUNTS':
           return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
         case 'NO_ETHEREUM_CLIENT':
@@ -67,16 +66,16 @@ $this->registerJs("
 
     console.log(workers)
 
-    ggEth.activeTransactionFinishedPromise()
+    graphGrailEther.activeTransactionFinishedPromise()
       .then(_ => {
         notifyCheckEthClient()
-        return ggEth.scoreWork(contractAddress, workers)
+        return graphGrailEther.scoreWork(contractAddress, workers)
       })
       .catch(err => {
         console.log(err.code + ' ' + err)
         switch(err.code) {
           case 'ALREADY_INITIALIZED':
-            return ggEth.getClientAddress()
+            return graphGrailEther.getClientAddress()
           case 'NO_ACCOUNTS':
             return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
           case 'NO_ETHEREUM_CLIENT':
@@ -104,7 +103,7 @@ $this->registerJs("
         })
       }
     
-      const ggEth = graphGrailEther
+      const graphGrailEther = graphGrailEther
       const contractAddress = $('.js-contract-address').val();
     
       $('.finalize-task-btn').on('click', function(e) {
@@ -116,10 +115,10 @@ $this->registerJs("
         $(this).attr('disabled', true)
         $('.m-portlet__head-caption').addClass('m-loader m-loader--success')
         
-        ggEth.activeTransactionFinishedPromise()
+        graphGrailEther.activeTransactionFinishedPromise()
           .then(_ => {    
             notifyCheckEthClient()       
-            return ggEth.finalizeContract(contractAddress)
+            return graphGrailEther.finalizeContract(contractAddress)
           })
           .catch(err => {
             console.log(err.code + ' ' + err)
