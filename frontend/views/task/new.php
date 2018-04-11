@@ -25,7 +25,7 @@ $this->registerJs("
             <div class="m-widget1">
               <div class="m--padding-bottom-5"></div>
               <h5 class="m-widget5__title m--margin-bottom-25">
-              	<?=Yii::t('app', 'Upload your dataset') ?>
+              	<?=Yii::t('app', 'Create new data labeling task') ?>
               </h5>
               <?php $form = ActiveForm::begin(['options' => ['class'=>'m-section m--margin-bottom-5']]) ?>
                 <?= $form->errorSummary($model); ?>
