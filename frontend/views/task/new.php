@@ -25,7 +25,7 @@ $this->registerJs("
             <div class="m-widget1">
               <div class="m--padding-bottom-5"></div>
               <h5 class="m-widget5__title m--margin-bottom-25">
-              	<?=Yii::t('app', 'Create new data labeling task') ?>
+              	<?=Yii::t('app', 'Task details') ?>
               </h5>
               <?php $form = ActiveForm::begin(['options' => ['class'=>'m-section m--margin-bottom-5']]) ?>
                 <?= $form->errorSummary($model); ?>
@@ -38,7 +38,7 @@ $this->registerJs("
                            ->label(false) ?>
                 </div>       
                 <div class="m-section__sub">
-                	<?=Yii::t('app', 'Description') ?>
+                	<?=Yii::t('app', 'Description (make it clear, this instruction will appear when labeller get the task to work)') ?>
                 </div>
                 <div class="form-group m-form__group">
                   <?= $form->field($model, 'description')

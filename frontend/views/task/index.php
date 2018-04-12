@@ -40,7 +40,7 @@ $this->registerJs("
                 case 'NO_ETHEREUM_CLIENT':
                     return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
                 case 'WRONG_NETWORK':
-                    return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
+                    return showEthClientError('Oops! Ethereum client was not found. Install one, such as <a href=\"https://metamask.io/\" target=\"_blank\">Metamask</a> and reload page')
                 default:
                     return showEthClientError(err)
             }

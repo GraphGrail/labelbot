@@ -21,9 +21,9 @@ $this->registerJs("
 				case 'NO_ACCOUNTS':
 				    return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
 				case 'NO_ETHEREUM_CLIENT':
-				    return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
+				    return showEthClientError('Oops! Ethereum client was not found. Install one, such as <a href=\"https://metamask.io/\" target=\"_blank\">Metamask</a> and reload page')
 				case 'WRONG_NETWORK':
-                    return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
+                    return showEthClientError('Oops! Etherium client select wrong network. Change it to \"Rinkeby Test Network\" and reload page')
 				default:
 					return showEthClientError(err)
 			}
@@ -88,8 +88,13 @@ $this->registerJs("
             <div class="m-widget1">
               <div class="m--padding-bottom-5"></div>
               <h5 class="m-widget5__title m--margin-bottom-25">
-              	<?=Yii::t('app', 'Create Smart-contract') ?>
+              	<?=Yii::t('app', 'Now we ready to create smart-contract for the task you created on the previous step.') ?>
               </h5>
+            <p class="m-widget5__title m--margin-bottom-25">
+                <?=Yii::t('app',
+                    'To get task available to participants of the GraphGrailAi platform you need deploy it to the testnet Ethereum blockchain (Rinkeby).<br>
+                    This guarantee for you as client and for data-labeller that all work will be transparent for both sides.') ?>
+            </p>
 			  <form class="m-section m--margin-bottom-5" action="" method="post">
 			  	<input type="hidden" name="<?=Yii::$app->request->csrfParam ?>" value="<?=Yii::$app->request->getCsrfToken() ?>" />
 			    <div class="form-group m-form__group">

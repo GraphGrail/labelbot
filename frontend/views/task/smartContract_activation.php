@@ -6,7 +6,8 @@ use frontend\assets\EthGatewayAsset;
 /* @var $this yii\web\View */
 EthGatewayAsset::register($this);
 
-$this->registerJs("
+$this->registerJs(/** @lang JavaScript */
+    "
   const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
   const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
   const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'
@@ -23,9 +24,9 @@ $this->registerJs("
         case 'NO_ACCOUNTS':
           return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
         case 'NO_ETHEREUM_CLIENT':
-          return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
+          return showEthClientError('Oops! Ethereum client was not found. Install one, such as <a href=\"https://metamask.io/\" target=\"_blank\">Metamask</a> and reload page')
         case 'WRONG_NETWORK':
-          return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
+          return showEthClientError('Oops! Ethereum client select wrong network. Change it to \"Rinkeby Test Network\" and reload page')
         default:
           return showEthClientError(err)
       }
