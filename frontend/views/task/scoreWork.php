@@ -196,6 +196,11 @@ $this->registerJs("
         </div>
     </div>
     <div class="m-portlet__body">
+        <div class="row">
+            <div class="col-xl-8 order-2 order-xl-1">
+                <?=$view->getStatusComment() ?>
+            </div>
+        </div>
         <!--begin: Search Form -->
         <div class="m-form m-form--label-align-right m--margin-top-20 m--margin-bottom-30">
             <div class="row align-items-center">
