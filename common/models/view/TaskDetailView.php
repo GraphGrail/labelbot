@@ -277,7 +277,7 @@ class TaskDetailView
             Task::STATUS_CONTRACT_ACTIVE_PAUSED        => 'Paused',
             Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => 'Completed',
             Task::STATUS_CONTRACT_FORCE_FINALIZING     => 'Finalizing',
-            Task::STATUS_CONTRACT_FINALIZED            => 'Finalize',
+            Task::STATUS_CONTRACT_FINALIZED            => 'Finalized',
         ];
         if (!array_key_exists($this->task->status, $map)) {
             return '';

@@ -101,7 +101,7 @@ $this->registerJs(/** @lang JavaScript */
             <div class="m-widget1">
               <div class="m--padding-bottom-5"></div>
                 <h5 class="m-widget5__title m--margin-bottom-25">
-                	<?=Yii::t('app', "Smart-contract for task \"$task->name\" deployed to blockchain.") ?>
+                	<?=Yii::t('app', "Now you can activate contract to start tasks distribution or you can cancel it and get tokens back.") ?>
                 </h5>
         			  <form class="m-section m--margin-bottom-5 js-form" method="post" action="">
         			  	<input type="hidden" name="<?=Yii::$app->request->csrfParam ?>" value="<?=Yii::$app->request->getCsrfToken() ?>" />

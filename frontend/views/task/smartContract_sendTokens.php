@@ -88,7 +88,7 @@ $this->registerJs("
 
 ");
 ?>
-<h1>Now you need to send tokens to smart contract.</h1>
+<h1>Now you need to send GAI tokens to smart contract.</h1>
 
 <div class="row">
   <div class="col-lg-8">
@@ -107,7 +107,7 @@ $this->registerJs("
             <div class="m-widget1">
               <div class="m--padding-bottom-5"></div>
               <h5 class="m-widget5__title m--margin-bottom-25">
-              	<?=Yii::t('app', "Smart-contract for task \"$task->name\" deployed to blockchain.") ?>
+              	<?=Yii::t('app', "Smart-contract for task \"$task->name\" succesfully deployed to blockchain.<br>Now you need to send GAI tokens to credit smart contract") ?>
               </h5>
       			  <form class="m-section m--margin-bottom-5 js-form" method="post" action="">
       			  	<input type="hidden" name="<?=Yii::$app->request->csrfParam ?>" value="<?=Yii::$app->request->getCsrfToken() ?>" />
@@ -126,7 +126,11 @@ $this->registerJs("
                     <?=Yii::t('app', 'Tokens to send') ?>
                   </div>
                   <div class="form-group field-task-label_group_id required">
-                    <input type="text" id="tokensValue" class="form-control m-input js-tokens-value" name="tokensValue" value="<?=$tokensValue ?>" disabled="disabled">
+                      <input type="hidden" id="tokensValue" class="form-control m-input js-tokens-value" name="tokensValue" value="<?=$tokensValue ?>" disabled="disabled">
+                      <input type="text" id="tokensValueFormatted" class="form-control m-input" name="tokensValueFormatted" value="<?=bcdiv($tokensValue,
+                          '1000000000000000000',
+                          6
+                      ); ?>" disabled="disabled">
                     <div class="help-block"></div>
                   </div>                  
                 </div>

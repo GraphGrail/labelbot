@@ -120,6 +120,8 @@ class TaskController extends \yii\web\Controller
     /**
      * Creation and activation of smartcontract for Task
      * @param int $id Task id
+     * @return string
+     * @throws \Exception
      */
     public function actionSmartContract($id)
     {
