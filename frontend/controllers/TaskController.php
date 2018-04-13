@@ -428,13 +428,35 @@ class TaskController extends \yii\web\Controller
             return [
                 'error'=>true,
                 'error_code' => 'NO_CREDITS',
-                'error_text' => "You already use all your credits"
+                'error_text' => "You already use all your credits."
             ];
         }
 
         $blockchain = new EthereumGateway;
         $walletAddress = new Address($address);
-        $tokenContractAddress = Yii::$app->params['tokenContractAddress'];
+        $tokenContractAddress = new Address(Yii::$app->params['tokenContractAddress']);
+
+        $systemWalletAddress = $blockchain->walletAddress();
+        $systemBalance = $blockchain->checkBalances($systemWalletAddress, $tokenContractAddress);
+
+        if (bccomp(Yii::$app->params['creditTokenValue'], $systemBalance->token) === 1) {
+            return [
+                'error'=>true,
+                'error_code' => 'NO_TOKEN_IN_SERVICE',
+                'error_text' => "At the moment, credit feature is not available."
+            ];
+        }
+
+        if (bccomp(Yii::$app->params['creditEtherValue'], $systemBalance->ether) === 1) {
+            //TODO: replace this dirty hack -
+            if (!strpos($systemBalance->ether, 'e+')) {
+                return [
+                    'error'=>true,
+                    'error_code' => 'NO_ETHER_IN_SERVICE',
+                    'error_text' => "At the moment, credit feature is not available."
+                ];
+            }
+        }
 
         $payload = [
             'tokenContractAddress' => (string) $tokenContractAddress,

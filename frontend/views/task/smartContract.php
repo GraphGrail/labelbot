@@ -24,9 +24,9 @@ if ($task->status >= Task::STATUS_CONTRACT_ACTIVE):
                             <div class="m-widget1">
                                 <div class="m--padding-bottom-5"></div>
                                 <h5 class="m-widget5__title m--margin-bottom-25">
-                                    Smart-contract for task "<?=$task->name ?>"
+                                    Smart-contract for task "<?=$task->name ?>" activation
                                 </h5>
-                                <div class="m-loader m-loader--success">Smart-contract in activating process</div>
+                                <div class="m-loader m-loader--success">It may take a minute or two.</div>
                                 <div class="m--padding-bottom-20"></div>
                             </div>
                         </div>
