@@ -6,8 +6,8 @@ require_once 'AuthenticatedUserCommand.php';
 
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
-use common\components\LabelsKeyboard;
 use common\models\Task;
+use Yii;
 
 /**
  * User "/getdata" command
@@ -50,8 +50,16 @@ class TasksCommand extends AuthenticatedUserCommand
             ->where(['status'=>Task::STATUS_CONTRACT_ACTIVE])
             ->all();
 
+        $reward = bcdiv(Yii::$app->params['workItemPrice'], '1000000000000000000', 4);
+
         foreach ($availbleTasks as $task) {
-            $text .= "/get_{$task->contract_address} - {$task->name}\n{$task->description}\n\n";
+            $text .= "{$task->name} /get_{$task->contract_address}" . PHP_EOL
+                . "Total: {$task->total_work_items} items, each {$task->work_item_size} texts to label. "
+                . "Reward: {$reward} GAI for item." . PHP_EOL;
+            if ($task->description) {
+                $text .= "Description: {$task->description}" . PHP_EOL;
+            }
+            $text .= PHP_EOL;
         }
 
         if ($availbleTasks === []) {
