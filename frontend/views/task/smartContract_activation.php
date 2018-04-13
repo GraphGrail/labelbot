@@ -57,7 +57,7 @@ $this->registerJs(/** @lang JavaScript */
           case 'INSUFFICIENT_TOKEN_BALANCE':
             return showEthClientError('Oops! Not enough tokens')
           case 'NOT_INITIALIZED':
-            return  showEthClientError('Oops! Etherium client was not initialized. Please reload page')
+            return  showEthClientError('Oops! Ethereum client was not initialized. Please reload page')
           case 'TRANSACTION_ALREADY_RUNNING':
             return showEthClientError('Oops! Transaction already running. Reload page') 
           case 'CONTRACT_NOT_FOUND':

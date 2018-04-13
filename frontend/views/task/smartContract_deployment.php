@@ -6,7 +6,8 @@ use frontend\assets\EthGatewayAsset;
 /* @var $this yii\web\View */
 EthGatewayAsset::register($this);
 
-$this->registerJs("
+$this->registerJs(/** @lang JavaScript */
+    "
 	const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
 	const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
 
@@ -23,7 +24,7 @@ $this->registerJs("
 				case 'NO_ETHEREUM_CLIENT':
 				    return showEthClientError('Oops! Ethereum client was not found. Install one, such as <a href=\"https://metamask.io/\" target=\"_blank\">Metamask</a> and reload page')
 				case 'WRONG_NETWORK':
-                    return showEthClientError('Oops! Etherium client select wrong network. Change it to \"Rinkeby Test Network\" and reload page')
+                    return showEthClientError('Oops! Ethereum client select wrong network. Change it to \"Rinkeby Test Network\" and reload page')
 				default:
 					return showEthClientError(err)
 			}
@@ -56,15 +57,39 @@ $this->registerJs("
 			console.log(err)
 			switch(err.code) {
 			    case 'NOT_INITIALIZED':
-			        return showEthClientError('Etherium client was not initialized. Please reload page')
+			        return showEthClientError('Ethereum client was not initialized. Please reload page')
 			    default:
                     return showEthClientError(err)
 			}
 		})
 
-	$('.js-get-credit').on('click', e => {
-		window.location = 'get-credit/' + clientAddress; 
-	})
+	$('.js-get-credit').on('click', () => {
+        $('.js-get-credit').attr('disabled', true)    
+        $.get('/task/get-credit/' + clientAddress)
+            .done(function( data ) {
+                //console.log(data);
+                if (data.error) {
+                    $('.js-credit-text').text(data.error_text)
+                    return;
+                }
+                $('.js-credit-invitation').hide()
+                $('.js-credit-waiting').show()
+                let timerId = setTimeout(function tick() {
+                    graphGrailEther.checkBalances(clientAddress)
+                        .then(balance => {
+                            //console.log(balance)
+                            if (balance.ether > 0 && balance.token > 0) {
+                                window.location.reload()
+                            }
+                        })
+                    timerId = setTimeout(tick, 5000);
+                }, 5000);
+            })
+            .fail(function() {
+                $('.js-get-credit').attr('disabled', false)
+            })      
+	
+	});
 
 
 ");

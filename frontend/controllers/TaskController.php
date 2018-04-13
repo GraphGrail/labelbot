@@ -12,8 +12,7 @@ use common\models\Moderator;
 use common\models\Task;
 use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
-use common\domain\ethereum\Contract;
-use common\models\view\ActionView;
+use common\models\User;
 use common\models\view\PreviewScoreWorkView;
 use common\models\view\TaskDetailView;
 use common\models\view\TaskScoreWorkView;
@@ -21,7 +20,6 @@ use console\jobs\SynchronizeTaskStatusJob;
 use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
-use yii\helpers\Url;
 use yii\log\Logger;
 use yii\web\NotFoundHttpException;
 
@@ -416,15 +414,27 @@ class TaskController extends \yii\web\Controller
 
     /**
      * Credits users
+     * @param string $address
+     * @return array
+     * @throws \Exception
      */
-    public function actionGetCredit($id, $address)
+    public function actionGetCredit($address)
     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $user = User::findOne(['id'=>Yii::$app->user->id]);
+
+        if (!$user->credits) {
+            return [
+                'error'=>true,
+                'error_code' => 'NO_CREDITS',
+                'error_text' => "You already use all your credits"
+            ];
+        }
+
         $blockchain = new EthereumGateway;
         $walletAddress = new Address($address);
-
-        // TODO: Check is balance really low
-
-        $tokenContractAddress = Yii::$app->params['tokenContractAddress']; 
+        $tokenContractAddress = Yii::$app->params['tokenContractAddress'];
 
         $payload = [
             'tokenContractAddress' => (string) $tokenContractAddress,
@@ -439,12 +449,18 @@ class TaskController extends \yii\web\Controller
         $callback->type = BlockchainCallback::CREDIT_ACCOUNT;
         $callback->callback_id = $callback_id;
         $callback->params = json_encode($payload);
-        
+
         if (!$callback->save()) {
             throw new \Exception("Can't save Callback after creditAcount() was called");
         }
 
-        return $this->redirect("/task/$id/smart-contract");
+        $user->updateCounters(['credits'=> -1]);
+
+        return [
+            'error'=>false,
+            'error_code' => null,
+            'error_text' => null
+        ];
     }
 
 

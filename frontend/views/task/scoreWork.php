@@ -33,7 +33,7 @@ $this->registerJs("
         case 'NO_ETHEREUM_CLIENT':
           return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
         case 'WRONG_NETWORK':
-          return showEthClientError('Oops! Etherium client select wrong network. Change it  to \"Rinkeby Test Network\" and reload page')
+          return showEthClientError('Oops! Ethereum client select wrong network. Change it  to \"Rinkeby Test Network\" and reload page')
         default:
           return showEthClientError(err)
       }
@@ -81,7 +81,7 @@ $this->registerJs("
           case 'NO_ETHEREUM_CLIENT':
             return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
           case 'WRONG_NETWORK':
-            return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
+            return showEthClientError('Oops! Ethereum client select wrong network. Change it and reload page')
           case 'INSUFFICIENT_ETHER_BALANCE':
             return showEthCreditAlert();
           default:
@@ -124,7 +124,7 @@ $this->registerJs("
             console.log(err.code + ' ' + err)
             switch(err.code) {
               case 'NOT_INITIALIZED':
-                return showEthClientError('Oops! Etherium client was not initialized. Please reload page')
+                return showEthClientError('Oops! Ethereum client was not initialized. Please reload page')
               case 'TRANSACTION_ALREADY_RUNNING':
                 return showEthClientError('Oops! Transaction already running. Reload page')
               case 'INSUFFICIENT_ETHER_BALANCE':

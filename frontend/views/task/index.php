@@ -76,7 +76,7 @@ $this->registerJs("
             console.log(err.code + ' ' + err)
             switch(err.code) {
               case 'NOT_INITIALIZED':
-                return showEthClientError('Oops! Etherium client was not initialized. Please reload page')
+                return showEthClientError('Oops! Ethereum client was not initialized. Please reload page')
               case 'TRANSACTION_ALREADY_RUNNING':
                 return showEthClientError('Oops! Transaction already running. Reload page')
               case 'INSUFFICIENT_ETHER_BALANCE':

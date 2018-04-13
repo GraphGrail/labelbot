@@ -50,7 +50,7 @@ return [
                 '<controller:[\w\-]+>/<id:\d+>/<action:[\w\-]+>' => '<controller>/<action>',
                 '<controller:[\w\-]+>/<id:\d+>' => '<controller>/view',
                 '<controller:[\w\-]+>/<action:[\w\-]+>' => '<controller>/<action>',
-                'task/<id:\d+>/get-credit/<address:[\w\-]+>' => 'task/get-credit',
+                'task/get-credit/<address:[\w\-]+>' => 'task/get-credit',
             ],
         ],
         'assetManager' => [

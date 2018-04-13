@@ -20,7 +20,7 @@ function showEthCreditAlert(taskId, contractAddress) {
 function notifyCheckEthClient() {
     swal({
         position: 'top-right',
-        title: '<span class="text-success"><i class="fa fa-check"></i> Check your Etherium client</span>',
+        title: '<span class="text-success"><i class="fa fa-check"></i> Check your Ethereum client</span>',
         showConfirmButton: false,
         timer: 2500,
     });
