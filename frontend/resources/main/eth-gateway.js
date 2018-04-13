@@ -37178,4 +37178,4 @@ module.exports = __webpack_require__("./src/lib.js");
 
 /******/ });
 });
-//# sourceMappingURL=eth-gateway.map
+//# sourceMappingURL=eth-gateway.js.map
