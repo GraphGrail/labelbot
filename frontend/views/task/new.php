@@ -11,9 +11,6 @@ use yii\widgets\ActiveForm;
 
 $this->title = Yii::t('app', 'Add New Task');
 
-$this->registerJs("
-
-", yii\web\View::POS_READY);
 ?>
 
 <div class="row">

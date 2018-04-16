@@ -1,12 +1,10 @@
 <?php
 
 use common\models\Task;
-use frontend\assets\EthGatewayAsset;
 use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $task Task */
-EthGatewayAsset::register($this);
 
 $this->registerJs("
     setTimeout(function(){ window.location = '" . Url::toRoute(['task/view', 'id' => $task->id]) . "' }, 2000);

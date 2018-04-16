@@ -4,9 +4,11 @@
 /* @var $content string */
 
 use frontend\assets\AppAsset;
+use frontend\assets\EthereumAsset;
 use yii\helpers\Html;
 
 AppAsset::register($this);
+EthereumAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -22,6 +24,8 @@ AppAsset::register($this);
 </head>
 <body class="m-page--fluid m--skin- m-content--skin-light2 m-header--fixed m-header--fixed-mobile m-aside-left--enabled m-aside-left--skin-dark m-aside-left--offcanvas m-footer--push m-aside--offcanvas-default">
 <?php $this->beginBody() ?>
+<div class="js-token-contract-address" style="display: none"><?=Yii::$app->params['tokenContractAddress'] ?></div>
+<div class="js-eth-network-id" style="display: none"><?=Yii::$app->params['networkId'] ?></div>
 
     <!-- begin:: Page -->
     <div class="m-grid m-grid--hor m-grid--root m-page">

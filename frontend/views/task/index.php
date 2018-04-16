@@ -1,103 +1,16 @@
 <?php
 
 use common\models\view\TaskDetailView;
-use frontend\assets\EthGatewayAsset;
 use frontend\assets\pages\TaskPageAsset;
 use yii\helpers\Url;
 
 TaskPageAsset::register($this);
-EthGatewayAsset::register($this);
 
 /* @var $this yii\web\View */
 /* @var $tasks \common\models\Task[] */
 
 $this->title = 'Tasks';
 
-
-$this->registerJs("
-  const syncStatus = function(taskId) {
-    $.post('task/' + taskId + '/sync-status', (response) => {
-        console.log(response);
-    })
-  }
-  const finalizeInit = function() {
-      const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
-      const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-    
-      let clientAddress
-      const contractAddress = $('.js-contract-address').val();
-      
-      graphGrailEther.init(tokenContractAddress, expectedNetworkId)
-        .catch(err => {
-            console.log(err.code + ' ' + err);
-            switch(err.code) {
-                case 'ALREADY_INITIALIZED':
-                    return graphGrailEther.getClientAddress();
-                case 'INVALID_ETHEREUM_ADDRESS':
-                    return showEthClientError(err);
-                case 'NO_ACCOUNTS':
-                    return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
-                case 'NO_ETHEREUM_CLIENT':
-                    return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
-                case 'WRONG_NETWORK':
-                    return showEthClientError('Oops! Ethereum client was not found. Install one, such as <a href=\"https://metamask.io/\" target=\"_blank\">Metamask</a> and reload page')
-                default:
-                    return showEthClientError(err)
-            }
-        })
-        .then(address => {
-             clientAddress = address
-        })
-        .catch(err => {
-            console.log(err);
-            showEthClientError(err)
-        })
-    
-  
-      $('.finalize-task-btn').on('click', function(e) {
-        e.preventDefault();
-    
-        var taskId = $(this).data('id');
-        var contractAddress = $(this).data('contract-address');
-        if (!contractAddress) {
-            return;
-        }
-        if (!clientAddress) {
-            return;
-        }
-       
-        $(this).attr('disabled', true).addClass('m-loader m-loader--right')
-        graphGrailEther.activeTransactionFinishedPromise()
-          .then(_ => {
-            notifyCheckEthClient()
-            return graphGrailEther.finalizeContract(contractAddress)
-          })
-          .catch(err => {
-            console.log(err.code + ' ' + err)
-            switch(err.code) {
-              case 'NOT_INITIALIZED':
-                return showEthClientError('Oops! Ethereum client was not initialized. Please reload page')
-              case 'TRANSACTION_ALREADY_RUNNING':
-                return showEthClientError('Oops! Transaction already running. Reload page')
-              case 'INSUFFICIENT_ETHER_BALANCE':
-                return showEthCreditAlert(taskId, clientAddress)
-              case 'INSUFFICIENT_TOKEN_BALANCE':
-                return showEthClientError('Oops! Not enough tokens')
-              default:
-                return showEthClientError(err)
-            }
-          })
-          .then(_ => {
-            if (_ === false) {
-                return
-            }
-            syncStatus(taskId)
-            setTimeout(() => {window.location.reload()}, 3000);
-          })
-      })
-  }();
-
-");
 ?>
 <div class="row">
     <div class="col-xl-12">

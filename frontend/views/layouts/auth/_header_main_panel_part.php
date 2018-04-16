@@ -5,57 +5,6 @@
 
 use yii\helpers\Html;
 use yii\helpers\Url;
-use frontend\assets\EthGatewayAsset;
-
-EthGatewayAsset::register($this);
-
-$this->registerJs("
-
-const userWallet = function () {
-    const bigNum = graphGrailEther.BigNumber
-    const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
-    const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-    let clientAddress
-
-    function initWallet() {
-        graphGrailEther.init(tokenContractAddress, expectedNetworkId)
-            .catch(err => null)
-        return !graphGrailEther.isInitialized() ?
-          new Promise(resolve => setTimeout(initWallet, 50)) :
-          showWallet()
-    };
-
-    initWallet();
-
-    function showWallet() {
-      graphGrailEther.getClientAddress()
-        .then(address => {
-            if (!address) {
-                return
-            }
-            console.log('User wallet address: ' + address)
-            clientAddress = address
-            $('.js-address').val(address)
-            return graphGrailEther.checkBalances(address)
-        })
-        .then(balances => {
-            if (!balances) {
-                return;
-            }
-            console.log('Ether: ' + balances.ether + ', tokens: ' + balances.token)
-            $('.js-user-addr').text(clientAddress)
-            $('.js-user-ether').text(new bigNum(balances.ether).dividedBy('1e18').toFormat(6))
-            $('.js-user-token').text(new bigNum(balances.token).dividedBy('1e18').toFormat(6))
-            $('.js-user-wallet').removeClass('m--hide')
-        })
-        .catch(err => {
-            console.log(err.code + ' ' + err)
-        })
-    };
-}();
-
-
-");
 
 ?>
 <div class="m-stack__item m-stack__item--fluid m-header-head" id="m_header_nav">

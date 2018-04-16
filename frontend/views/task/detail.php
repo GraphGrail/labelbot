@@ -14,95 +14,6 @@ use yii\helpers\Url;
 /* @var $assignedCount int */
 
 TaskDetailPage::register($this);
-EthGatewayAsset::register($this);
-
-$this->registerJs("
-  const finalizeInit = function() {
-      const syncStatus = function() {
-        $.post('". Url::toRoute(['task/sync-status', 'id' => $task->id]) . "', (response) => {
-            console.log(response);
-        })
-      }
-    
-      const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
-      const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-      const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'  
-       
-    
-      let clientAddress
-      const contractAddress = $('.js-contract-address').val();
-      
-      graphGrailEther.init(tokenContractAddress, expectedNetworkId)
-        .catch(err => {
-            console.log(err.code + ' ' + err);
-            switch(err.code) {
-                case 'ALREADY_INITIALIZED':
-                    return graphGrailEther.getClientAddress();
-                case 'INVALID_ETHEREUM_ADDRESS':
-                    return showEthClientError(err);
-                case 'NO_ACCOUNTS':
-                    return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
-                case 'NO_ETHEREUM_CLIENT':
-                    return showEthClientError('Oops! Ethereum client was not found. Install one, such as <a href=\"https://metamask.io/\" target=\"_blank\">Metamask</a> and reload page')
-                case 'WRONG_NETWORK':
-                    return showEthClientError('Oops! Ethereum client select wrong network. Change it  to \"Rinkeby Test Network\" and reload page')
-                default:
-                    return showEthClientError(err)
-            }
-        })
-        .then(address => {
-             clientAddress = address
-        })
-        .catch(err => {
-            console.log(err);
-            showEthClientError(err)
-        })
-        
-        $('.js-get-credit').on('click', e => {
-            window.location = 'get-credit/' + clientAddress; 
-        })
-    
-  
-      $('.finalize-task-btn').on('click', e => {
-        e.preventDefault();
-    
-        if (!clientAddress) {
-            return;
-        }
-        $('.finalize-task-btn').attr('disabled', true)
-        $('.m-portlet__head-caption').addClass('m-loader m-loader--success')
-        
-        graphGrailEther.activeTransactionFinishedPromise()
-          .then(_ => {
-            notifyCheckEthClient()
-            return graphGrailEther.finalizeContract(contractAddress)
-          })
-          .catch(err => {
-            console.log(err.code + ' ' + err)
-            switch(err.code) {
-              case 'NOT_INITIALIZED':
-                return showEthClientError('Oops! Ethereum client was not initialized. Please reload page')
-              case 'TRANSACTION_ALREADY_RUNNING':
-                return showEthClientError('Oops! Transaction already running. Reload page')
-              case 'INSUFFICIENT_ETHER_BALANCE':
-                return showEthCreditAlert()
-              case 'INSUFFICIENT_TOKEN_BALANCE':
-                return showEthClientError('Oops! Not enough tokens')
-              default:
-                return showEthClientError(err)
-            }
-          })
-          .then(_ => {
-            if (_ === false) {
-                return
-            }
-            syncStatus()
-            setTimeout(() => {window.location.reload()}, 3000);
-          })
-      })
-  }();
-
-");
 
 ?>
 <div class="m-alert m-alert--icon alert alert-danger eth-errors" role="alert" style="display:none">
@@ -185,7 +96,12 @@ $this->registerJs("
                                                         foreach ($additionalActions as $additionalAction) {
                                                             ?>
                                                             <li class="m-nav__item">
-                                                                <a href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>" class="m-nav__link <?=$additionalAction->getOptions()['class']?>">
+                                                                <a
+                                                                        href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>"
+                                                                        class="m-nav__link <?=$additionalAction->getOptions()['class']?>"
+                                                                        data-id="<?=$task->id?>"
+                                                                        data-contract-address="<?=$task->contract_address?>"
+                                                                >
                                                                     <i class="m-nav__link-icon <?=$additionalAction->getOptions()['iconClass']?>"></i>
                                                                     <span class="m-nav__link-text">
 																	<?=$additionalAction->getLabel()?>
