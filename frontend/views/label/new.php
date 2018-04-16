@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-$this->title = Yii::t('app', 'Create New Label Group');
+$this->title = Yii::t('app', 'Create New Labeling');
 
 $this->registerCss("
 #labels-tree { margin: -15px 0 15px -50px; }
@@ -69,9 +69,23 @@ function createLabelTreeRecursievly(childLabels) {
   return labels;
 }
 
-$('.js-add')
-  .trigger('click')
-  .trigger('click');
+const exampleLabeling = function() {
+    let examples = [
+        '',
+        'Payment',
+        'Card',
+        'Question how to pay',
+        'Shipment',
+        'Time of shipment',
+        'Price',
+        'Other'
+    ];
+    
+    $('.js-add').trigger('click').trigger('click');
+    $('.js-add-child').trigger('click').trigger('click');
+    $.each($('.label input'), function () { $(this).val(examples.shift())});
+} ();
+
 ", yii\web\View::POS_READY);
 
 ?>
@@ -85,11 +99,11 @@ $('.js-add')
             <div class="m-widget1">
               <div class="m--padding-bottom-5"></div>
               <h5 class="m-widget5__title m--margin-bottom-25">
-              	<?=Yii::t('app', 'Create label group') ?>
+              	<?=Yii::t('app', 'Create labels tree here') ?>
               </h5>
               <?php $form = ActiveForm::begin(['options' => ['id' => 'add_label', 'class'=>'m-section m--margin-bottom-5']]) ?>
                 <div class="m-section__sub">
-                	<?=Yii::t('app', 'Labels group name') ?>
+                	<?=Yii::t('app', 'Labels tree name') ?>
                 </div>
                 <div class="form-group m-form__group">
                   <?= $form->field($model, 'name')
@@ -112,8 +126,8 @@ $('.js-add')
   	                           ->label(false) ?>
   	                </div>
   	            </div>
-          			<div id="labels-tree"  class="form-group  m-form__group row">
-        					<div class="col-lg-10">
+                    <div id="labels-tree"  class="form-group  m-form__group row">
+                        <div class="col-lg-10">
                     <div data-level="0" class="label label-0">
                       <div class="input-group">
                         <div class="input-group-prepend">
@@ -135,7 +149,7 @@ $('.js-add')
                       </div>
                       <div class="child-labels"></div>
                     </div>
-        					</div>
+                </div>
                 </div>
           			<div class="row">
           				<div class="col-lg-1"></div>

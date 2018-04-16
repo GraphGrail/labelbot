@@ -1,75 +1,7 @@
 <?php
 
-use yii\helpers\Html;
-use frontend\assets\EthGatewayAsset;
-
 /* @var $this yii\web\View */
-EthGatewayAsset::register($this);
 
-$this->registerJs("
-	const ggEth = graphGrailEther
-	const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
-	const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-	const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'
-
-	let clientAddress
-
-	ggEth.init(tokenContractAddress, expectedNetworkId)  
-		.catch(err => {
-			console.log(err.code + ' ' + err)
-			switch(err.code) {
-				case 'ALREADY_INITIALIZED':
-					return ggEth.getClientAddress()
-				case 'NO_ACCOUNTS':
-				    return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
-				case 'NO_ETHEREUM_CLIENT':
-				    return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
-				case 'WRONG_NETWORK':
-                    return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
-				default:
-					return showEthClientError(err)
-			}
-		})
-		.then(address => {
-			if (!address) {
-			    return
-			}
-			console.log('User wallet address: ' + address)
-			clientAddress = address
-			$('.js-address').val(address)
-			return ggEth.checkBalances(address)
-		})
-		.then(balances => {
-		    if (!balances) {
-		        return;
-		    }
-			// $('.js-btn-create').attr('disabled', false) // on testing
-			console.log('Ether: ' + balances.ether + ', tokens: ' + balances.ether)
-			if (balances.ether == 0 || balances.token == 0) {
-				$('.js-credit-invitation').show()
-			} else {
-				$('.js-btn-create').attr('disabled', false)
-				$('.js-btn-create').click(_ => {
-				    $('.js-btn-create').addClass('m-loader m-loader--right')
-				})
-			}
-		})
-		.catch(err => {
-			console.log(err)
-			switch(err.code) {
-			    case 'NOT_INITIALIZED':
-			        return showEthClientError('Etherium client was not initialized. Please reload page')
-			    default:
-                    return showEthClientError(err)
-			}
-		})
-
-	$('.js-get-credit').on('click', e => {
-		window.location = 'get-credit/' + clientAddress; 
-	})
-
-
-");
 ?>
 <h1>Smart-contract for task "<?=$task->name ?>"</h1>
 
@@ -90,8 +22,13 @@ $this->registerJs("
             <div class="m-widget1">
               <div class="m--padding-bottom-5"></div>
               <h5 class="m-widget5__title m--margin-bottom-25">
-              	<?=Yii::t('app', 'Create Smart-contract') ?>
+              	<?=Yii::t('app', 'Now we ready to create smart-contract for the task you created on the previous step.') ?>
               </h5>
+            <p class="m-widget5__title m--margin-bottom-25">
+                <?=Yii::t('app',
+                    'To get task available to participants of the GraphGrailAi platform you need deploy it to the testnet Ethereum blockchain (Rinkeby).<br>
+                    This guarantee for you as client and for data-labeller that all work will be transparent for both sides.') ?>
+            </p>
 			  <form class="m-section m--margin-bottom-5" action="" method="post">
 			  	<input type="hidden" name="<?=Yii::$app->request->csrfParam ?>" value="<?=Yii::$app->request->getCsrfToken() ?>" />
 			    <div class="form-group m-form__group">

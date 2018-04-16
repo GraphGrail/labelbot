@@ -8,13 +8,13 @@ namespace frontend\assets;
 
 use yii\web\AssetBundle;
 
-class EthGatewayAsset extends AssetBundle
+class EthereumAsset extends AssetBundle
 {
     public $sourcePath = '@resources/main';
 
     public $js = [
         'eth-gateway.js',
-        'eth-errors.js',
+        'eth-main.js',
     //    'eth-gateway.js.map',
     ];
 

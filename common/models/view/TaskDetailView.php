@@ -277,7 +277,37 @@ class TaskDetailView
             Task::STATUS_CONTRACT_ACTIVE_PAUSED        => 'Paused',
             Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => 'Completed',
             Task::STATUS_CONTRACT_FORCE_FINALIZING     => 'Finalizing',
-            Task::STATUS_CONTRACT_FINALIZED            => 'Finalize',
+            Task::STATUS_CONTRACT_FINALIZED            => 'Finalized',
+        ];
+        if (!array_key_exists($this->task->status, $map)) {
+            return '';
+        }
+
+        return $map[$this->task->status];
+    }
+
+    public function getStatusComment()
+    {
+        $map = [
+            Task::STATUS_CONTRACT_NOT_DEPLOYED         => '',
+            Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS   => '',
+            Task::STATUS_CONTRACT_DEPLOYMENT_ERROR     => '',
+            Task::STATUS_CONTRACT_NEW_NEED_TOKENS      => '',
+            Task::STATUS_CONTRACT_NEW                  => '',
+            Task::STATUS_CONTRACT_ACTIVE               => Yii::t('app',
+                'Now navigate to <a href="http://telegram.me/datalabelbot" target="_blank">@DataLabelBot in Telegram</a>, 
+                 login with your Ethereum address and type command /tasks to check your task successfully distributed 
+                 to workers of the Platform.'),
+            Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS   => '',
+            Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE => '',
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED        => Yii::t('app',
+                'You can either approve work, if you check it is done properly, or decline, if worker done bad.'),
+            Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => '',
+            Task::STATUS_CONTRACT_FORCE_FINALIZING     => '',
+            Task::STATUS_CONTRACT_FINALIZED            => Yii::t('app',
+                'Done! Now data-labeler can get paid with GAI token for work.<br>
+                 You can download ready to use dataset. All the data now labeled with categories, you provided to worker.<br>
+                 Now you can use dataset to train neural networks for your business-task.'),
         ];
         if (!array_key_exists($this->task->status, $map)) {
             return '';

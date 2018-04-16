@@ -22351,7 +22351,7 @@ module.exports = TruffleContractSchema;
 /***/ "../../node_modules/truffle-contract-schema/package.json":
 /***/ (function(module, exports) {
 
-module.exports = {"_from":"truffle-contract-schema@^2.0.0","_id":"truffle-contract-schema@2.0.0","_inBundle":false,"_integrity":"sha512-nLlspmu1GKDaluWksBwitHi/7Z3IpRjmBYeO9N+T1nVJD2V4IWJaptCKP1NqnPiJA+FChB7+F7pI6Br51/FtXQ==","_location":"/truffle-contract-schema","_phantomChildren":{},"_requested":{"type":"range","registry":true,"raw":"truffle-contract-schema@^2.0.0","name":"truffle-contract-schema","escapedName":"truffle-contract-schema","rawSpec":"^2.0.0","saveSpec":null,"fetchSpec":"^2.0.0"},"_requiredBy":["/truffle-contract"],"_resolved":"https://registry.npmjs.org/truffle-contract-schema/-/truffle-contract-schema-2.0.0.tgz","_shasum":"535378c0b6a7f58011ea8d84f57771771cb45163","_spec":"truffle-contract-schema@^2.0.0","_where":"/Users/sam/dev/projects/gg/smart-contracts/node_modules/truffle-contract","author":{"name":"Tim Coulter","email":"tim.coulter@consensys.net"},"bugs":{"url":"https://github.com/trufflesuite/truffle-schema/issues"},"bundleDependencies":false,"dependencies":{"ajv":"^5.1.1","crypto-js":"^3.1.9-1","debug":"^3.1.0"},"deprecated":false,"description":"JSON schema for contract artifacts","devDependencies":{"mocha":"^3.2.0","solc":"^0.4.16"},"homepage":"https://github.com/trufflesuite/truffle-schema#readme","keywords":["ethereum","json","schema","contract","artifacts"],"license":"MIT","main":"index.js","name":"truffle-contract-schema","repository":{"type":"git","url":"git+https://github.com/trufflesuite/truffle-schema.git"},"scripts":{"test":"mocha"},"version":"2.0.0"}
+module.exports = {"_args":[["truffle-contract-schema@2.0.0","/mnt/c/os/ggeth"]],"_from":"truffle-contract-schema@2.0.0","_id":"truffle-contract-schema@2.0.0","_inBundle":false,"_integrity":"sha512-nLlspmu1GKDaluWksBwitHi/7Z3IpRjmBYeO9N+T1nVJD2V4IWJaptCKP1NqnPiJA+FChB7+F7pI6Br51/FtXQ==","_location":"/truffle-contract-schema","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"truffle-contract-schema@2.0.0","name":"truffle-contract-schema","escapedName":"truffle-contract-schema","rawSpec":"2.0.0","saveSpec":null,"fetchSpec":"2.0.0"},"_requiredBy":["/truffle-contract"],"_resolved":"https://registry.npmjs.org/truffle-contract-schema/-/truffle-contract-schema-2.0.0.tgz","_spec":"2.0.0","_where":"/mnt/c/os/ggeth","author":{"name":"Tim Coulter","email":"tim.coulter@consensys.net"},"bugs":{"url":"https://github.com/trufflesuite/truffle-schema/issues"},"dependencies":{"ajv":"^5.1.1","crypto-js":"^3.1.9-1","debug":"^3.1.0"},"description":"JSON schema for contract artifacts","devDependencies":{"mocha":"^3.2.0","solc":"^0.4.16"},"homepage":"https://github.com/trufflesuite/truffle-schema#readme","keywords":["ethereum","json","schema","contract","artifacts"],"license":"MIT","main":"index.js","name":"truffle-contract-schema","repository":{"type":"git","url":"git+https://github.com/trufflesuite/truffle-schema.git"},"scripts":{"test":"mocha"},"version":"2.0.0"}
 
 /***/ }),
 
@@ -30793,9 +30793,9 @@ class ProjectContract extends _baseContract2.default {
 
   async activate() {
     const { tokenBalance, totalWorkItems, workItemPrice, state, client } = await this.describe();
-    this.assertActivationTokenBalance(workItemPrice.mul(totalWorkItems), tokenBalance);
-    this.assertContractStateIs(_contractApiHelpers.State.New, state);
-    this.assertActorIs(client);
+    this._assertActivationTokenBalance(workItemPrice.mul(totalWorkItems), tokenBalance);
+    this._assertContractStateIs(_contractApiHelpers.State.New, state);
+    this._assertActorIs(client);
 
     return this._callContractMethod('activate');
   }
@@ -30803,8 +30803,8 @@ class ProjectContract extends _baseContract2.default {
   async updateTotals(totalsMap) {
     const { state, owner } = await this.describe();
 
-    this.assertActorIs(owner);
-    this.assertContractStateIs(_contractApiHelpers.State.Active, state);
+    this._assertActorIs(owner);
+    this._assertContractStateIs(_contractApiHelpers.State.Active, state);
 
     const { addresses, totals } = (0, _contractApiHelpers.totalsToArrays)(totalsMap);
 
@@ -30818,13 +30818,13 @@ class ProjectContract extends _baseContract2.default {
   async updatePerformance(performanceUpdate) {
     const [{ state, client }, currentPerformanceMap] = await Promise.all([this.describe(), this.getPerformance()]);
 
-    this.assertContractStateIs(_contractApiHelpers.State.Active, state);
-    this.assertActorIs(client);
-    this.assertPerformanceUpdateIsValid(currentPerformanceMap, performanceUpdate);
+    this._assertContractStateIs(_contractApiHelpers.State.Active, state);
+    this._assertActorIs(client);
+    this._assertPerformanceUpdateIsValid(currentPerformanceMap, performanceUpdate);
 
     const { addresses, approved, declined } = (0, _contractApiHelpers.performanceToArrays)(performanceUpdate);
 
-    const [addressesChunks, approvedChunks, declinedChunks] = (0, _splitToChunks2.default)(UPDATE_TOTALS_CHUNK_SIZE, [addresses, approved, declined]);
+    const [addressesChunks, approvedChunks, declinedChunks] = (0, _splitToChunks2.default)(UPDATE_PERFORMANCE_CHUNK_SIZE, [addresses, approved, declined]);
 
     // NOTE: not parallelizing here as this is intended to be called by a client,
     // and it would be a bad UX to ask signing a lot of transactions at once.
@@ -30843,16 +30843,16 @@ class ProjectContract extends _baseContract2.default {
   async finalize() {
     const { state, client, canFinalize } = await this.describe();
 
-    this.assertContractStateIs(_contractApiHelpers.State.Active, state);
-    this.assertActorIs(client);
-    this.assertCanFinalize(canFinalize);
+    this._assertContractStateIs(_contractApiHelpers.State.Active, state);
+    this._assertActorIs(client);
+    this._assertCanFinalize(canFinalize);
 
     return this._callContractMethod('finalize');
   }
 
   async forceFinalize() {
     const { state, canForceFinalize } = await this.describe();
-    this.assertCanForceFinalize(state, canForceFinalize);
+    this._assertCanForceFinalize(state, canForceFinalize);
 
     let newState = state;
 
@@ -30862,26 +30862,26 @@ class ProjectContract extends _baseContract2.default {
     }
   }
 
-  assertActorIs(address) {
+  _assertActorIs(address) {
     if (!(0, _compareAddress2.default)(address, this.account)) {
       throw new _errors.UserError(`Only authorized address for action is ${address}, but you're running as ${this.account} now`, ErrorCodes.UNAUTHORIZED);
     }
     return;
   }
 
-  assertContractStateIs(expected, fact) {
+  _assertContractStateIs(expected, fact) {
     if (expected !== fact) {
       throw new _errors.UserError(`Contract should be in ${(0, _contractApiHelpers.stateToString)(expected)} state, but is in ` + `${(0, _contractApiHelpers.stateToString)(fact)}`, ErrorCodes.INVALID_CONTRACT_STATE);
     }
   }
 
-  assertActivationTokenBalance(requiredBalance, factBalance) {
+  _assertActivationTokenBalance(requiredBalance, factBalance) {
     if (factBalance.lt(requiredBalance)) {
       throw new _errors.UserError(`Failed to activate contract; need ${requiredBalance} tokens, have ${factBalance}`, ErrorCodes.INSUFFICIENT_TOKEN_BALANCE);
     }
   }
 
-  assertPerformanceUpdateIsValid(currentPerformanceData, update) {
+  _assertPerformanceUpdateIsValid(currentPerformanceData, update) {
     Object.keys(update).forEach(updateItemAddress => {
       const existingItem = currentPerformanceData[updateItemAddress];
       if (!existingItem) {
@@ -30908,13 +30908,13 @@ class ProjectContract extends _baseContract2.default {
     return;
   }
 
-  assertCanFinalize(canFinalize) {
+  _assertCanFinalize(canFinalize) {
     if (!canFinalize) {
       throw new _errors.UserError(`Contract has pending work and couldn't be finalized`, ErrorCodes.INVALID_CONTRACT_STATE);
     }
   }
 
-  assertCanForceFinalize(state, canForceFinalize) {
+  _assertCanForceFinalize(state, canForceFinalize) {
     if (state !== _contractApiHelpers.State.Active && state !== _contractApiHelpers.State.ForceFinalizing) {
       throw new _errors.UserError(`You can only force-finalize contract in ACTIVE or FORCE_FINALIZING state, ` + `current state: ${(0, _contractApiHelpers.stateToString)(state)}`, ErrorCodes.INVALID_CONTRACT_STATE);
     }
@@ -36898,6 +36898,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.BigNumber = exports.UserError = undefined;
 exports.init = init;
 exports.isInitialized = isInitialized;
+exports.isInitialization = isInitialization;
 exports.getClientAddress = getClientAddress;
 exports.checkBalances = checkBalances;
 exports.isTransacting = isTransacting;
@@ -37000,7 +37001,11 @@ async function _init(tokenContractAddress, expectedNetworkId) {
 }
 
 function isInitialized() {
-  return isInitializing || moduleIsInitialized;
+  return moduleIsInitialized;
+}
+
+function isInitialization() {
+  return isInitializing;
 }
 
 function assertInitialized() {

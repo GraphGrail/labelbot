@@ -1,6 +1,7 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
@@ -42,7 +43,10 @@ $('#uploaddatasetform-datasetfile').on('change',function(){
                            ->textarea(['class'=>'form-control m-input', 'rows'=>'3'])
                            ->label(false) ?>
                 </div>      
-                <div class="m-section__sub"><?=Yii::t('app', 'Accepted files in ".csv" format') ?></div>
+                <div class="m-section__sub">
+                    <?=Yii::t('app', 'Only csv with latest data column supported. Example:') ?>
+                    <?=Html::a('download dataset example', Url::to('/files/dataset-example.csv')) ?>
+                </div>
                 <div class="form-group m-form__group">
                   <div class="custom-file">
                   	<?= $form->field($model, 'datasetFile')

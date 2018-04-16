@@ -12,141 +12,6 @@ use yii\widgets\ActiveForm;
 /* @var $view \common\models\view\TaskDetailView */
 
 ScoreWorkAsset::register($this);
-EthGatewayAsset::register($this);
-
-$this->registerJs("
-  const ggEth = graphGrailEther
-  const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
-  const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-  const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'
-
-  let clientAddress
-  const contractAddress = $('.js-contract-address').val();
-
-  ggEth.init(tokenContractAddress, expectedNetworkId)  
-    .catch(err => {
-      console.log(err.code + ' ' + err)
-      switch(err.code) {
-        case 'ALREADY_INITIALIZED':
-          return ggEth.getClientAddress()
-        case 'NO_ACCOUNTS':
-          return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
-        case 'NO_ETHEREUM_CLIENT':
-          return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
-        case 'WRONG_NETWORK':
-          return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
-        default:
-          return showEthClientError(err)
-      }
-    })
-    .then(address => {
-      console.log('User wallet address: ' + address)
-      clientAddress = address
-      $('.js-btn-score-work').attr('disabled', false)
-    })
-    .catch(err => {
-      showEthClientError(err)
-    })
-    
-    $('.js-get-credit').on('click', e => {
-		window.location = 'get-credit/' + clientAddress; 
-	})
-
-
-  $('.js-btn-score-work').on('click', e => {
-    e.preventDefault();
-
-    if (!$('.js-workers').val()) {
-        alert('Score work to send results to blockchain')
-        return false;
-    }
-
-    $('.js-btn-score-work').attr('disabled', true)
-
-    let workers = JSON.parse($('.js-workers').val())
-
-    console.log(workers)
-
-    ggEth.activeTransactionFinishedPromise()
-      .then(_ => {
-        notifyCheckEthClient()
-        return ggEth.scoreWork(contractAddress, workers)
-      })
-      .catch(err => {
-        console.log(err.code + ' ' + err)
-        switch(err.code) {
-          case 'ALREADY_INITIALIZED':
-            return ggEth.getClientAddress()
-          case 'NO_ACCOUNTS':
-            return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
-          case 'NO_ETHEREUM_CLIENT':
-            return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
-          case 'WRONG_NETWORK':
-            return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
-          case 'INSUFFICIENT_ETHER_BALANCE':
-            return showEthCreditAlert();
-          default:
-            return showEthClientError(err)
-        }
-      })
-      .then(_ => {
-        $('.js-form').submit();
-      })
-  })
-
-");
-
-$this->registerJs("
-  const finalizeInit = function() {
-      const syncStatus = function() {
-        $.post('". Url::toRoute(['task/sync-status', 'id' => $task->id]) . "', (response) => {
-            console.log(response);
-        })
-      }
-    
-      const ggEth = graphGrailEther
-      const contractAddress = $('.js-contract-address').val();
-    
-      $('.finalize-task-btn').on('click', function(e) {
-        e.preventDefault();
-    
-        if (!clientAddress) {
-            return;
-        }
-        $(this).attr('disabled', true)
-        $('.m-portlet__head-caption').addClass('m-loader m-loader--success')
-        
-        ggEth.activeTransactionFinishedPromise()
-          .then(_ => {    
-            notifyCheckEthClient()       
-            return ggEth.finalizeContract(contractAddress)
-          })
-          .catch(err => {
-            console.log(err.code + ' ' + err)
-            switch(err.code) {
-              case 'NOT_INITIALIZED':
-                return showEthClientError('Oops! Etherium client was not initialized. Please reload page')
-              case 'TRANSACTION_ALREADY_RUNNING':
-                return showEthClientError('Oops! Transaction already running. Reload page')
-              case 'INSUFFICIENT_ETHER_BALANCE':
-                return showEthCreditAlert();
-              case 'INSUFFICIENT_TOKEN_BALANCE':
-                return showEthClientError('Oops! Not enough tokens')
-              default:
-                return showEthClientError(err)
-            }
-          })
-          .then(_ => {
-            if (_ === false) {
-                return
-            }
-            syncStatus()
-            setTimeout(() => {window.location = '". Url::toRoute(['task/view', 'id' => $task->id]) . "' }, 3000);
-          })
-      })
-  }();
-
-");
 
 ?>
 <h1>Jobs scoring</h1>
@@ -197,6 +62,11 @@ $this->registerJs("
         </div>
     </div>
     <div class="m-portlet__body">
+        <div class="row">
+            <div class="col-xl-8 order-2 order-xl-1">
+                <?=$view->getStatusComment() ?>
+            </div>
+        </div>
         <!--begin: Search Form -->
         <div class="m-form m-form--label-align-right m--margin-top-20 m--margin-bottom-30">
             <div class="row align-items-center">

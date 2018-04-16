@@ -22,7 +22,15 @@ return [
             // send all mails to a file by default. You have to set
             // 'useFileTransport' to false and configure a transport
             // for the mailer to send real emails.
-            'useFileTransport' => true,
+            'useFileTransport' => false,
+            'transport' => [
+                'class' => 'Swift_SmtpTransport',
+                'host' => getenv('SMTP_HOST'),
+                'username' => getenv('SMTP_USERNAME'),
+                'password' => getenv('SMTP_PASSWORD'),
+                'port' => getenv('SMTP_PORT') ?: '587',
+                'encryption' => getenv('SMTP_ENCRYPT') ?: 'tls',
+            ],
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',

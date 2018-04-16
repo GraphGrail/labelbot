@@ -123,7 +123,11 @@ class Dataset extends ActiveRecord
         return $this->save();
     }
 
-    public function status(): object {
+    /**
+     * @return object
+     */
+    public function status(): object
+    {
         $status = [];
         switch ($this->status) {
             case self::STATUS_READY:
@@ -147,11 +151,13 @@ class Dataset extends ActiveRecord
                     'color' => 'danger'
                 ];
                 break;
-            case self::STATUS_UPLOADED || self::STATUS_PARSING:
+            case self::STATUS_UPLOADED:
+            case self::STATUS_PARSING:
                 $status = [
                     'text' => Yii::t('app', 'Processing'),
                     'tip' => '',
-                    'color' => 'info'
+                    'color' => 'info',
+                    'reload' => true
                 ];
                 break;
             case self::STATUS_PARSING_ERROR:
@@ -162,7 +168,7 @@ class Dataset extends ActiveRecord
                 ];
                 break;
         }
-        return (object) $status;
+        return (object)$status;
     }
 
     public static function find()
