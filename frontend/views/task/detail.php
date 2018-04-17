@@ -71,7 +71,12 @@ TaskDetailPage::register($this);
                         <?php
                             if ($action = $view->getNextAction()) {
                                 ?>
-                                    <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>"><?=$action->getLabel()?></a>
+                                    <a
+                                        href="<?=$action->getUrl() ?: 'javascript:void(0);'?>"
+                                        class="<?=$action->getOptions()['class']?>"
+                                        data-id="<?=$task->id ?>"
+                                        data-contract-address="<?=$task->contract_address ?>"
+                                    ><?=$action->getLabel()?></a>
                                 <?php
                             }
                             if ($additionalActions = $view->getAdditionalActions()) {

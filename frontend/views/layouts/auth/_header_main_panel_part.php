@@ -74,7 +74,7 @@ use yii\helpers\Url;
 
                 <li class="m-nav__item m-dropdown m-dropdown--large m-dropdown--arrow m-dropdown--align-center m-dropdown--mobile-full-width m-list-search m-list-search--skin-light">
                     <a class="m-nav__link m--hide m--font-brand js-user-wallet">
-                        Wallet: <span class="m--font-focus js-user-addr"></span><br>
+                        Wallet: <span class="m--font-focus js-user-address"></span><br>
                         Ether: <span class="js-user-ether"></span>, GAI tokens: <span class="js-user-token"></span><br>
                     </a>
                 </li>
