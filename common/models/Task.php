@@ -181,7 +181,11 @@ class Task extends ActiveRecord
         if ($this->isGettingNewWorkItem($moderator_id)) {
             $blockchain      = new EthereumGateway;
             $contractAddress = new Address($this->contract_address);
-            $contractStatus  = $blockchain->contractStatus($contractAddress);
+            try {
+                $contractStatus  = $blockchain->contractStatus($contractAddress);
+            } catch (\Exception $e) {
+                return null;
+            }
 
             // If there is no workItems, all of them are already in work
             if ($contractStatus->workItemsLeft <= $this->currentWorkItemsCount()) {

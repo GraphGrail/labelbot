@@ -6,11 +6,9 @@ require_once 'AuthenticatedUserCommand.php';
 
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
-use common\models\Moderator;
 use common\models\Task;
 use common\models\Data;
 use common\models\Label;
-use common\domain\ethereum\Address;
 use common\components\LabelsKeyboard;
 
 

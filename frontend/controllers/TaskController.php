@@ -116,7 +116,7 @@ class TaskController extends \yii\web\Controller
     }
 
     /**
-     * Creation and activation of smartcontract for Task
+     * Creation and activation of smart contract for Task
      * @param int $id Task id
      * @return string
      * @throws \Exception
@@ -337,6 +337,8 @@ class TaskController extends \yii\web\Controller
     /**
      * Moderators' work scoring
      * @param int $id Task id
+     * @return string|\yii\web\Response
+     * @throws \Exception
      */
     public function actionScoreWork($id)
     {
@@ -387,8 +389,10 @@ class TaskController extends \yii\web\Controller
 
 
     /**
-     * Creates smartcontract for Task
+     * Creates smart contract for Task
      * @param int $id Task id
+     * @return string
+     * @throws \Exception
      */
     public function actionSendTokens($id)
     {
@@ -448,7 +452,7 @@ class TaskController extends \yii\web\Controller
         }
 
         if (bccomp(Yii::$app->params['creditEtherValue'], $systemBalance->ether) === 1) {
-            //TODO: replace this dirty hack -
+            //TODO: replace this dirty hack
             if (!strpos($systemBalance->ether, 'e+')) {
                 return [
                     'error'=>true,
@@ -589,6 +593,7 @@ class TaskController extends \yii\web\Controller
 
     /**
      * @param $id
+     * @return \yii\console\Response|\yii\web\Response
      * @throws NotFoundHttpException
      * @throws \yii\base\ExitException
      */
@@ -669,7 +674,6 @@ class TaskController extends \yii\web\Controller
 
     /**
      * @param Task $task
-     * @param $contractStatus
      * @return array
      */
     private function getModeratorCountAssignedLabels(Task $task): array
