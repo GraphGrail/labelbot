@@ -9,12 +9,14 @@ use Yii;
  *
  * @property int $id
  * @property string $auth_token
+ * @property string $eth_addr
  * @property int $tg_chat_id
  * @property int $tg_id
  * @property string $tg_username
  * @property string $tg_first_name
  * @property string $tg_last_name
  * @property string $phone
+ * @property string $current_task
  * @property int $created_at
  * @property int $updated_at
  */
@@ -61,6 +63,7 @@ class Moderator extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'auth_token' => 'Auth Token',
+            'eth_addr' => 'Ethereum address',
             'tg_chat_id' => 'Tg Chat ID',
             'tg_id' => 'Tg ID',
             'tg_username' => 'Tg Username',
