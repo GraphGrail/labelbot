@@ -16,6 +16,9 @@ return [
             'password' => getenv('DB_PASSWORD'),
             'charset' => getenv('DB_CHARSET') ?: 'utf8',
         ],
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager',
+        ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
             'viewPath' => '@common/mail',
