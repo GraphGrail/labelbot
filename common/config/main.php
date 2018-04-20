@@ -46,6 +46,15 @@ return [
                         'app/error' => 'error.php',
                     ],
                 ],
+                'adm*' => [
+                    'class' => 'yii\i18n\PhpMessageSource',
+                    'basePath' => '@common/messages',
+                    'sourceLanguage' => 'en-US',
+                    'fileMap' => [
+                        'app' => 'adm.php',
+                        'app/error' => 'error.php',
+                    ],
+                ],
                 'tg*' => [
                     'class' => 'yii\i18n\PhpMessageSource',
                     'basePath' => '@common/messages',
