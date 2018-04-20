@@ -31,8 +31,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'text',
             'label_group_id',
             'ordering',
-            //'created_at',
-            //'updated_at',
+            'created_at:datetime',
+            'updated_at:datetime',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],
