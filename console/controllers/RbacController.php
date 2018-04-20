@@ -10,7 +10,7 @@ namespace console\controllers;
 
 use common\models\User;
 use Yii;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\console\Controller;
 
 class RbacController extends Controller
@@ -19,15 +19,19 @@ class RbacController extends Controller
     {
         $user = User::find()->where(['email' => $email])->one();
         if (!$user) {
-            throw new InvalidParamException("There is no user with email \"$email\".");
+            throw new InvalidArgumentException("There is no user with email \"$email\".");
         }
 
         $auth = Yii::$app->authManager;
         $roleObject = $auth->getRole($role);
         if (!$roleObject) {
-            throw new InvalidParamException("There is no role \"$role\".");
+            throw new InvalidArgumentException("There is no role \"$role\".");
         }
 
-        $auth->assign($roleObject, $user->id);
+        try {
+            $auth->assign($roleObject, $user->id);
+        } catch (\Exception $e) {
+            echo $e;
+        }
     }
 }

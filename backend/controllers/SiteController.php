@@ -18,22 +18,23 @@ class SiteController extends Controller
     public function behaviors()
     {
         return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'rules' => [
-                    [
-                        'actions' => ['login', 'error'],
+            'access' => array(
+                'class' => AccessControl::class,
+                'rules' => array(
+                    array(
+                        'actions' => array('login', 'error'),
                         'allow' => true,
-                    ],
-                    [
-                        'actions' => ['logout', 'index'],
+                        'roles' => array('?'),
+                    ),
+                    array(
+                        'actions' => array('logout', 'index'),
                         'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
+                        'roles' => array('moderator'),
+                    ),
+                ),
+            ),
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
                     'logout' => ['post'],
                 ],
