@@ -173,8 +173,9 @@ $('.finalize-task-btn').on('click', function(e) {
 
     const taskId = $(this).data('id');
     const contractAddress = $(this).data('contract-address');
+
     if (contractAddress === undefined) return;
-    alert();
+
     $(this).attr('disabled', true).addClass('m-loader m-loader--right');
 
     graphGrailEther.activeTransactionFinishedPromise()
