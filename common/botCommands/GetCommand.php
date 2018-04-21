@@ -6,6 +6,7 @@ require_once 'AuthenticatedUserCommand.php';
 
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
+use common\domain\ethereum\Address;
 use common\models\Task;
 use common\models\Data;
 use common\models\Label;
@@ -55,10 +56,19 @@ class GetCommand extends AuthenticatedUserCommand
  		$command = $this->message->getCommand();
 
  		if (substr($command, 0, 6) === 'get_0x') {
- 			$contract_address = substr($command, 4);
+ 			$command_param = substr($command, 4);
 
-        	// TODO: $contract_address ethereum address validation  
- 			$this->moderator->current_task = $contract_address;
+            try {
+                $contract_address = new Address($command_param);
+            } catch (\Exception $e) {
+                $req_data = [
+                    'chat_id' => $this->chat_id,
+                    'text'    => 'Wrong contract address.',
+                ];
+                return Request::sendMessage($req_data);
+            }
+
+            $this->moderator->current_task = (string) $contract_address;
  			$this->moderator->save();
  		}
 
@@ -77,6 +87,16 @@ class GetCommand extends AuthenticatedUserCommand
                     'text'    => 'Inactive task. Please, try to get data for this task later.',
                 ];
             return Request::sendMessage($req_data);        	
+        }
+
+        // We don't let to get own tasks works because it going to errors with smart contract
+        $task_contract = json_decode($task->contract);
+        if ($task_contract->clientAddress === $this->moderator->eth_addr) {
+            $req_data = [
+                'chat_id' => $this->chat_id,
+                'text'    => 'Sorry, but you can\'t get own tasks jobs.',
+            ];
+            return Request::sendMessage($req_data);
         }
 
         $assignedLabel = $task->getDataForLabelAssignment($this->moderator->id);

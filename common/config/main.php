@@ -16,6 +16,9 @@ return [
             'password' => getenv('DB_PASSWORD'),
             'charset' => getenv('DB_CHARSET') ?: 'utf8',
         ],
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager',
+        ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
             'viewPath' => '@common/mail',
@@ -43,6 +46,15 @@ return [
                     'sourceLanguage' => 'en-US',
                     'fileMap' => [
                         'app' => 'app.php',
+                        'app/error' => 'error.php',
+                    ],
+                ],
+                'adm*' => [
+                    'class' => 'yii\i18n\PhpMessageSource',
+                    'basePath' => '@common/messages',
+                    'sourceLanguage' => 'en-US',
+                    'fileMap' => [
+                        'app' => 'adm.php',
                         'app/error' => 'error.php',
                     ],
                 ],
