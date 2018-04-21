@@ -7,6 +7,8 @@ LabelPageAsset::register($this);
 
 /* @var $this yii\web\View */
 $this->title = 'Labels';
+
+$showHelper = true;
 ?>
 <div class="row">
 	<div class="col-xl-8">
@@ -68,17 +70,45 @@ $this->title = 'Labels';
 						]);
 					}
 
-					if (empty($labelGroups)): 
+					if (empty($labelGroups)):
+                        $showHelper = false;
 				?>
 					<div class="lead">
 						<?=Yii::t('app', 'There is no created Labelings. Please create the new one.'); ?>
 					</div>
+                        <div class="m-stack m-stack--ver m-stack--general m--padding-top-30 m--padding-bottom-30">
+                            <div class="m-stack__item m-stack__item--center m-stack__item--middle">
+                                <a href="/label/new" class="btn btn-info btn-lg">
+                                    <?=Yii::t('app', 'Create Labeling'); ?>
+                                </a>
+                            </div>
+                        </div>
 				<?php endif; ?>
 				</div>
 			</div>
 		</div>
 		<!--end:: Widgets/Support Tickets -->
 	</div>
+    <?php if ($showHelper): ?>
+    <div class="col-xl-8">
+        <div class="m-alert m-alert--icon alert alert-success js-first-dataset" role="alert" style="">
+            <div class="m-alert__icon">
+                <i class="flaticon-information"></i>
+            </div>
+            <div class="m-alert__text js-credit-text">
+                <?=Yii::t('app', "You have created Labelings. Now you can upload Dataset, if you haven't or you need a new one. Or go to Task creation and create a new Task.") ?>
+            </div>
+            <div class="m-alert__actions credit-action" style="width: 260px;">
+                <a class="btn btn-link btn-outline-light btn-sm m-btn m-btn--hover-secondary" href="/dataset/new">
+                    <?=Yii::t('app', "Upload Dataset") ?>
+                </a>
+                <a class="btn btn-link btn-outline-light btn-sm m-btn m-btn--hover-secondary" href="/task/new">
+                    <?=Yii::t('app', "Create Task") ?>
+                </a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <div class="modal fade" id="delete_label_modal" tabindex="-1" role="dialog" aria-labelledby="delete_label_modal" aria-hidden="true">

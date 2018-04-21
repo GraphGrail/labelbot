@@ -8,6 +8,9 @@ use yii\helpers\Url;
 $this->title = 'Datasets';
 
 DatasetPageAsset::register($this);
+
+$showHelper = false;
+
 ?>
 <div class="row">
 	<div class="col-xl-8">
@@ -64,6 +67,9 @@ DatasetPageAsset::register($this);
                 <div class="m-widget4 m-widget4--progress">
 				<?php 
 					foreach ($datasets as $dataset) {
+					    if ($dataset->status === \common\models\Dataset::STATUS_READY) {
+					        $showHelper = true;
+                        }
 						echo $this->render('_dataset', [
 							'dataset' => $dataset
 						]);
@@ -74,13 +80,41 @@ DatasetPageAsset::register($this);
 					<div class="lead">
 						<?=Yii::t('app', 'There is no uploaded Datasets. Please upload the new one.'); ?>
 					</div>
+                        <div class="m-stack m-stack--ver m-stack--general m--padding-top-30 m--padding-bottom-30">
+                            <div class="m-stack__item m-stack__item--center m-stack__item--middle">
+                                <a href="/dataset/new" class="btn btn-info btn-lg">
+                                    <?=Yii::t('app', 'Upload Dataset'); ?>
+                                </a>
+                            </div>
+                        </div>
 				<?php endif; ?>
 				</div>
 			</div>
 		</div>
 		<!--end:: Widgets/Support Tickets -->
-	</div>
+    </div>
+    <?php if ($showHelper): ?>
+    <div class="col-xl-8">
+        <div class="m-alert m-alert--icon alert alert-success js-first-dataset" role="alert" style="">
+            <div class="m-alert__icon">
+                <i class="flaticon-information"></i>
+            </div>
+            <div class="m-alert__text js-credit-text">
+                <?=Yii::t('app', "You have ready datasets. Now you can create Labeling, if you didn't before or you need a new one. Or go to Task creation and create a new Task.") ?>
+            </div>
+            <div class="m-alert__actions credit-action" style="width: 260px;">
+                <a class="btn btn-link btn-outline-light btn-sm m-btn m-btn--hover-secondary" href="/label/new">
+                    <?=Yii::t('app', "Create Labeling") ?>
+                </a>
+                <a class="btn btn-link btn-outline-light btn-sm m-btn m-btn--hover-secondary" href="/task/new">
+                    <?=Yii::t('app', "Create Task") ?>
+                </a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
+
 
 <div class="modal fade" id="delete_dataset_modal" tabindex="-1" role="dialog" aria-labelledby="delete_dataset_modal" aria-hidden="true">
     <div class="modal-dialog" role="document">

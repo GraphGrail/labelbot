@@ -85,6 +85,13 @@ $this->title = 'Tasks';
                         <div class="lead">
                             <?=Yii::t('app', 'There is no created tasks. Please create the new one.'); ?>
                         </div>
+                        <div class="m-stack m-stack--ver m-stack--general m--padding-top-30 m--padding-bottom-30">
+                            <div class="m-stack__item m-stack__item--center m-stack__item--middle">
+                                <a href="/task/new" class="btn btn-info btn-lg">
+                                    <?=Yii::t('app', 'Create Task'); ?>
+                                </a>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
