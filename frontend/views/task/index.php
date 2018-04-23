@@ -13,7 +13,7 @@ $this->title = 'Tasks';
 
 ?>
 <div class="row">
-    <div class="col-xl-12">
+    <div class="col-xl-8">
         <div class="m-alert m-alert--icon alert alert-danger eth-errors" role="alert" style="display:none">
             <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
             <div class="m-alert__text"></div>

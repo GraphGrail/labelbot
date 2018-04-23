@@ -66,6 +66,7 @@ $('html').on('wallet_ready', () => {
     $('.js-btn-create').attr('disabled', false);
     $('.js-btn-transfer').attr('disabled', false);
     $('.js-btn-activate').attr('disabled', false);
+    $('.finalize-task-btn').attr('disabled', false);
     $('.js-btn-score-work').attr('disabled', false);
 });
 
@@ -105,7 +106,7 @@ $('.js-btn-transfer').on('click', e => {
     $('.js-btn-transfer').attr('disabled', true).addClass('m-loader m-loader--right');
 
     graphGrailEther.activeTransactionFinishedPromise()
-        .then(_ => {
+        .then(() => {
             notifyCheckEthClient();
             return graphGrailEther.transferTokensTo(contractAddress, tokensValue)
         })
@@ -143,26 +144,28 @@ $('.js-btn-activate').on('click', e => {
 $('.js-btn-score-work').on('click', e => {
     e.preventDefault();
 
-    if (!$('.js-workers').val()) {
+    const workersJSON = $('.js-workers').val();
+
+    if (!workersJSON) {
         alert('Score work to send results to blockchain');
         return false;
     }
 
-    $('.js-btn-score-work').attr('disabled', true);
+    $('.js-btn-score-work').attr('disabled', true).addClass('m-loader m-loader--right');
 
-    let workers = JSON.parse($('.js-workers').val());
+    let workers = JSON.parse(workersJSON);
 
     console.log(workers);
 
     graphGrailEther.activeTransactionFinishedPromise()
-        .then(_ => {
+        .then(() => {
             notifyCheckEthClient();
             return graphGrailEther.scoreWork(contractAddress, workers);
         })
         .catch(err => {
             handleEthError(err);
         })
-        .then(_ => {
+        .then(() => {
             $('.js-form').submit();
         });
 });
@@ -179,7 +182,7 @@ $('.finalize-task-btn').on('click', function(e) {
     $(this).attr('disabled', true).addClass('m-loader m-loader--right');
 
     graphGrailEther.activeTransactionFinishedPromise()
-        .then(_ => {
+        .then(() => {
             notifyCheckEthClient();
             return graphGrailEther.finalizeContract(contractAddress)
         })

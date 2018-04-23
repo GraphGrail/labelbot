@@ -21,6 +21,7 @@ use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
 use yii\log\Logger;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 
 class TaskController extends \yii\web\Controller
@@ -364,9 +365,12 @@ class TaskController extends \yii\web\Controller
             ]);
         }
 
+        if ($task->status === Task::STATUS_CONTRACT_FINALIZED) {
+            return $this->redirect('/task/' . $task->id);
+        }
+
         if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED && $task->status !== Task::STATUS_CONTRACT_ACTIVE_COMPLETED) {
-            // TODO: remove that
-            throw new \Exception("Task must be paused or completed for scoring.");
+            throw new HttpException(500, "Task must be paused or completed for scoring.");
         }
 
         try {
@@ -384,34 +388,6 @@ class TaskController extends \yii\web\Controller
             'contractStatus' => $contractStatus,
             'sendingForm' => new SendScoreWorkForm(),
             'view' => $view,
-        ]);
-    }
-
-
-    /**
-     * Creates smart contract for Task
-     * @param int $id Task id
-     * @return string
-     * @throws \Exception
-     */
-    public function actionSendTokens($id)
-    {
-        $blockchain  = new EthereumGateway;
-
-        $task = Task::find()
-            ->where(['id'=>$id])
-            ->ownedByUser() // task must belongs to user
-            ->one();
-
-        if ($task === null) {
-            throw new \Exception("Can't find Task");
-        }
-
-        $contractNotDeployed = $task->status === Task::STATUS_CONTRACT_NOT_DEPLOYED 
-                            || $task->status === Task::STATUS_CONTRACT_DEPLOYMENT_ERROR;
-
-        return $this->render('sendTokens', [
-            'task' => $task
         ]);
     }
 

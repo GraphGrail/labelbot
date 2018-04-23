@@ -226,7 +226,14 @@ class TaskDetailView
     {
         $actions = [];
 
-        if ($this->contractStatus && $this->contractStatus->canFinalize && !$this->task->isCompleted() && !$this->task->isFinalized()) {
+        $taskCanBeFinalizedByUser = in_array($this->task->status, [
+            Task::STATUS_CONTRACT_NEW_NEED_TOKENS,
+            Task::STATUS_CONTRACT_NEW,
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED,
+            Task::STATUS_CONTRACT_ACTIVE_COMPLETED,
+        ]);
+
+        if ($taskCanBeFinalizedByUser) {
             $action = new ActionView(
                 Yii::t('app', 'Finalize task')
             );

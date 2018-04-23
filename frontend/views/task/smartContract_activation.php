@@ -28,6 +28,11 @@
                                 <input type="hidden" class="form-control m-input" name="action" value="activation">
                                 <?= \common\widgets\smartContractAddress::widget(['address'=>$task->contract_address]); ?>
                                 <div class="form-group m-form__group m--padding-top-20">
+                                    <?php /* <button class="btn btn-outline-info m-btn--pill pull-right finalize-task-btn"
+                                            data-id="<?=$task->id?>"
+                                            data-contract-address="<?=$task->contract_address?>"
+                                            disabled="disabled">Cancel
+                                    </button> */ ?>
                                     <button class="btn btn-danger m-btn--pill m-btn--air pull-right js-btn-activate"
                                             disabled="disabled">Activate smart contract
                                     </button>

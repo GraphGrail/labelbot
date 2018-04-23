@@ -101,7 +101,12 @@ ScoreWorkAsset::register($this);
                                                 foreach ($additionalActions as $additionalAction) {
                                                     ?>
                                                     <li class="m-nav__item">
-                                                        <a href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>" class="m-nav__link <?=$additionalAction->getOptions()['class']?>">
+                                                        <a
+                                                                href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>"
+                                                                class="m-nav__link <?=$additionalAction->getOptions()['class']?>"
+                                                                data-id="<?=$task->id?>"
+                                                                data-contract-address="<?=$task->contract_address?>"
+                                                        >
                                                             <i class="m-nav__link-icon <?=$additionalAction->getOptions()['iconClass']?>"></i>
                                                             <span class="m-nav__link-text">
                                                                 <?=$additionalAction->getLabel()?>
