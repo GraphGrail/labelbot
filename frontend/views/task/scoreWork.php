@@ -48,7 +48,7 @@ ScoreWorkAsset::register($this);
 
 <?=$this->render('_credit')?>
 
-<input type="hidden" class="js-workers-source" disabled="disabled" value="<?=htmlspecialchars(json_encode($contractStatus->workers))?>" />
+<input type="hidden" class="js-workers-source" disabled="disabled" value="<?=$view->getTableSourceAsJson() ?>" />
 <div class="m-portlet m-portlet--mobile">
     <div class="m-portlet__head">
         <div class="m-portlet__head-caption">
