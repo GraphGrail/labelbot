@@ -103,7 +103,7 @@ $('.js-btn-create').click(_ => {
 });
 
 
-$('.js-btn-transfer').on('click', e => {
+$('.js-btn-transfer').on('click', function(e) {
     e.preventDefault();
     $('.js-btn-transfer').attr('disabled', true).addClass('m-loader m-loader--right');
 
@@ -122,7 +122,7 @@ $('.js-btn-transfer').on('click', e => {
 });
 
 
-$('.js-btn-activate').on('click', e => {
+$('.js-btn-activate').on('click', function(e) {
     e.preventDefault();
     $('.js-btn-activate').attr('disabled', true).addClass('m-loader m-loader--right');
 
@@ -157,6 +157,7 @@ $('.js-btn-cancel').on('click', function(e) {
             return graphGrailEther.activateContract(contractAddress)
         })
         .then(() => {
+            notifyCheckEthClient();
             return graphGrailEther.finalizeContract(contractAddress)
         })
         .catch(err => {
@@ -171,21 +172,18 @@ $('.js-btn-cancel').on('click', function(e) {
 });
 
 
-$('.js-btn-score-work').on('click', e => {
+$('.js-btn-score-work').on('click', function(e) {
     e.preventDefault();
 
     const workersJSON = $('.js-workers').val();
-
     if (!workersJSON) {
         alert('Score work to send results to blockchain');
         return false;
     }
+    let workers = JSON.parse(workersJSON);
+    console.log(workers);
 
     $('.js-btn-score-work').attr('disabled', true).addClass('m-loader m-loader--right');
-
-    let workers = JSON.parse(workersJSON);
-
-    console.log(workers);
 
     graphGrailEther.activeTransactionFinishedPromise()
         .then(() => {
@@ -195,9 +193,16 @@ $('.js-btn-score-work').on('click', e => {
         .catch(err => {
             return handleEthError(err);
         })
-        .then(() => {
+        .then(_ => {
+            if (_ === false) return;
             $('.js-form').submit();
         });
+});
+
+
+$('.js-btn-release').on('click', function(e) {
+    e.preventDefault();
+    $('.js-form').submit();
 });
 
 
@@ -217,6 +222,9 @@ $('.finalize-task-btn').on('click', function(e) {
             return graphGrailEther.finalizeContract(contractAddress)
         })
         .catch(err => {
+            if (err.code === 'INVALID_CONTRACT_STATE') {
+                return true;
+            }
             return handleEthError(err);
         })
         .then(_ => {

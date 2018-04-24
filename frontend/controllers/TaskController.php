@@ -355,6 +355,10 @@ class TaskController extends \yii\web\Controller
             throw new \Exception("Can't find Task");
         }
 
+        if ($task->status === Task::STATUS_CONTRACT_ACTIVE_PAUSED && Yii::$app->request->isPost) {
+            return $this->redirect('release');
+        }
+
         if ($task->status === Task::STATUS_CONTRACT_ACTIVE) {
             return $this->redirect(['pause', 'id' => $id]);
         }

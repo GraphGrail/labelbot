@@ -226,6 +226,21 @@ class TaskDetailView
     {
         $actions = [];
 
+        $taskPaused = in_array($this->task->status, [
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED
+        ]);
+
+        if ($taskPaused) {
+            $action = new ActionView(
+                Yii::t('app', 'Continue task')
+            );
+            $action->setOptions([
+                'class' => 'js-btn-release',
+                'iconClass' => 'la la-play',
+            ]);
+            $actions[] = $action;
+        }
+
         $taskCanBeFinalizedByUser = in_array($this->task->status, [
             Task::STATUS_CONTRACT_NEW_NEED_TOKENS,
             Task::STATUS_CONTRACT_NEW,
@@ -304,7 +319,9 @@ class TaskDetailView
             Task::STATUS_CONTRACT_ACTIVE               => Yii::t('app',
                 'Now navigate to <a href="http://telegram.me/datalabelbot" target="_blank">@DataLabelBot in Telegram</a>, 
                  login with your Ethereum address and type command /tasks to check your task successfully distributed 
-                 to workers of the Platform.'),
+                 to workers of the Platform. The table below shows the progress of the data labeling. 
+                 When some of the employees complete their current work by 100%, you can click on the "Score work" button 
+                 to pause the task and approve or decline their work.'),
             Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS   => '',
             Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE => '',
             Task::STATUS_CONTRACT_ACTIVE_PAUSED        => Yii::t('app',

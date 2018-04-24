@@ -136,7 +136,7 @@ var ScoreWorkTable = function() {
             data: {
                 type: 'local',
                 source: this.getFormattedData(),
-                pageSize: 20
+                pageSize: 50
             },
 
             // layout definition
