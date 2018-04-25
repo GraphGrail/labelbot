@@ -5,14 +5,6 @@ class m180420_000001_castDb_rbac extends \yii\db\Migration
 
     public function up()
     {
-        $this->dropTable("auth_assignment");
-        $this->dropTable("auth_item");
-        $this->dropTable("auth_item_child");
-        $this->dropTable("auth_rule");
-    }
-
-    public function down()
-    {
         $tableOptions = 'ENGINE=InnoDB' . PHP_EOL . "COLLATE utf8_unicode_ci";
 
         $this->createTable('auth_assignment', [
@@ -64,6 +56,14 @@ class m180420_000001_castDb_rbac extends \yii\db\Migration
         $this->addForeignKey('auth_item_ibfk_1', 'auth_item','rule_name', 'auth_rule', 'name', 'SET NULL', 'CASCADE');
         $this->addForeignKey('auth_item_child_ibfk_1', 'auth_item_child','parent', 'auth_item', 'name', 'CASCADE', 'CASCADE');
         $this->addForeignKey('auth_item_child_ibfk_2', 'auth_item_child','child', 'auth_item', 'name', 'CASCADE', 'CASCADE');
+    }
+
+    public function down()
+    {
+        $this->dropTable("auth_assignment");
+        $this->dropTable("auth_item");
+        $this->dropTable("auth_item_child");
+        $this->dropTable("auth_rule");
     }
 
 }
