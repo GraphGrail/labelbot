@@ -17,8 +17,9 @@ $workersJSON = $view->getTableSourceAsJson();
 ?>
 <h1>Jobs scoring</h1>
 
+<?php
 
-<?php $form = ActiveForm::begin([
+$form = ActiveForm::begin([
     'options' => [
         'class'=>'m-section m--margin-bottom-5 score-work-form js-form',
     ],
@@ -29,10 +30,9 @@ echo $form->field($sendingForm, 'workers')
         'class' => 'js-workers',
         'value' => '',
     ])
-->label(false);
+    ->label(false);
 
 ActiveForm::end();
-
 
 foreach ($contractStatus->workers as $addr => $worker) {
     printf('<input type="hidden" class="workers-preview-url-%s" disabled="disabled" value="%s" />',
@@ -49,7 +49,7 @@ foreach ($contractStatus->workers as $addr => $worker) {
     <div class="m-alert__text"></div>
 </div>
 
-<?=$this->render('_credit')?>
+<?=$this->render('_credit') ?>
 
 <input type="hidden" class="js-workers-source" disabled="disabled" value="<?=$workersJSON ?>" />
 <div class="m-portlet m-portlet--mobile">
@@ -82,8 +82,7 @@ foreach ($contractStatus->workers as $addr => $worker) {
                     </div>
                 </div>
                 <div class="col-xl-4 order-1 m--align-right">
-                    <?php if ($additionalActions = $view->getAdditionalActions()) {
-                        ?>
+                    <?php if ($additionalActions = $view->getAdditionalActions()): ?>
                         <div class="pull-right m-dropdown m-dropdown--inline m-dropdown--arrow m-dropdown--align-right m-dropdown--align-push m--margin-left-10" data-dropdown-toggle="hover" aria-expanded="true">
                             <a href="#" class="m-portlet__nav-link btn btn-lg btn-secondary  m-btn m-btn--outline-2x m-btn--air m-btn--icon m-btn--icon-only m-btn--pill  m-dropdown__toggle">
                                 <i class="la la-plus m--hide"></i>
@@ -100,52 +99,40 @@ foreach ($contractStatus->workers as $addr => $worker) {
                                                         Quick Actions
                                                     </span>
                                                 </li>
-                                                <?php
-                                                foreach ($additionalActions as $additionalAction) {
-                                                    ?>
+                                                <?php foreach ($additionalActions as $additionalAction): ?>
                                                     <li class="m-nav__item">
                                                         <a
-                                                                href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>"
-                                                                class="m-nav__link <?=$additionalAction->getOptions()['class']?>"
-                                                                data-id="<?=$task->id?>"
-                                                                data-contract-address="<?=$task->contract_address?>"
+                                                                href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);' ?>"
+                                                                class="m-nav__link <?=$additionalAction->getOptions()['class'] ?>"
+                                                                data-id="<?=$task->id ?>"
+                                                                data-contract-address="<?=$task->contract_address ?>"
                                                         >
-                                                            <i class="m-nav__link-icon <?=$additionalAction->getOptions()['iconClass']?>"></i>
+                                                            <i class="m-nav__link-icon <?=$additionalAction->getOptions()['iconClass'] ?>"></i>
                                                             <span class="m-nav__link-text">
-                                                                <?=$additionalAction->getLabel()?>
+                                                                <?=$additionalAction->getLabel() ?>
                                                             </span>
                                                         </a>
                                                     </li>
-                                                    <?php
-                                                }
-                                                ?>
+                                                <?php endforeach; ?>
                                             </ul>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <?php
-                    }
-                    ?>
+                    <?php endif; ?>
 
-                    <?php if ($workersJSON === '[]'): ?>
-                    <span class="pull-right">
-                        <?php
-                            if ($action = $view->getNextAction()) {
-                                ?>
-                                <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>  js-btn-release" style="margin-left: 10px;">
-                                    <?=$action->getLabel()?>
-                                </a>
-                                <?php
-                            }
-                        ?>
-                    </span>
+                    <?php if (($workersJSON === '[]') && ($action = $view->getNextAction())): ?>
+                        <span class="pull-right">
+                            <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>  js-btn-release" style="margin-left: 10px;">
+                                <?=$action->getLabel()?>
+                            </a>
+                        </span>
                     <?php else: ?>
-                    <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work <?=!$task->isPaused() ? 'disabled' : ''?>">
-                        Send results to blockchain <i class="la la-send"></i>
-                    </button>
-                    <? endif; ?>
+                        <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work <?=!$task->isPaused() ? 'disabled' : ''?>">
+                            Send results to blockchain <i class="la la-send"></i>
+                        </button>
+                    <?php endif; ?>
                     <div class="m-separator m-separator--dashed d-xl-none"></div>
                 </div>
             </div>
