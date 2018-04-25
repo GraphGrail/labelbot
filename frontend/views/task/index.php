@@ -13,7 +13,7 @@ $this->title = 'Tasks';
 
 ?>
 <div class="row">
-    <div class="col-xl-12">
+    <div class="col-xl-8">
         <div class="m-alert m-alert--icon alert alert-danger eth-errors" role="alert" style="display:none">
             <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
             <div class="m-alert__text"></div>
@@ -84,6 +84,13 @@ $this->title = 'Tasks';
                         ?>
                         <div class="lead">
                             <?=Yii::t('app', 'There is no created tasks. Please create the new one.'); ?>
+                        </div>
+                        <div class="m-stack m-stack--ver m-stack--general m--padding-top-30 m--padding-bottom-30">
+                            <div class="m-stack__item m-stack__item--center m-stack__item--middle">
+                                <a href="/task/new" class="btn btn-info btn-lg">
+                                    <?=Yii::t('app', 'Create Task'); ?>
+                                </a>
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>

@@ -12,6 +12,18 @@ use yii\helpers\Url;
 
 class TaskScoreWorkView extends TaskDetailView
 {
+    public function getTableSourceAsJson($escape = true)
+    {
+        $data = json_decode(json_encode($this->getContractStatus()->workers), true);
+
+        $dataWaitsApprovement = array_filter($data, function($worker) {
+            return $worker['totalItems'] > ($worker['approvedItems'] + $worker['declinedItems']);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $json = json_encode($dataWaitsApprovement);
+        return $escape ? htmlspecialchars($json) : $json;
+
+    }
 
     public function getNextAction(): ?ActionView {
         $action = null;

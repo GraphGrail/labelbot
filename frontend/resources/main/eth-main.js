@@ -66,6 +66,8 @@ $('html').on('wallet_ready', () => {
     $('.js-btn-create').attr('disabled', false);
     $('.js-btn-transfer').attr('disabled', false);
     $('.js-btn-activate').attr('disabled', false);
+    $('.js-btn-cancel').attr('disabled', false);
+    $('.finalize-task-btn').attr('disabled', false);
     $('.js-btn-score-work').attr('disabled', false);
 });
 
@@ -75,10 +77,10 @@ function handleEthError(err) {
     switch(err.code) {
         case 'INSUFFICIENT_TOKEN_BALANCE':
             showEthCreditAlert(null, clientAddress);
-            return showEthClientError(errorText[err.code]);
+            showEthClientError(errorText[err.code]);
         case 'INSUFFICIENT_ETHER_BALANCE':
             showEthCreditAlert(null, clientAddress);
-            return showEthClientError(errorText[err.code]);
+            showEthClientError(errorText[err.code]);
         case 'NO_ACCOUNTS':
         case 'NO_ETHEREUM_CLIENT':
         case 'WRONG_NETWORK':
@@ -88,10 +90,11 @@ function handleEthError(err) {
         case 'INVALID_CONTRACT_STATE':
         case 'UNAUTHORIZED':
         case 'TRANSACTION_FAILED':
-            return showEthClientError(errorText[err.code]);
+            showEthClientError(errorText[err.code]);
         default:
-            return showEthClientError(err);
+            showEthClientError(err);
     }
+    return false;
 }
 
 
@@ -100,17 +103,17 @@ $('.js-btn-create').click(_ => {
 });
 
 
-$('.js-btn-transfer').on('click', e => {
+$('.js-btn-transfer').on('click', function(e) {
     e.preventDefault();
     $('.js-btn-transfer').attr('disabled', true).addClass('m-loader m-loader--right');
 
     graphGrailEther.activeTransactionFinishedPromise()
-        .then(_ => {
+        .then(() => {
             notifyCheckEthClient();
             return graphGrailEther.transferTokensTo(contractAddress, tokensValue)
         })
         .catch(err => {
-            handleEthError(err);
+            return handleEthError(err);
         })
         .then(_ => {
             if (_ === false) return;
@@ -119,7 +122,7 @@ $('.js-btn-transfer').on('click', e => {
 });
 
 
-$('.js-btn-activate').on('click', e => {
+$('.js-btn-activate').on('click', function(e) {
     e.preventDefault();
     $('.js-btn-activate').attr('disabled', true).addClass('m-loader m-loader--right');
 
@@ -129,7 +132,7 @@ $('.js-btn-activate').on('click', e => {
             return graphGrailEther.activateContract(contractAddress)
         })
         .catch(err => {
-            handleEthError(err);
+            return handleEthError(err);
         })
         .then(_ => {
             if(_ === false) {
@@ -140,31 +143,66 @@ $('.js-btn-activate').on('click', e => {
 });
 
 
-$('.js-btn-score-work').on('click', e => {
+$('.js-btn-cancel').on('click', function(e) {
+    e.preventDefault();
+    const taskId = $(this).data('id');
+    const contractAddress = $(this).data('contract-address');
+    if (contractAddress === undefined) return;
+
+    $('.js-btn-cancel').attr('disabled', true).addClass('m-loader m-loader--right');
+
+    graphGrailEther.activeTransactionFinishedPromise()
+        .then(() => {
+            notifyCheckEthClient();
+            return graphGrailEther.activateContract(contractAddress)
+        })
+        .then(() => {
+            notifyCheckEthClient();
+            return graphGrailEther.finalizeContract(contractAddress)
+        })
+        .catch(err => {
+            return handleEthError(err);
+        })
+        .then(_ => {
+            if (_ === false) return;
+            syncStatus(taskId);
+            setTimeout(() => {window.location.reload()}, 3000);
+        })
+
+});
+
+
+$('.js-btn-score-work').on('click', function(e) {
     e.preventDefault();
 
-    if (!$('.js-workers').val()) {
+    const workersJSON = $('.js-workers').val();
+    if (!workersJSON) {
         alert('Score work to send results to blockchain');
         return false;
     }
-
-    $('.js-btn-score-work').attr('disabled', true);
-
-    let workers = JSON.parse($('.js-workers').val());
-
+    let workers = JSON.parse(workersJSON);
     console.log(workers);
 
+    $('.js-btn-score-work').attr('disabled', true).addClass('m-loader m-loader--right');
+
     graphGrailEther.activeTransactionFinishedPromise()
-        .then(_ => {
+        .then(() => {
             notifyCheckEthClient();
             return graphGrailEther.scoreWork(contractAddress, workers);
         })
         .catch(err => {
-            handleEthError(err);
+            return handleEthError(err);
         })
         .then(_ => {
+            if (_ === false) return;
             $('.js-form').submit();
         });
+});
+
+
+$('.js-btn-release').on('click', function(e) {
+    e.preventDefault();
+    $('.js-form').submit();
 });
 
 
@@ -179,12 +217,15 @@ $('.finalize-task-btn').on('click', function(e) {
     $(this).attr('disabled', true).addClass('m-loader m-loader--right');
 
     graphGrailEther.activeTransactionFinishedPromise()
-        .then(_ => {
+        .then(() => {
             notifyCheckEthClient();
             return graphGrailEther.finalizeContract(contractAddress)
         })
         .catch(err => {
-            handleEthError(err);
+            if (err.code === 'INVALID_CONTRACT_STATE') {
+                return true;
+            }
+            return handleEthError(err);
         })
         .then(_ => {
             if (_ === false) return;

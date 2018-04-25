@@ -25,7 +25,7 @@ $this->registerJs('
                             <h5 class="m-widget5__title m--margin-bottom-25">
                                 Score work for task "<?=$task->name ?>"
                             </h5>
-                            <div class="m-loader m-loader--success">Waiting for pause...</div>
+                            <div class="m-loader m-loader--success">Pausing task...</div>
                             <div class="m--padding-bottom-20"></div>
                         </div>
                     </div>

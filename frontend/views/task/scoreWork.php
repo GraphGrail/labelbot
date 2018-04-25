@@ -12,34 +12,37 @@ use yii\widgets\ActiveForm;
 /* @var $view \common\models\view\TaskDetailView */
 
 ScoreWorkAsset::register($this);
+$workersJSON = $view->getTableSourceAsJson();
 
 ?>
 <h1>Jobs scoring</h1>
 
 
 <?php $form = ActiveForm::begin([
-        'options' => [
-            'class'=>'m-section m--margin-bottom-5 score-work-form js-form',
-        ],
-    ]);
+    'options' => [
+        'class'=>'m-section m--margin-bottom-5 score-work-form js-form',
+    ],
+]);
 
-    echo $form->field($sendingForm, 'workers')
-        ->hiddenInput([
-            'class' => 'js-workers',
-            'value' => '',
+echo $form->field($sendingForm, 'workers')
+    ->hiddenInput([
+        'class' => 'js-workers',
+        'value' => '',
+    ])
+->label(false);
+
+ActiveForm::end();
+
+
+foreach ($contractStatus->workers as $addr => $worker) {
+    printf('<input type="hidden" class="workers-preview-url-%s" disabled="disabled" value="%s" />',
+        $addr,
+        Url::to(['task/preview-work',
+            'id' => $task->id,
+            'addr' => $addr,
         ])
-    ->label(false);
-
-
-    foreach ($contractStatus->workers as $addr => $worker) {
-        printf('<input type="hidden" class="workers-preview-url-%s" disabled="disabled" value="%s" />',
-            $addr,
-            Url::to(['task/preview-work',
-                'id' => $task->id,
-                'addr' => $addr,
-            ])
-        );
-    }
+    );
+}
 ?>
 <div class="m-alert m-alert--icon alert alert-danger eth-errors" role="alert" style="display:none">
     <div class="m-alert__icon"><i class="flaticon-danger"></i></div>
@@ -48,7 +51,7 @@ ScoreWorkAsset::register($this);
 
 <?=$this->render('_credit')?>
 
-<input type="hidden" class="js-workers-source" disabled="disabled" value="<?=htmlspecialchars(json_encode($contractStatus->workers))?>" />
+<input type="hidden" class="js-workers-source" disabled="disabled" value="<?=$workersJSON ?>" />
 <div class="m-portlet m-portlet--mobile">
     <div class="m-portlet__head">
         <div class="m-portlet__head-caption">
@@ -73,18 +76,7 @@ ScoreWorkAsset::register($this);
                 <div class="col-xl-8 order-2 order-xl-1">
                     <div class="form-group m-form__group row align-items-center">
                         <div class="col-md-8">
-                            <div class="m-form__group m-form__group--inline">
-                                <div class="m-form__label">
-                                    <label>
-                                        <small>
-                                            <?=Yii::t('app', 'Smart contract address') ?>:
-                                        </small>
-                                    </label>
-                                </div>
-                                <div class="m-form__control">
-                                    <input type="text" id="address" class="form-control m-input js-contract-address" name="address" value="<?=$task->contract_address?>" disabled="disabled" />
-                                </div>
-                            </div>
+                            <?= \common\widgets\smartContractAddress::widget(['address'=>$task->contract_address]); ?>
                             <div class="d-md-none m--margin-bottom-10"></div>
                         </div>
                     </div>
@@ -112,7 +104,12 @@ ScoreWorkAsset::register($this);
                                                 foreach ($additionalActions as $additionalAction) {
                                                     ?>
                                                     <li class="m-nav__item">
-                                                        <a href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>" class="m-nav__link <?=$additionalAction->getOptions()['class']?>">
+                                                        <a
+                                                                href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>"
+                                                                class="m-nav__link <?=$additionalAction->getOptions()['class']?>"
+                                                                data-id="<?=$task->id?>"
+                                                                data-contract-address="<?=$task->contract_address?>"
+                                                        >
                                                             <i class="m-nav__link-icon <?=$additionalAction->getOptions()['iconClass']?>"></i>
                                                             <span class="m-nav__link-text">
                                                                 <?=$additionalAction->getLabel()?>
@@ -131,6 +128,8 @@ ScoreWorkAsset::register($this);
                         <?php
                     }
                     ?>
+
+                    <?php if ($workersJSON === '[]'): ?>
                     <span class="pull-right">
                         <?php
                             if ($action = $view->getNextAction()) {
@@ -142,9 +141,11 @@ ScoreWorkAsset::register($this);
                             }
                         ?>
                     </span>
+                    <?php else: ?>
                     <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work <?=!$task->isPaused() ? 'disabled' : ''?>">
                         Send results to blockchain <i class="la la-send"></i>
                     </button>
+                    <? endif; ?>
                     <div class="m-separator m-separator--dashed d-xl-none"></div>
                 </div>
             </div>
@@ -155,7 +156,6 @@ ScoreWorkAsset::register($this);
         <!--end: Datatable -->
     </div>
 </div>
-<?php ActiveForm::end() ?>
 
 <div class="modal fade" id="delete_score_work_modal" tabindex="-1" role="dialog" aria-labelledby="delete_score_work_modal" aria-hidden="true">
     <div class="modal-dialog" role="document">
