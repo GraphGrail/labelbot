@@ -320,12 +320,21 @@ class TaskDetailView
                 'Now navigate to <a href="http://telegram.me/datalabelbot" target="_blank">@DataLabelBot in Telegram</a>, 
                  login with your Ethereum address and type command /tasks to check your task successfully distributed 
                  to workers of the Platform. The table below shows the progress of the data labeling. 
-                 When some of the employees complete their current work by 100%, you can click on the "Score work" button 
-                 to pause the task and approve or decline their work.'),
+                 When some of the employees complete their current work by 100%, you can click on the 
+                 <span class="m-badge m-badge--accent m-badge--wide">Score work</span> 
+                 button to pause the task and approve or decline their work.'),
             Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS   => '',
             Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE => '',
             Task::STATUS_CONTRACT_ACTIVE_PAUSED        => Yii::t('app',
-                'You can either approve work, if you check it is done properly, or decline, if worker done bad.'),
+                'Task paused for scoring and workers don\'t receive new works from this task. In the table below you can 
+                either approve current work <span class="m-badge m-badge--success"><i class="la la-check-circle-o"></i></span>, 
+                if you check it is done properly, or decline <span class="m-badge m-badge--danger"><i class="la la-ban"></i></span>, 
+                if worker done bad. To make a decision you can see a preview of the completed work, which shows part of the labeled data 
+                <span class="m-badge m-badge--accent"><i class="la la-picture-o"></i></span>.<br>
+                After you score all works push <span class="m-badge m-badge--info m-badge--wide">Send to blockchain</span> 
+                to save results in task\'s  smart contract. Or you can skip scoring and continue the task by clicking 
+                on "Continue task" or even ending it by clicking on "Finalize task" in the additional actions menu next 
+                the main action button.'),
             Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => '',
             Task::STATUS_CONTRACT_FORCE_FINALIZING     => '',
             Task::STATUS_CONTRACT_FINALIZED            => Yii::t('app',
