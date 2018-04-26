@@ -22,7 +22,7 @@ class AppAsset extends AssetBundle
     public $depends = [
         InitAsset::class,
         VendorsAsset::class,
-        FullCalendarAsset::class,
-        DashBoardAsset::class,
+    //    FullCalendarAsset::class,
+    //    DashBoardAsset::class,
     ];
 }
