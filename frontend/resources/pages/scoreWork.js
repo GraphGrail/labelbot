@@ -1,11 +1,12 @@
-var ScoreWorkTable = function() {
-    var processed = {};
-    var needSort = true;
-    var source = $(".js-workers-source");
-    var result = $(".js-workers");
-    var obj = this;
-    var rendered = false;
-    var declineModal = $('#delete_score_work_modal');
+const ScoreWorkTable = function() {
+    let processed = {};
+    let needSort = true;
+    let worksToScore = 0;
+    let rendered = false;
+    const source = $(".js-workers-source");
+    const result = $(".js-workers");
+    const obj = this;
+    const declineModal = $('#delete_score_work_modal');
 
     this.updateResult = function (data) {
         var _result = {};
@@ -16,6 +17,8 @@ var ScoreWorkTable = function() {
             };
         });
         result.val(JSON.stringify(_result));
+        worksToScore--;
+        console.log(worksToScore);
     };
 
     this.updateSource = function (data) {
@@ -46,9 +49,10 @@ var ScoreWorkTable = function() {
         }
         $.each(formatted, function (_, element) {
             if (element.totalItems != (element.approvedItems + element.declinedItems)) {
+                worksToScore++;
                 return;
             }
-            processed[element.id]= true;
+            processed[element.id] = true;
         });
 
         return formatted;
@@ -58,6 +62,9 @@ var ScoreWorkTable = function() {
         rendered = false;
         $('.m_datatable').mDatatable('destroy');
         this.renderTable();
+        if (!worksToScore) {
+            $('.js-btn-score-work').attr('disabled', false);
+        }
     };
 
     this.updateRow = function (id, type) {
@@ -307,6 +314,6 @@ var ScoreWorkTable = function() {
     };
 }();
 
-jQuery(document).ready(function() {
+$(document).ready(function() {
     ScoreWorkTable.init();
 });

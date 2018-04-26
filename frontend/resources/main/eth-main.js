@@ -68,7 +68,6 @@ $('html').on('wallet_ready', () => {
     $('.js-btn-activate').attr('disabled', false);
     $('.js-btn-cancel').attr('disabled', false);
     $('.finalize-task-btn').attr('disabled', false);
-    $('.js-btn-score-work').attr('disabled', false);
 });
 
 
@@ -202,7 +201,8 @@ $('.js-btn-score-work').on('click', function(e) {
 
 $('.js-btn-release').on('click', function(e) {
     e.preventDefault();
-    $('.js-form').submit();
+    const taskId = $(this).data('id');
+    window.location.replace(taskId ? '/task/' + taskId + '/release' : 'release');
 });
 
 

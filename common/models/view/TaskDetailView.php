@@ -326,16 +326,14 @@ class TaskDetailView
             Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS   => '',
             Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE => '',
             Task::STATUS_CONTRACT_ACTIVE_PAUSED        => Yii::t('app',
-                'Task paused for scoring and workers don\'t receive new works from this task. In the table below you can 
-                either approve current work <span class="m-badge m-badge--success"><i class="la la-check-circle-o"></i></span>, 
-                if you check it is done properly, or decline <span class="m-badge m-badge--danger"><i class="la la-ban"></i></span>, 
-                if worker done bad. To make a decision you can see a preview of the completed work, which shows part of the labeled data 
-                <span class="m-badge m-badge--accent"><i class="la la-picture-o"></i></span>.<br>
-                After you score all works push <span class="m-badge m-badge--info m-badge--wide">Send to blockchain</span> 
-                to save results in task\'s  smart contract. Or you can skip scoring and continue the task by clicking 
+                'Task paused for scoring and workers don\'t receive new works from this task. Push 
+                <span class="m-badge m-badge--accent m-badge--wide">Score work</span> button
+                to approve works. Or you can skip scoring and continue the task by clicking 
                 on "Continue task" or even ending it by clicking on "Finalize task" in the additional actions menu next 
                 the main action button.'),
-            Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => '',
+            Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => Yii::t('app',
+                'All works completed. Click on <span class="m-badge m-badge--danger m-badge--wide">Finalize task</span> 
+                button to finalize smart contract.'),
             Task::STATUS_CONTRACT_FORCE_FINALIZING     => '',
             Task::STATUS_CONTRACT_FINALIZED            => Yii::t('app',
                 'Done! Now data-labeler can get paid with GAI token for work.<br>

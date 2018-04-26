@@ -129,7 +129,7 @@ foreach ($contractStatus->workers as $addr => $worker) {
                             </a>
                         </span>
                     <?php else: ?>
-                        <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work <?=!$task->isPaused() ? 'disabled' : ''?>">
+                        <button type="submit" class="btn btn-info m-btn--pill m-btn--air pull-right js-btn-score-work" disabled="disabled">
                             Send results to blockchain <i class="la la-send"></i>
                         </button>
                     <?php endif; ?>
