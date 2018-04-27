@@ -12,8 +12,7 @@ use common\models\Moderator;
 use common\models\Task;
 use common\models\BlockchainCallback;
 use common\domain\ethereum\Address;
-use common\domain\ethereum\Contract;
-use common\models\view\ActionView;
+use common\models\User;
 use common\models\view\PreviewScoreWorkView;
 use common\models\view\TaskDetailView;
 use common\models\view\TaskScoreWorkView;
@@ -21,8 +20,8 @@ use console\jobs\SynchronizeTaskStatusJob;
 use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
 use Yii;
-use yii\helpers\Url;
 use yii\log\Logger;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 
 class TaskController extends \yii\web\Controller
@@ -117,8 +116,10 @@ class TaskController extends \yii\web\Controller
     }
 
     /**
-     * Creation and activation of smartcontract for Task
+     * Creation and activation of smart contract for Task
      * @param int $id Task id
+     * @return string
+     * @throws \Exception
      */
     public function actionSmartContract($id)
     {
@@ -336,6 +337,8 @@ class TaskController extends \yii\web\Controller
     /**
      * Moderators' work scoring
      * @param int $id Task id
+     * @return string|\yii\web\Response
+     * @throws \Exception
      */
     public function actionScoreWork($id)
     {
@@ -351,6 +354,10 @@ class TaskController extends \yii\web\Controller
             throw new \Exception("Can't find Task");
         }
 
+        if ($task->status === Task::STATUS_CONTRACT_ACTIVE_PAUSED && Yii::$app->request->isPost) {
+            return $this->redirect('release');
+        }
+
         if ($task->status === Task::STATUS_CONTRACT_ACTIVE) {
             return $this->redirect(['pause', 'id' => $id]);
         }
@@ -361,9 +368,12 @@ class TaskController extends \yii\web\Controller
             ]);
         }
 
+        if ($task->status === Task::STATUS_CONTRACT_FINALIZED) {
+            return $this->redirect('/task/' . $task->id);
+        }
+
         if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED && $task->status !== Task::STATUS_CONTRACT_ACTIVE_COMPLETED) {
-            // TODO: remove that
-            throw new \Exception("Task must be paused or completed for scoring.");
+            throw new HttpException(500, "Task must be paused or completed for scoring.");
         }
 
         try {
@@ -386,42 +396,59 @@ class TaskController extends \yii\web\Controller
 
 
     /**
-     * Creates smartcontract for Task
-     * @param int $id Task id
+     * Credits users
+     * @param string $address
+     * @return array
+     * @throws \Exception
      */
-    public function actionSendTokens($id)
+    public function actionGetCredit($address)
     {
-        $blockchain  = new EthereumGateway;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $task = Task::find()
-            ->where(['id'=>$id])
-            ->ownedByUser() // task must belongs to user
-            ->one();
+        $user = User::findOne(['id'=>Yii::$app->user->id]);
+        $time = time();
 
-        if ($task === null) {
-            throw new \Exception("Can't find Task");
+        if (!$user->credits) {
+            return [
+                'error'=>true,
+                'error_code' => 'NO_CREDITS',
+                'error_text' => "You already use all your credits."
+            ];
         }
 
-        $contractNotDeployed = $task->status === Task::STATUS_CONTRACT_NOT_DEPLOYED 
-                            || $task->status === Task::STATUS_CONTRACT_DEPLOYMENT_ERROR;
+        if ($user->credited_at > ($time - Yii::$app->params['creditOnceAt'])) {
+            return [
+                'error'=>true,
+                'error_code' => 'CREDIT_DAY_LIMIT',
+                'error_text' => "You already get your credit for today. If you don't receive it yet, please wait some more time."
+            ];
+        }
 
-        return $this->render('sendTokens', [
-            'task' => $task
-        ]);
-    }
-
-
-    /**
-     * Credits users
-     */
-    public function actionGetCredit($id, $address)
-    {
         $blockchain = new EthereumGateway;
         $walletAddress = new Address($address);
+        $tokenContractAddress = new Address(Yii::$app->params['tokenContractAddress']);
 
-        // TODO: Check is balance really low
+        $systemWalletAddress = $blockchain->walletAddress();
+        $systemBalance = $blockchain->checkBalances($systemWalletAddress, $tokenContractAddress);
 
-        $tokenContractAddress = Yii::$app->params['tokenContractAddress']; 
+        if (bccomp(Yii::$app->params['creditTokenValue'], $systemBalance->token) === 1) {
+            return [
+                'error'=>true,
+                'error_code' => 'NO_TOKEN_IN_SERVICE',
+                'error_text' => "At the moment, credit feature is not available."
+            ];
+        }
+
+        if (bccomp(Yii::$app->params['creditEtherValue'], $systemBalance->ether) === 1) {
+            //TODO: replace this dirty hack
+            if (!strpos($systemBalance->ether, 'e+')) {
+                return [
+                    'error'=>true,
+                    'error_code' => 'NO_ETHER_IN_SERVICE',
+                    'error_text' => "At the moment, credit feature is not available."
+                ];
+            }
+        }
 
         $payload = [
             'tokenContractAddress' => (string) $tokenContractAddress,
@@ -436,12 +463,20 @@ class TaskController extends \yii\web\Controller
         $callback->type = BlockchainCallback::CREDIT_ACCOUNT;
         $callback->callback_id = $callback_id;
         $callback->params = json_encode($payload);
-        
+
         if (!$callback->save()) {
             throw new \Exception("Can't save Callback after creditAcount() was called");
         }
 
-        return $this->redirect("/task/$id/smart-contract");
+        $user->updateCounters(['credits'=> -1]);
+        $user->credited_at = $time;
+        $user->save();
+
+        return [
+            'error'=>false,
+            'error_code' => null,
+            'error_text' => null
+        ];
     }
 
 
@@ -548,6 +583,7 @@ class TaskController extends \yii\web\Controller
 
     /**
      * @param $id
+     * @return \yii\console\Response|\yii\web\Response
      * @throws NotFoundHttpException
      * @throws \yii\base\ExitException
      */
@@ -628,7 +664,6 @@ class TaskController extends \yii\web\Controller
 
     /**
      * @param Task $task
-     * @param $contractStatus
      * @return array
      */
     private function getModeratorCountAssignedLabels(Task $task): array

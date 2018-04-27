@@ -2,6 +2,7 @@
 /* @var $this yii\web\View */
 /* @var $dataset \common\models\Dataset */
 $formatter = \Yii::$app->formatter;
+$status = $dataset->status();
 ?>
 <div class="m-widget4__item dataset-item" data-id="<?=$dataset->id?>" data-delete-url="<?=\yii\helpers\Url::toRoute(sprintf('dataset/%s/delete', $dataset->id))?>" >
     <div class="m-widget4__img m-widget4__img--pic">
@@ -24,8 +25,8 @@ $formatter = \Yii::$app->formatter;
         <?=$dataset->description ?>
     </div>
     <div class="m-widget4__ext">
-        <span class="m--font-<?=$dataset->status()->color ?>">
-			<?=$dataset->status()->text ?>
+        <span class="m--font-<?=$status->color ?> <?=isset($status->reload) ? 'js-reload' : null ?>">
+			<?=$status->text ?>
 		</span>
     </div>
     <div class="m-widget4__ext">

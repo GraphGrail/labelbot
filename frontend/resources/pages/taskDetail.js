@@ -37,7 +37,7 @@ var TaskDetailTable = function() {
             data: {
                 type: 'local',
                 source: this.getFormattedData(),
-                pageSize: 10
+                pageSize: 20
             },
 
             // layout definition
@@ -57,7 +57,7 @@ var TaskDetailTable = function() {
                     // pagination
                     pagination: {
                         // page size select
-                        pageSizeSelect: [10, 20, 30, 50, 100],
+                        pageSizeSelect: [20, 50, 100, 200, 500],
                     },
                 },
             },
@@ -70,37 +70,59 @@ var TaskDetailTable = function() {
             columns: [
                 {
                     field: 'id',
-                    title: 'Worker',
+                    title: 'Worker Ethereum address <i class="flaticon-info" ' +
+                    'data-trigger1="focus" ' +
+                    'data-toggle="m-popover" ' +
+                    'data-placement="top" ' +
+                    'data-content="Ethereum addresses of worker who worked on the task."></i>',
                     sortable: false, // disable sort for this column
-                    width: 320,
+                    width: 350,
                     selector: false,
-                    textAlign: 'center',
+                    textAlign: 'left',
                 },
                 {
                     field: 'totalItems',
-                    title: 'Total',
+                    title: 'Total works <i class="flaticon-info" ' +
+                    'data-trigger1="focus" ' +
+                    'data-toggle="m-popover" ' +
+                    'data-placement="top" ' +
+                    'data-content="Total number of works made each worker."></i>',
+                    // sortable: 'asc', // default sort
                     filterable: false, // disable or enable filtering
-                    width: 60,
-                },
-                {
+                    width: 120,
+                    // basic templating support for column rendering,
+                    // template: '{{OrderID}} - {{ShipCountry}}',
+                    textAlign: 'center',
+                }, {
                     field: 'approvedItems',
-                    title: 'Approved',
+                    title: 'Approved <i class="flaticon-info" ' +
+                    'data-trigger1="focus" ' +
+                    'data-toggle="m-popover" ' +
+                    'data-placement="top" ' +
+                    'data-content="Number of approved works worker made."></i>',
                     sortable: false,
-                    width: 60,
+                    width: 100,
                     selector: false,
                     textAlign: 'center',
                 },
                 {
                     field: 'declinedItems',
-                    title: 'Declined',
+                    title: 'Declined <i class="flaticon-info" ' +
+                    'data-trigger1="focus" ' +
+                    'data-toggle="m-popover" ' +
+                    'data-placement="top" ' +
+                    'data-content="Number of declined works worker made."></i>',
                     sortable: false,
-                    width: 60,
+                    width: 100,
                     selector: false,
                     textAlign: 'center',
-                },
-                {
+                }, {
                     field: 'current',
-                    title: 'Current',
+                    title: 'Current work <i class="flaticon-info" ' +
+                    'data-trigger1="focus" ' +
+                    'data-toggle="m-popover" ' +
+                    'data-placement="top" ' +
+                    'data-content="Completeness of the worker\'s current work."></i>',
                     sortable: false,
                     width: 120,
                     selector: false,

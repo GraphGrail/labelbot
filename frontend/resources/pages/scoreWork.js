@@ -1,11 +1,12 @@
-var ScoreWorkTable = function() {
-    var processed = {};
-    var needSort = true;
-    var source = $(".js-workers-source");
-    var result = $(".js-workers");
-    var obj = this;
-    var rendered = false;
-    var declineModal = $('#delete_score_work_modal');
+const ScoreWorkTable = function() {
+    let processed = {};
+    let needSort = true;
+    let worksToScore = 0;
+    let rendered = false;
+    const source = $(".js-workers-source");
+    const result = $(".js-workers");
+    const obj = this;
+    const declineModal = $('#delete_score_work_modal');
 
     this.updateResult = function (data) {
         var _result = {};
@@ -16,6 +17,8 @@ var ScoreWorkTable = function() {
             };
         });
         result.val(JSON.stringify(_result));
+        worksToScore--;
+        console.log(worksToScore);
     };
 
     this.updateSource = function (data) {
@@ -46,9 +49,10 @@ var ScoreWorkTable = function() {
         }
         $.each(formatted, function (_, element) {
             if (element.totalItems != (element.approvedItems + element.declinedItems)) {
+                worksToScore++;
                 return;
             }
-            processed[element.id]= true;
+            processed[element.id] = true;
         });
 
         return formatted;
@@ -58,6 +62,9 @@ var ScoreWorkTable = function() {
         rendered = false;
         $('.m_datatable').mDatatable('destroy');
         this.renderTable();
+        if (!worksToScore) {
+            $('.js-btn-score-work').attr('disabled', false);
+        }
     };
 
     this.updateRow = function (id, type) {
@@ -136,7 +143,7 @@ var ScoreWorkTable = function() {
             data: {
                 type: 'local',
                 source: this.getFormattedData(),
-                pageSize: 10
+                pageSize: 50
             },
 
             // layout definition
@@ -156,7 +163,7 @@ var ScoreWorkTable = function() {
                     // pagination
                     pagination: {
                         // page size select
-                        pageSizeSelect: [10, 20, 30, 50, 100],
+                        pageSizeSelect: [20, 50, 100, 200, 500],
                     },
                 },
             },
@@ -169,39 +176,60 @@ var ScoreWorkTable = function() {
             columns: [
                 {
                     field: 'id',
-                    title: 'Worker',
+                    title: 'Worker Ethereum address <i class="flaticon-info" ' +
+                        'data-trigger1="focus" ' +
+                        'data-toggle="m-popover" ' +
+                        'data-placement="top" ' +
+                        'data-content="Ethereum addresses of worker who worked on the task."></i>',
                     sortable: false, // disable sort for this column
-                    width: 320,
+                    width: 350,
                     selector: false,
-                    textAlign: 'center',
+                    textAlign: 'left',
                 },
                 {
                     field: 'totalItems',
-                    title: 'Total',
+                    title: 'Total works <i class="flaticon-info" ' +
+                        'data-trigger1="focus" ' +
+                        'data-toggle="m-popover" ' +
+                        'data-placement="top" ' +
+                        'data-content="Total number of works made each worker."></i>',
                     // sortable: 'asc', // default sort
                     filterable: false, // disable or enable filtering
-                    width: 60,
+                    width: 120,
                     // basic templating support for column rendering,
                     // template: '{{OrderID}} - {{ShipCountry}}',
+                    textAlign: 'center',
                 }, {
                     field: 'approvedItems',
-                    title: 'Approved',
+                    title: 'Approved <i class="flaticon-info" ' +
+                    'data-trigger1="focus" ' +
+                    'data-toggle="m-popover" ' +
+                    'data-placement="top" ' +
+                    'data-content="Number of approved works worker made."></i>',
                     sortable: false,
-                    width: 60,
+                    width: 100,
                     selector: false,
                     textAlign: 'center',
                 },
                 {
                     field: 'declinedItems',
-                    title: 'Declined',
+                    title: 'Declined <i class="flaticon-info" ' +
+                    'data-trigger1="focus" ' +
+                    'data-toggle="m-popover" ' +
+                    'data-placement="top" ' +
+                    'data-content="Number of declined works worker made."></i>',
                     sortable: false,
-                    width: 60,
+                    width: 100,
                     selector: false,
                     textAlign: 'center',
                 }, {
                     field: 'Actions',
-                    width: 110,
-                    title: 'Actions',
+                    width: 120,
+                    title: 'Current work <i class="flaticon-info" ' +
+                    'data-trigger1="focus" ' +
+                    'data-toggle="m-popover" ' +
+                    'data-placement="top" ' +
+                    'data-content="Last completed work that needs to be approved or declined."></i>',
                     sortable: false,
                     overflow: 'visible',
                     template: function (row, index, datatable) {
@@ -286,7 +314,6 @@ var ScoreWorkTable = function() {
     };
 }();
 
-jQuery(document).ready(function() {
+$(document).ready(function() {
     ScoreWorkTable.init();
-
 });

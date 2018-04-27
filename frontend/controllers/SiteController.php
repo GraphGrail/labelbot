@@ -12,7 +12,6 @@ use common\models\LoginForm;
 use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
-use frontend\models\ContactForm;
 
 /**
  * Site controller
@@ -76,7 +75,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->redirect('datasets');
+        return $this->redirect('tasks');
     }
 
     /**

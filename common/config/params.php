@@ -52,5 +52,6 @@ return [
     // User credit defaults
     'creditEtherValue' => getenv('CREDIT_ETH_VALUE') ?: '1000000000000000000',
     'creditTokenValue' => getenv('CREDIT_TOKEN_VALUE') ?: '1000000000000000000',
-
+    'creditNumber'     => getenv('CREDIT_NUMBER') ?: 100,
+    'creditOnceAt'     => getenv('CREDIT_ONCE_AT') ?: 60*60*24,
 ];

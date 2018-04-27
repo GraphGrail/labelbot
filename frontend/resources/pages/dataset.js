@@ -33,4 +33,8 @@ $(document).ready(function () {
     $('.break-delete-link').click(function () {
         $(this).data('id', '');
     });
+
+    if ( $('.js-reload').length ) {
+        setTimeout(() => { window.location.reload() }, 5000);
+    }
 });

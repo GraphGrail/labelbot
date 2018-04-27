@@ -1,13 +1,9 @@
 <?php
 
-use frontend\assets\EthGatewayAsset;
-
 /* @var $this yii\web\View */
 /* @var $task \common\models\Task */
-EthGatewayAsset::register($this);
 
 $this->registerJs("
-
     setTimeout(function() {window.location.reload();}, 15000);
 ");
 ?>

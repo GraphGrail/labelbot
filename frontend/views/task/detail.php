@@ -14,96 +14,6 @@ use yii\helpers\Url;
 /* @var $assignedCount int */
 
 TaskDetailPage::register($this);
-EthGatewayAsset::register($this);
-
-$this->registerJs("
-  const finalizeInit = function() {
-      const syncStatus = function() {
-        $.post('". Url::toRoute(['task/sync-status', 'id' => $task->id]) . "', (response) => {
-            console.log(response);
-        })
-      }
-    
-      const ggEth = graphGrailEther
-      const tokenContractAddress = '" . Yii::$app->params['tokenContractAddress'] . "'
-      const expectedNetworkId = '" . Yii::$app->params['networkId'] . "'
-      const internalApi = '" . Yii::$app->params['ethGatewayApiUrl'] . "'  
-       
-    
-      let clientAddress
-      const contractAddress = $('.js-contract-address').val();
-      
-      ggEth.init(tokenContractAddress, expectedNetworkId)
-        .catch(err => {
-            console.log(err.code + ' ' + err);
-            switch(err.code) {
-                case 'ALREADY_INITIALIZED':
-                    return ggEth.getClientAddress();
-                case 'INVALID_ETHEREUM_ADDRESS':
-                    return showEthClientError(err);
-                case 'NO_ACCOUNTS':
-                    return showEthClientError('Oops! Ethereum client not logged in. Log in and reload page')
-                case 'NO_ETHEREUM_CLIENT':
-                    return showEthClientError('Oops! Ethereum client was not found. Install one, such as Metamask and reload page')
-                case 'WRONG_NETWORK':
-                    return showEthClientError('Oops! Etherium client select wrong network. Change it and reload page')
-                default:
-                    return showEthClientError(err)
-            }
-        })
-        .then(address => {
-             clientAddress = address
-        })
-        .catch(err => {
-            console.log(err);
-            showEthClientError(err)
-        })
-        
-        $('.js-get-credit').on('click', e => {
-            window.location = 'get-credit/' + clientAddress; 
-        })
-    
-  
-      $('.finalize-task-btn').on('click', e => {
-        e.preventDefault();
-    
-        if (!clientAddress) {
-            return;
-        }
-        $('.finalize-task-btn').attr('disabled', true)
-        $('.m-portlet__head-caption').addClass('m-loader m-loader--success')
-        
-        ggEth.activeTransactionFinishedPromise()
-          .then(_ => {
-            notifyCheckEthClient()
-            return ggEth.finalizeContract(contractAddress)
-          })
-          .catch(err => {
-            console.log(err.code + ' ' + err)
-            switch(err.code) {
-              case 'NOT_INITIALIZED':
-                return showEthClientError('Oops! Etherium client was not initialized. Please reload page')
-              case 'TRANSACTION_ALREADY_RUNNING':
-                return showEthClientError('Oops! Transaction already running. Reload page')
-              case 'INSUFFICIENT_ETHER_BALANCE':
-                return showEthCreditAlert()
-              case 'INSUFFICIENT_TOKEN_BALANCE':
-                return showEthClientError('Oops! Not enough tokens')
-              default:
-                return showEthClientError(err)
-            }
-          })
-          .then(_ => {
-            if (_ === false) {
-                return
-            }
-            syncStatus()
-            setTimeout(() => {window.location.reload()}, 3000);
-          })
-      })
-  }();
-
-");
 
 ?>
 <div class="m-alert m-alert--icon alert alert-danger eth-errors" role="alert" style="display:none">
@@ -126,28 +36,21 @@ $this->registerJs("
                 </h3>
             </div>
         </div>
-        <div class="m-portlet__head-tools">
-        </div>
+        <div class="m-portlet__head-tools"></div>
     </div>
     <div class="m-portlet__body">
         <!--begin: Search Form -->
+        <div class="row">
+            <div class="col-xl-8 order-2 order-xl-1">
+                <?=$view->getStatusComment() ?>
+            </div>
+        </div>
         <div class="m-form m-form--label-align-right m--margin-top-20 m--margin-bottom-30">
             <div class="row align-items-center">
                 <div class="col-xl-8 order-2 order-xl-1">
                     <div class="form-group m-form__group row align-items-center">
                         <div class="col-md-8">
-                            <div class="m-form__group m-form__group--inline">
-                                <div class="m-form__label">
-                                    <label>
-                                        <small>
-                                            <?=Yii::t('app', 'Smart contract address') ?>:
-                                        </small>
-                                    </label>
-                                </div>
-                                <div class="m-form__control">
-                                    <input type="text" id="address" class="form-control m-input js-contract-address" name="address" value="<?=$task->contract_address?>" disabled="disabled" />
-                                </div>
-                            </div>
+                            <?= \common\widgets\smartContractAddress::widget(['address'=>$task->contract_address]); ?>
                             <div class="d-md-none m--margin-bottom-10"></div>
                         </div>
                     </div>
@@ -157,7 +60,12 @@ $this->registerJs("
                         <?php
                             if ($action = $view->getNextAction()) {
                                 ?>
-                                    <a href="<?=$action->getUrl() ?: 'javascript:void(0);'?>" class="<?=$action->getOptions()['class']?>"><?=$action->getLabel()?></a>
+                                    <a
+                                        href="<?=$action->getUrl() ?: 'javascript:void(0);'?>"
+                                        class="<?=$action->getOptions()['class']?>"
+                                        data-id="<?=$task->id ?>"
+                                        data-contract-address="<?=$task->contract_address ?>"
+                                    ><?=$action->getLabel()?></a>
                                 <?php
                             }
                             if ($additionalActions = $view->getAdditionalActions()) {
@@ -182,7 +90,12 @@ $this->registerJs("
                                                         foreach ($additionalActions as $additionalAction) {
                                                             ?>
                                                             <li class="m-nav__item">
-                                                                <a href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>" class="m-nav__link <?=$additionalAction->getOptions()['class']?>">
+                                                                <a
+                                                                        href="<?=$additionalAction->getUrl() ?: 'javascript: void(0);'?>"
+                                                                        class="m-nav__link <?=$additionalAction->getOptions()['class']?>"
+                                                                        data-id="<?=$task->id?>"
+                                                                        data-contract-address="<?=$task->contract_address?>"
+                                                                >
                                                                     <i class="m-nav__link-icon <?=$additionalAction->getOptions()['iconClass']?>"></i>
                                                                     <span class="m-nav__link-text">
 																	<?=$additionalAction->getLabel()?>
@@ -205,10 +118,10 @@ $this->registerJs("
                         ?>
                     </div>
                     <div class="m--margin-bottom-10"></div>
-                    Complete percent: <strong><?=$view->getCompletedPercent()?></strong>
+                    Completeness percent: <strong><?=$view->getCompletedPercent()?></strong>
                     <div class="m-separator m-separator--dashed d-xl-none"></div>
                     <p class="m--font-metal">
-                        completed/all <?=$view->getApprovedCount()?>/<?=$view->getFullCount()?>
+                        approved/all <?=$view->getApprovedCount()?>/<?=$view->getFullCount()?>
                     </p>
                 </div>
             </div>

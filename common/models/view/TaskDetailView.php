@@ -226,7 +226,29 @@ class TaskDetailView
     {
         $actions = [];
 
-        if ($this->contractStatus && $this->contractStatus->canFinalize && !$this->task->isCompleted()) {
+        $taskPaused = in_array($this->task->status, [
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED
+        ]);
+
+        if ($taskPaused) {
+            $action = new ActionView(
+                Yii::t('app', 'Continue task')
+            );
+            $action->setOptions([
+                'class' => 'js-btn-release',
+                'iconClass' => 'la la-play',
+            ]);
+            $actions[] = $action;
+        }
+
+        $taskCanBeFinalizedByUser = in_array($this->task->status, [
+            Task::STATUS_CONTRACT_NEW_NEED_TOKENS,
+            Task::STATUS_CONTRACT_NEW,
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED,
+            Task::STATUS_CONTRACT_ACTIVE_COMPLETED,
+        ]);
+
+        if ($taskCanBeFinalizedByUser) {
             $action = new ActionView(
                 Yii::t('app', 'Finalize task')
             );
@@ -277,7 +299,46 @@ class TaskDetailView
             Task::STATUS_CONTRACT_ACTIVE_PAUSED        => 'Paused',
             Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => 'Completed',
             Task::STATUS_CONTRACT_FORCE_FINALIZING     => 'Finalizing',
-            Task::STATUS_CONTRACT_FINALIZED            => 'Finalize',
+            Task::STATUS_CONTRACT_FINALIZED            => 'Finalized',
+        ];
+        if (!array_key_exists($this->task->status, $map)) {
+            return '';
+        }
+
+        return $map[$this->task->status];
+    }
+
+    public function getStatusComment()
+    {
+        $map = [
+            Task::STATUS_CONTRACT_NOT_DEPLOYED         => '',
+            Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS   => '',
+            Task::STATUS_CONTRACT_DEPLOYMENT_ERROR     => '',
+            Task::STATUS_CONTRACT_NEW_NEED_TOKENS      => '',
+            Task::STATUS_CONTRACT_NEW                  => '',
+            Task::STATUS_CONTRACT_ACTIVE               => Yii::t('app',
+                'Now navigate to <a href="http://telegram.me/datalabelbot" target="_blank">@DataLabelBot in Telegram</a>, 
+                 login with your Ethereum address and type command /tasks to check your task successfully distributed 
+                 to workers of the Platform. The table below shows the progress of the data labeling. 
+                 When some of the employees complete their current work by 100%, you can click on the 
+                 <span class="m-badge m-badge--accent m-badge--wide">Score work</span> 
+                 button to pause the task and approve or decline their work.'),
+            Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS   => '',
+            Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE => '',
+            Task::STATUS_CONTRACT_ACTIVE_PAUSED        => Yii::t('app',
+                'Task paused for scoring and workers don\'t receive new works from this task. Push 
+                <span class="m-badge m-badge--accent m-badge--wide">Score work</span> button
+                to approve works. Or you can skip scoring and continue the task by clicking 
+                on "Continue task" or even ending it by clicking on "Finalize task" in the additional actions menu next 
+                the main action button.'),
+            Task::STATUS_CONTRACT_ACTIVE_COMPLETED     => Yii::t('app',
+                'All works completed. Click on <span class="m-badge m-badge--danger m-badge--wide">Finalize task</span> 
+                button to finalize smart contract.'),
+            Task::STATUS_CONTRACT_FORCE_FINALIZING     => '',
+            Task::STATUS_CONTRACT_FINALIZED            => Yii::t('app',
+                'Done! Now data-labeler can get paid with GAI token for work.<br>
+                 You can download ready to use dataset. All the data now labeled with categories, you provided to worker.<br>
+                 Now you can use dataset to train neural networks for your business-task.'),
         ];
         if (!array_key_exists($this->task->status, $map)) {
             return '';

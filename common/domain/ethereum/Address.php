@@ -3,7 +3,7 @@
 namespace common\domain\ethereum;
 
 /**
- * Ethereum Adress Type
+ * Ethereum Address Type
  */
 class Address
 {
@@ -17,7 +17,7 @@ class Address
 
 	public function __toString() : string
 	{
-		return $this->address;
+		return strtolower($this->address);
 	}
 
 	private function validate()

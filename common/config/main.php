@@ -16,13 +16,24 @@ return [
             'password' => getenv('DB_PASSWORD'),
             'charset' => getenv('DB_CHARSET') ?: 'utf8',
         ],
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager',
+        ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
             'viewPath' => '@common/mail',
             // send all mails to a file by default. You have to set
             // 'useFileTransport' to false and configure a transport
             // for the mailer to send real emails.
-            'useFileTransport' => true,
+            'useFileTransport' => false,
+            'transport' => [
+                'class' => 'Swift_SmtpTransport',
+                'host' => getenv('SMTP_HOST'),
+                'username' => getenv('SMTP_USERNAME'),
+                'password' => getenv('SMTP_PASSWORD'),
+                'port' => getenv('SMTP_PORT') ?: '587',
+                'encryption' => getenv('SMTP_ENCRYPT') ?: 'tls',
+            ],
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -35,6 +46,15 @@ return [
                     'sourceLanguage' => 'en-US',
                     'fileMap' => [
                         'app' => 'app.php',
+                        'app/error' => 'error.php',
+                    ],
+                ],
+                'adm*' => [
+                    'class' => 'yii\i18n\PhpMessageSource',
+                    'basePath' => '@common/messages',
+                    'sourceLanguage' => 'en-US',
+                    'fileMap' => [
+                        'app' => 'adm.php',
                         'app/error' => 'error.php',
                     ],
                 ],

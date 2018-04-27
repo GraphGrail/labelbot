@@ -15,7 +15,7 @@ class SendScoreWorkForm extends Model
     public function rules()
     {
         return [
-            ['workers', 'required'],
+        //    ['workers', 'required'],
         ];
     }
 }
