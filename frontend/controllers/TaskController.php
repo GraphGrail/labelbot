@@ -407,12 +407,21 @@ class TaskController extends \yii\web\Controller
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         $user = User::findOne(['id'=>Yii::$app->user->id]);
+        $time = time();
 
         if (!$user->credits) {
             return [
                 'error'=>true,
                 'error_code' => 'NO_CREDITS',
                 'error_text' => "You already use all your credits."
+            ];
+        }
+
+        if ($user->credited_at > ($time - Yii::$app->params['creditOnceAt'])) {
+            return [
+                'error'=>true,
+                'error_code' => 'CREDIT_DAY_LIMIT',
+                'error_text' => "You already get your credit for today. If you don't receive it yet, please wait some more time."
             ];
         }
 
@@ -461,6 +470,8 @@ class TaskController extends \yii\web\Controller
         }
 
         $user->updateCounters(['credits'=> -1]);
+        $user->credited_at = $time;
+        $user->save();
 
         return [
             'error'=>false,
