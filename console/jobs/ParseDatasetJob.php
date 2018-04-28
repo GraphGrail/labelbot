@@ -53,11 +53,11 @@ class ParseDatasetJob extends \yii\base\BaseObject implements \yii\queue\JobInte
                 $string = end($dataArr);
                 $toEncoding = 'UTF-8';
                 if(!mb_check_encoding($string, $toEncoding)) {
-                    $fromEncoding = mb_detect_encoding($string);
-                    if ($fromEncoding === $toEncoding) {
-                        $fromEncoding = 'Windows-1251';
+                    try {
+                        $string = mb_convert_encoding($string, $toEncoding);
+                    } catch (\Exception $e) {
+                        Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
                     }
-                    $string = mb_convert_encoding($string, $toEncoding, $fromEncoding);
                 }
 
                 $data->data_raw = $string;
@@ -81,6 +81,7 @@ class ParseDatasetJob extends \yii\base\BaseObject implements \yii\queue\JobInte
             $dataset->updateStatus(Dataset::STATUS_READY);
         } catch (\Exception $e) {
             Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
+            $dataset->updateStatus(Dataset::STATUS_PARSING_ERROR);
         }
     }
 }
