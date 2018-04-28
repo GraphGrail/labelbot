@@ -46,7 +46,7 @@ class CreateWorksJob extends \yii\base\BaseObject implements \yii\queue\JobInter
 
         $itemCountFrom = 0;
 
-        while($worksCount) {
+        while ($worksCount) {
             $workItem = new WorkItem();
             $workItem->task_id = $this->task->id;
 
@@ -56,9 +56,10 @@ class CreateWorksJob extends \yii\base\BaseObject implements \yii\queue\JobInter
                 $rest--;
             }
             $workItem->items = $itemCount;
+            $workItem->status = WorkItem::STATUS_FREE;
             $workItem->save();
 
-            $this->createDataLabels($workItem->id, $itemCountFrom, $itemCount);
+            $this->createDataLabels($workItem, $itemCountFrom, $itemCount);
 
             $itemCountFrom += $itemCount;
             $worksCount--;
@@ -72,7 +73,13 @@ class CreateWorksJob extends \yii\base\BaseObject implements \yii\queue\JobInter
     }
 
 
-    public function createDataLabels(int $work_item_id, int $from, int $num)
+    /**
+     * @param WorkItem $workItem
+     * @param int $from
+     * @param int $num
+     * @throws \yii\db\Exception
+     */
+    public function createDataLabels(WorkItem $workItem, int $from, int $num)
     {
         $data = (new \yii\db\Query)
             ->select(['id'])
@@ -86,7 +93,7 @@ class CreateWorksJob extends \yii\base\BaseObject implements \yii\queue\JobInter
         foreach ($data->batch(100) as $ids) {
             $dataToInsert = [];
             foreach ($ids as $id) {
-                $dataToInsert []= [$this->task->id, $work_item_id, $id['id'], DataLabel::STATUS_NEW, $timestamp, $timestamp];
+                $dataToInsert []= [$this->task->id, $workItem->id, $id['id'], DataLabel::STATUS_NEW, $timestamp, $timestamp];
             }
             Yii::$app->db->createCommand()->batchInsert(
                 DataLabel::tableName(), 

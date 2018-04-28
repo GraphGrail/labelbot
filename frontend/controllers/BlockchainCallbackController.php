@@ -2,11 +2,9 @@
 
 namespace frontend\controllers;
 
-use console\jobs\CreateAssignedLabelsJob;
 use common\models\Task;
 use common\models\BlockchainCallback;
-use console\jobs\CreateWorkItemsJob;
-use yii\web\Controller;
+use console\jobs\CreateWorksJob;
 use yii\filters\AccessControl;
 use Yii;
 
@@ -102,7 +100,7 @@ class BlockchainCallbackController extends \yii\web\Controller
             throw new \Exception("Can't save Task");
         }
 
-        Yii::$app->queue->push(new CreateWorkItemsJob([
+        Yii::$app->queue->push(new CreateWorksJob([
             'task_id' => $task->id
         ]));
 

@@ -5,9 +5,6 @@ namespace common\models;
 use common\components\EthereumGateway;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
-use common\models\BlockchainCallback;
-use common\models\AssignedLabel;
-use common\models\Data;
 use common\interfaces\BlockchainGatewayInterface;
 use Yii;
 
@@ -79,18 +76,18 @@ class Task extends ActiveRecord
     public function behaviors()
     {
         return [
-            \yii\behaviors\TimestampBehavior::className(),
+            \yii\behaviors\TimestampBehavior::class,
             [
-                'class' => \yii\behaviors\BlameableBehavior::className(),
+                'class' => \yii\behaviors\BlameableBehavior::class,
                 'createdByAttribute' => 'user_id',
                 'updatedByAttribute' => null,
             ],
             'typecast' => [
-                'class' => \yii\behaviors\AttributeTypecastBehavior::className(),
+                'class' => \yii\behaviors\AttributeTypecastBehavior::class,
                 'typecastAfterFind' => true,
             ],
             'deletedAttribute' => [
-                'class' => \common\models\behavior\DeletedAttributeBehavior::className(),
+                'class' => \common\models\behavior\DeletedAttributeBehavior::class,
             ],
         ];
     }
@@ -128,17 +125,17 @@ class Task extends ActiveRecord
 
     public function getDataset()
     {
-        return $this->hasOne(Dataset::className(), ['id' => 'dataset_id'])->one();
+        return $this->hasOne(Dataset::class, ['id' => 'dataset_id'])->one();
     }
 
     public function getLabelGroup()
     {
-        return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id'])->one();
+        return $this->hasOne(LabelGroup::class, ['id' => 'label_group_id'])->one();
     }
 
-    public function getAssignedLabels()
+    public function getWorkItems()
     {
-        return $this->hasMany(AssignedLabel::className(), ['task_id' => 'id']);
+        return $this->hasMany(WorkItem::class, ['task_id' => 'id']);
     }
 
     public function deployContract(BlockchainGatewayInterface $blockchain, Address $clientAddress)
@@ -171,100 +168,57 @@ class Task extends ActiveRecord
     {
         return $this->contract_address ? new Address($this->contract_address) : null;
     }
-    
 
-    public function getDataForLabelAssignment(int $moderator_id) : ?AssignedLabel
+
+    public function getDataForLabelAssignment(int $moderator_id) : ?DataLabel
     {
-        AssignedLabel::handleSkippedLabels();
+        $currentWorkItem = WorkItem::find()
+            ->where(['task_id' => $this->id])
+            ->andWhere(['moderator_id' => $moderator_id])
+            ->andWhere(['OR', ['status' => WorkItem::STATUS_IN_HAND], ['status' => WorkItem::STATUS_READY]])
+            ->one();
 
-        // Are moderator start new workItem or not?
-        if ($this->isGettingNewWorkItem($moderator_id)) {
+        if ($currentWorkItem === null) {
             $blockchain      = new EthereumGateway;
             $contractAddress = new Address($this->contract_address);
+
             try {
                 $contractStatus  = $blockchain->contractStatus($contractAddress);
             } catch (\Exception $e) {
                 return null;
             }
 
-            // If there is no workItems, all of them are already in work
-            if ($contractStatus->workItemsLeft <= $this->currentWorkItemsCount()) {
-                return null;
-            }
-            // If we haven't balance to pay new workItem 
+            // If we haven't balance to pay new workItem
             if ($contractStatus->workItemsBalance < 1) {
                 $this->status = Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
                 $this->save();
                 return null;
             }
-        }
-        // if moderator continue work on workItem
-        else {
-            if ($this->work_item_size <= $this->workItemAssignsCount($moderator_id)) {
+
+            $newWorkItem = WorkItem::find()
+                ->where(['task_id' => $this->id])
+                ->andWhere(['moderator_id' => $moderator_id])
+                ->andWhere(['status' => WorkItem::STATUS_FREE])
+                ->one();
+
+            if ($newWorkItem === null || !Lock::create($newWorkItem)) {
                 return null;
+            }
+
+            $newWorkItem->moderator_id = $moderator_id;
+            $newWorkItem->status = WorkItem::STATUS_IN_HAND;
+
+            if ($newWorkItem->save()) {
+                Lock::free($newWorkItem);
+                $currentWorkItem = $newWorkItem;
             }
         }
 
-        if (!$work = $this->getUndoneWork($moderator_id) ?: $this->getFreeWork()) {
-            return null;
-        }
-        if ($work->moderator_id && $work->moderator_id != $moderator_id) {
-            throw new \Exception('Work is not free');
-        }
+        return $currentWorkItem->getNewDataLabel();
 
-        $work->moderator_id = $moderator_id;
-        if ($work->save()) {
-            Lock::free($work);
-        }
-
-        /** @var AssignedLabel $assigned_label */
-        $assigned_label = $work->getData();
-
-        if ($assigned_label === null) return null;
-
-        // We update AssignedLabel with STATUS_IN_HAND to prevent other moderators to get same data at one moment.
-        $assigned_label->moderator_id = $moderator_id;
-        $assigned_label->status = AssignedLabel::STATUS_IN_HAND;
-        $assigned_label->save();
-
-        return $assigned_label;
     }
 
-    private function isGettingNewWorkItem(int $moderator_id) : bool
-    {
-        // If there is not approved or declined AssignedLabel for moderator
-        $assignedLabel = AssignedLabel::find()
-            ->where(['task_id' => $this->id])
-            ->andWhere(['moderator_id' => $moderator_id])
-            ->andWhere(['OR', ['status' => AssignedLabel::STATUS_IN_HAND], ['status' => AssignedLabel::STATUS_READY]])
-            ->one();
 
-        return $assignedLabel === null ? true : false;
-    }
-
-    private function workItemAssignsCount(int $moderator_id) : int
-    {
-        $count = AssignedLabel::find()
-            ->select('count')
-            ->where(['task_id' => $this->id])
-            ->andWhere(['moderator_id' => $moderator_id])
-            ->andWhere(['OR', ['status' => AssignedLabel::STATUS_IN_HAND], ['status' => AssignedLabel::STATUS_READY]])
-            ->count();
-
-        return $count;
-    }
-
-    private function currentWorkItemsCount(): int
-    {
-        $count = AssignedLabel::find()
-            ->select('moderator_id')
-            ->where(['task_id' => $this->id])
-            ->andWhere(['in', 'status', [AssignedLabel::STATUS_IN_HAND, AssignedLabel::STATUS_READY]])
-            ->groupBy('moderator_id')
-            ->count();
-
-        return $count;
-    }
 
     public function isContractNew()
     {
@@ -331,27 +285,26 @@ class Task extends ActiveRecord
 
     public function readyWorkItemsNumber(Moderator $moderator) : int
     {
-        $readyCount = AssignedLabel::find()
+        $readyCount = WorkItem::find()
             ->where(['task_id' => $this->id])
             ->andWhere(['moderator_id'=>$moderator->id])
-            ->andWhere(['status' => AssignedLabel::STATUS_READY])
+            ->andWhere(['status' => WorkItem::STATUS_READY])
             ->count();
 
-        $readyWorkItems = (int) ($readyCount/$this->work_item_size);
-        return $readyWorkItems;
+        return (int) $readyCount;
     }
 
-    public function approveWorkItems(Moderator $moderator, int $num=1) : bool
+/*    public function approveWorkItems(Moderator $moderator, int $num=1) : bool
     {
         $readyWorkItems = $this->readyWorkItemsNumber($moderator);
         if ($readyWorkItems < $num) return false;
 
-        $updates = AssignedLabel::updateStatuses(
+        $updates = WorkItem::updateStatuses(
             $this->id,
-            AssignedLabel::STATUS_READY,
-            AssignedLabel::STATUS_APPROVED,
+            WorkItem::STATUS_READY,
+            WorkItem::STATUS_APPROVED,
             $moderator->id,
-            $this->work_item_size * $num
+            $num
         );
 
         return $updates ? true : false;
@@ -364,14 +317,14 @@ class Task extends ActiveRecord
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            AssignedLabel::updateStatuses(
+            WorkItem::updateStatuses(
                 $this->id,
-                AssignedLabel::STATUS_READY,
-                AssignedLabel::STATUS_DECLINED,
+                WorkItem::STATUS_READY,
+                WorkItem::STATUS_DECLINED,
                 $moderator->id,
-                $this->work_item_size * $num
+                $num
             );
-            AssignedLabel::copyDeclinedToNew($this->id, $moderator->id, $this->work_item_size * $num);
+            DataLabel::copyDeclinedToNew($this->id, $moderator->id, $num);
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -379,53 +332,8 @@ class Task extends ActiveRecord
         }
 
         return true;
-    }
+    }*/
 
-    public function getFreeWork(): ?WorkItem
-    {
-        $locked = null;
-        $stopTime = time() + 60;
 
-        while (!$locked) {
-            /** @var WorkItem $work */
-            if (!$work = WorkItem::find()
-                ->where(['task_id' => $this->id])
-                ->andWhere(['moderator_id' => null])
-                ->one()
-            ) {
-                return null;
-            }
-            if (Lock::create($work)) {
-                $locked = $work;
-                break;
-            }
-            if (time() >= $stopTime) {
-                return null;
-            }
-
-            sleep(1);
-        }
-        return $locked;
-    }
-
-    public function getUndoneWork($moderatorId): ?WorkItem
-    {
-        /** @var WorkItem[] $works */
-        if (!$works = WorkItem::find()
-            ->where(['task_id' => $this->id])
-            ->andWhere(['moderator_id' => $moderatorId])
-            ->all()
-        ) {
-            return null;
-        }
-
-        foreach ($works as $work) {
-            if ($work->items == $work->getAssigned()->count()) {
-                continue;
-            }
-            return $work;
-        }
-        return null;
-    }
 
 }
