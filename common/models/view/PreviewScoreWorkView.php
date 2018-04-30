@@ -6,14 +6,14 @@
 namespace common\models\view;
 
 
-use common\models\AssignedLabel;
+use common\models\DataLabel;
 use common\models\Label;
 
 class PreviewScoreWorkView
 {
     protected $label;
 
-    public function __construct(AssignedLabel $label)
+    public function __construct(DataLabel $label)
     {
         $this->label = $label;
     }

@@ -3,7 +3,6 @@
 namespace Longman\TelegramBot\Commands;
 
 use common\models\Moderator;
-use Longman\TelegramBot\Request;
 
 /**
  * Authenticated User Command

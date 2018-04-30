@@ -8,7 +8,7 @@ use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
 use common\components\CallbackData;
 use common\models\Label;
-use common\models\AssignedLabel;
+use common\models\DataLabel;
 use common\components\LabelsKeyboard;
 
 
@@ -56,17 +56,18 @@ class BackKeyCallbackCommand extends AuthenticatedUserCommand
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse
      * @throws \Longman\TelegramBot\Exception\TelegramException
+     * @throws \yii\web\HttpException
      */
     public function execute()
     {
         $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
         $verified_callback_data = $callback_data->getVerifiedData();
-        list($assigned_label_id, $label_id) = explode(':', $verified_callback_data);
+        list($data_label_id, $label_id) = explode(':', $verified_callback_data);
 
-        $assignedLabel = AssignedLabel::findOne($assigned_label_id);
+        $dataLabel = DataLabel::findOne($data_label_id);
         $root_label    = Label::findOne($label_id);
 
-        $inline_keyboard = new LabelsKeyboard($root_label, $assignedLabel, $this->moderator);
+        $inline_keyboard = new LabelsKeyboard($root_label, $dataLabel, $this->moderator);
         $req_data = [
             'chat_id'      => $this->chat_id,
             'message_id'   => $this->message_id,

@@ -93,11 +93,11 @@ class CreateWorksJob extends \yii\base\BaseObject implements \yii\queue\JobInter
         foreach ($data->batch(100) as $ids) {
             $dataToInsert = [];
             foreach ($ids as $id) {
-                $dataToInsert []= [$this->task->id, $workItem->id, $id['id'], DataLabel::STATUS_NEW, $timestamp, $timestamp];
+                $dataToInsert []= [$workItem->id, $id['id'], DataLabel::STATUS_NEW, $timestamp, $timestamp];
             }
             Yii::$app->db->createCommand()->batchInsert(
                 DataLabel::tableName(), 
-                ['task_id', 'work_item_id', 'data_id', 'status', 'created_at', 'updated_at'], 
+                ['work_item_id', 'data_id', 'status', 'created_at', 'updated_at'],
                 $dataToInsert
             )->execute();
         }

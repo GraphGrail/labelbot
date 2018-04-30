@@ -99,9 +99,9 @@ class GetCommand extends AuthenticatedUserCommand
             return Request::sendMessage($req_data);
         }
 
-        $assignedLabel = $task->getDataForLabelAssignment($this->moderator->id);
+        $dataLabel = $task->getDataForLabelAssignment($this->moderator);
 
-        if ($assignedLabel === null) {
+        if ($dataLabel === null) {
             $req_data = [
                     'chat_id' => $this->chat_id,
                     'text'    => 'Сurrently, there is no data to markup in this task. Please, try to get data for this task later.',
@@ -109,7 +109,7 @@ class GetCommand extends AuthenticatedUserCommand
             return Request::sendMessage($req_data);
         }
 
-        $data = Data::findOne($assignedLabel->data_id);
+        $data = Data::findOne($dataLabel->data_id);
         // TODO: We need to delete data with empty texts on Dataset upload,
         // because Telegram don't send/edit message with empty text!!
         if (!trim($data->data)) {
@@ -121,7 +121,7 @@ class GetCommand extends AuthenticatedUserCommand
             'parent_label_id' => 0
         ]);
 
-        $inline_keyboard = new LabelsKeyboard($rootLabel, $assignedLabel, $this->moderator);
+        $inline_keyboard = new LabelsKeyboard($rootLabel, $dataLabel, $this->moderator);
 
         $req_data = [
             'chat_id'                  => $this->chat_id,

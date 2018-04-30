@@ -170,11 +170,11 @@ class Task extends ActiveRecord
     }
 
 
-    public function getDataForLabelAssignment(int $moderator_id) : ?DataLabel
+    public function getDataForLabelAssignment(Moderator $moderator) : ?DataLabel
     {
         $currentWorkItem = WorkItem::find()
             ->where(['task_id' => $this->id])
-            ->andWhere(['moderator_id' => $moderator_id])
+            ->andWhere(['moderator_id' => $moderator->id])
             ->andWhere(['OR', ['status' => WorkItem::STATUS_IN_HAND], ['status' => WorkItem::STATUS_READY]])
             ->one();
 
@@ -197,7 +197,6 @@ class Task extends ActiveRecord
 
             $newWorkItem = WorkItem::find()
                 ->where(['task_id' => $this->id])
-                ->andWhere(['moderator_id' => $moderator_id])
                 ->andWhere(['status' => WorkItem::STATUS_FREE])
                 ->one();
 
@@ -205,7 +204,8 @@ class Task extends ActiveRecord
                 return null;
             }
 
-            $newWorkItem->moderator_id = $moderator_id;
+            $newWorkItem->moderator_id = $moderator->id;
+            $newWorkItem->moderator_address = $moderator->eth_addr;
             $newWorkItem->status = WorkItem::STATUS_IN_HAND;
 
             if ($newWorkItem->save()) {
@@ -214,8 +214,14 @@ class Task extends ActiveRecord
             }
         }
 
-        return $currentWorkItem->getNewDataLabel();
+        $dataLabel = $currentWorkItem->getNewDataLabel();
 
+        if ($dataLabel === null && $currentWorkItem->status === WorkItem::STATUS_IN_HAND) {
+            $currentWorkItem->status = WorkItem::STATUS_READY;
+            $currentWorkItem->save();
+        }
+
+        return $dataLabel;
     }
 
 
@@ -294,37 +300,50 @@ class Task extends ActiveRecord
         return (int) $readyCount;
     }
 
-/*    public function approveWorkItems(Moderator $moderator, int $num=1) : bool
+    /**
+     * @param Moderator $moderator
+     * @param int $num
+     * @return WorkItem[]
+     */
+    public function readyWorkItems(Moderator $moderator, int $num)
     {
-        $readyWorkItems = $this->readyWorkItemsNumber($moderator);
-        if ($readyWorkItems < $num) return false;
+        $readWorkItems= WorkItem::find()
+            ->where(['task_id' => $this->id])
+            ->andWhere(['moderator_id'=>$moderator->id])
+            ->andWhere(['status' => WorkItem::STATUS_READY])
+            ->limit($num)
+            ->orderBy('updated_at')
+            ->all();
 
-        $updates = WorkItem::updateStatuses(
-            $this->id,
-            WorkItem::STATUS_READY,
-            WorkItem::STATUS_APPROVED,
-            $moderator->id,
-            $num
-        );
+        return $readWorkItems;
+    }
 
-        return $updates ? true : false;
+    public function approveWorkItems(Moderator $moderator, int $num=1) : bool
+    {
+        $readyWorkItemsNumber = $this->readyWorkItemsNumber($moderator);
+        if ($readyWorkItemsNumber < $num) return false;
+
+        $readyWorkItems = $this->readyWorkItems($moderator, $num=1);
+
+        foreach ($readyWorkItems as $readyWorkItem) {
+            $readyWorkItem->approve();
+        }
+
+        return true;
     }
 
     public function declineWorkItems(Moderator $moderator, int $num=1) : bool
     {
-        $readyWorkItems = $this->readyWorkItemsNumber($moderator);
-        if ($readyWorkItems < $num) return false;
+        $readyWorkItemsNumber = $this->readyWorkItemsNumber($moderator);
+        if ($readyWorkItemsNumber < $num) return false;
+
+        $readyWorkItems = $this->readyWorkItems($moderator, $num=1);
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            WorkItem::updateStatuses(
-                $this->id,
-                WorkItem::STATUS_READY,
-                WorkItem::STATUS_DECLINED,
-                $moderator->id,
-                $num
-            );
-            DataLabel::copyDeclinedToNew($this->id, $moderator->id, $num);
+            foreach ($readyWorkItems as $readyWorkItem) {
+                $readyWorkItem->decline();
+            }
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -332,7 +351,7 @@ class Task extends ActiveRecord
         }
 
         return true;
-    }*/
+    }
 
 
 

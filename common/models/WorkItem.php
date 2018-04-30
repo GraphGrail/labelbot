@@ -5,6 +5,7 @@
 
 namespace common\models;
 
+use Yii;
 use yii\behaviors\TimestampBehavior;
 
 
@@ -55,6 +56,15 @@ class WorkItem extends ActiveRecord
         return $this->hasMany(DataLabel::class, ['work_item_id' => 'id']);
     }
 
+    /**
+     * Returns related Moderator model
+     * @return \yii\db\ActiveQuery
+     */
+    public function getModerator()
+    {
+        return $this->hasOne(Moderator::class, ['id' => 'moderator_id']);
+    }
+
 
     public function getNewDataLabel() : ?DataLabel
     {
@@ -74,46 +84,32 @@ class WorkItem extends ActiveRecord
 
     public function decline()
     {
-        $declinedLabels = DataLabel::find()
-            ->where(['work_item_id'=>$this->id])
-            ->all()
-            ->asArray();
+        $newWorkItem = new WorkItem;
+        $newWorkItem->task_id = $this->task_id;
+        $newWorkItem->items   = $this->items;
+        $newWorkItem->status  = WorkItem::STATUS_FREE;
+        $newWorkItem->save();
 
         $timestamp = time();
         $dataToInsert = [];
 
-        foreach ($declinedLabels as $declinedLabel) {
-            $dataToInsert []= [$task_id, $declinedLabel['data_id'], $this->id, DataLabel::STATUS_NEW, $timestamp, $timestamp];
+        foreach ($this->dataLabels as $declinedLabel) {
+            $dataToInsert []= [
+                $newWorkItem->id,
+                $declinedLabel['data_id'],
+                DataLabel::STATUS_NEW,
+                $timestamp,
+                $timestamp
+            ];
         }
         Yii::$app->db->createCommand()->batchInsert(
             DataLabel::tableName(),
-            ['task_id', 'data_id', 'work_item_id', 'status', 'created_at', 'updated_at'],
+            ['work_item_id', 'data_id', 'status', 'created_at', 'updated_at'],
             $dataToInsert
         )->execute();
 
         $this->status = WorkItem::STATUS_DECLINED;
         return $this->save();
     }
-
-
-    public static function updateStatuses(int $task_id, int $from_status, int $to_status, int $moderator_id, int $limit) : int
-    {
-        $updates = Yii::$app->db->createCommand('
-            UPDATE work_item 
-                SET status=:new_status
-                WHERE task_id=:task_id
-                    AND moderator_id=:moderator_id
-                    AND status=:old_status
-                ORDER BY updated_at ASC 
-                LIMIT ' . $limit)
-            ->bindParam(':new_status',   $to_status)
-            ->bindParam(':task_id',      $task_id)
-            ->bindParam(':moderator_id', $moderator_id)
-            ->bindParam(':old_status',   $from_status)
-            ->execute();
-
-        return $updates;
-    }
-
 
 }

@@ -4,7 +4,6 @@ namespace Longman\TelegramBot\Commands\SystemCommands;
 
 
 use Longman\TelegramBot\Commands\SystemCommand;
-use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Request;
 use common\models\Moderator;
 use common\domain\ethereum\Address;
@@ -44,7 +43,7 @@ class LoginCommand extends SystemCommand
     /**
      * Command execute method
      *
-     * @return \Longman\TelegramBot\Entities\ServerResponse
+     * @return void
      * @throws \Longman\TelegramBot\Exception\TelegramException
      */
     public function execute()

@@ -8,7 +8,7 @@ use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
 use common\components\CallbackData;
 use common\models\Label;
-use common\models\AssignedLabel;
+use common\models\DataLabel;
 use common\components\LabelsKeyboard;
 
 /**
@@ -44,9 +44,9 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
     protected $private_only = true;
 
     /**
-     * @var int
+     * @var DataLabel
      */
-    protected $assigned_label;
+    protected $data_label;
 
     /**
      * @var int
@@ -63,15 +63,16 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse
      * @throws \Longman\TelegramBot\Exception\TelegramException
+     * @throws \yii\web\HttpException
      */
     public function execute()
     {
         $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
         $verified_callback_data = $callback_data->getVerifiedData();
-        list($assigned_label_id, $this->label_id) = explode(':', $verified_callback_data);
+        list($data_label_id, $this->label_id) = explode(':', $verified_callback_data);
         
-        $this->assigned_label = AssignedLabel::findOne($assigned_label_id);
-        if ($this->assigned_label === null || $this->assigned_label->status !== AssignedLabel::STATUS_IN_HAND) {
+        $this->data_label = DataLabel::findOne($data_label_id);
+        if ($this->data_label === null || $this->data_label->status !== DataLabel::STATUS_NEW) {
             $req_data = [
                 'callback_query_id' => $this->callback_query_id,
                 'text'              => 'Error: label was not confirmed',
@@ -82,12 +83,12 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
             return $this->telegram->executeCommand('get');
         }
 
-        if ($this->labelHasChildrenLabels() || $this->labelWasAssignedEalier()) return;
+        if ($this->labelHasChildrenLabels() || $this->labelWasAssignedEarlier()) return;
 
-        $this->assigned_label->status = AssignedLabel::STATUS_READY;            
-        $this->assigned_label->label_id = $this->label_id;
+        $this->data_label->status = DataLabel::STATUS_READY;
+        $this->data_label->label_id = $this->label_id;
 
-        if (!$this->assigned_label->save()) {
+        if (!$this->data_label->save()) {
             // TODO: log error
         }
 
@@ -96,15 +97,16 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
 
     /**
      * Handle if chosen label has children labels
-     * 
+     *
      * @return bool
+     * @throws \Longman\TelegramBot\Exception\TelegramException
      */
     private function labelHasChildrenLabels() : bool
     {
         $root_label = Label::findOne($this->label_id);
 
         if ($root_label && $root_label->children) {
-            $inline_keyboard = new LabelsKeyboard($root_label, $this->assigned_label, $this->moderator);
+            $inline_keyboard = new LabelsKeyboard($root_label, $this->data_label, $this->moderator);
             $req_data = [
                 'chat_id'      => $this->chat_id,
                 'message_id'   => $this->message_id,
@@ -120,12 +122,13 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
 
     /**
      * Handle if chosen label already was assigned by this moderator
-     * 
+     *
      * @return bool
+     * @throws \Longman\TelegramBot\Exception\TelegramException
      */
-    private function labelWasAssignedEalier()
+    private function labelWasAssignedEarlier()
     {
-        if (in_array($this->assigned_label->status, [AssignedLabel::STATUS_READY, AssignedLabel::STATUS_APPROVED, AssignedLabel::STATUS_DECLINED])) {
+        if ($this->data_label->status === DataLabel::STATUS_READY) {
             $req_data = [
                 'callback_query_id' => $this->callback_query_id,
                 'text'              => 'This data was labeled already',

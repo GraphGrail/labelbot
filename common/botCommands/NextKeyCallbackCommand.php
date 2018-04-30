@@ -4,11 +4,9 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 
 require_once 'AuthenticatedUserCommand.php';
 
+use common\models\DataLabel;
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
-use Longman\TelegramBot\Request;
 use common\components\CallbackData;
-use common\models\Label;
-use common\models\AssignedLabel;
 
 
 /**
@@ -55,21 +53,24 @@ class NextKeyCallbackCommand extends AuthenticatedUserCommand
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse
      * @throws \Longman\TelegramBot\Exception\TelegramException
+     * @throws \yii\web\HttpException
      */
     public function execute()
     {
         $callback_data = new CallbackData($this->moderator, $this->callback_query_data);
         $verified_callback_data = $callback_data->getVerifiedData();
-        list($assigned_label_id, $label_id) = explode(':', $verified_callback_data);
+        list($data_label_id, $label_id) = explode(':', $verified_callback_data);
 
-        $assignedLabel = AssignedLabel::findOne($assigned_label_id);
+        $dataLabel = DataLabel::findOne($data_label_id);
 
-        if ($assignedLabel === null || $assignedLabel->status != AssignedLabel::STATUS_IN_HAND) {
+        if ($dataLabel === null || $dataLabel->status !== DataLabel::STATUS_NEW) {
             return $this->telegram->executeCommand('get');
         }
 
-        $assignedLabel->status = AssignedLabel::STATUS_SKIPPED;            
-        if (!$assignedLabel->save()) {
+        // TODO: change data_label to data_label from free work_item
+
+
+        if (!$dataLabel->save()) {
             // TODO: log error
         }
 

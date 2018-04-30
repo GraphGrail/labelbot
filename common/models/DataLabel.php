@@ -36,8 +36,8 @@ class DataLabel extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['task_id', 'work_item_id', 'data_id'], 'required'],
-            [['task_id', 'work_item_id', 'data_id', 'label_id', 'moderator_id', 'created_at', 'updated_at'], 'integer'],
+            [['work_item_id', 'data_id'], 'required'],
+            [['work_item_id', 'data_id', 'label_id'], 'integer'],
         ];
     }
 
@@ -59,10 +59,8 @@ class DataLabel extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'data_id' => 'Data ID',
-            'task_id' => 'Task ID',
             'work_item_id' => 'Work item ID',
             'label_id' => 'Label ID',
-            'moderator_id' => 'Moderator ID',
             'status' => 'Status',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At'
