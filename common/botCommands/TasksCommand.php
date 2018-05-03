@@ -48,6 +48,7 @@ class TasksCommand extends AuthenticatedUserCommand
         
         $availbleTasks = Task::find()
             ->where(['status'=>Task::STATUS_CONTRACT_ACTIVE])
+            ->undeleted()
             ->all();
 
         $reward = bcdiv(Yii::$app->params['workItemPrice'], '1000000000000000000', 4);
