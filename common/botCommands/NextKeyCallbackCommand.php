@@ -7,6 +7,7 @@ require_once 'AuthenticatedUserCommand.php';
 use common\models\DataLabel;
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use common\components\CallbackData;
+use Longman\TelegramBot\Request;
 
 
 /**
@@ -54,6 +55,7 @@ class NextKeyCallbackCommand extends AuthenticatedUserCommand
      * @return \Longman\TelegramBot\Entities\ServerResponse
      * @throws \Longman\TelegramBot\Exception\TelegramException
      * @throws \yii\web\HttpException
+     * @throws \yii\db\Exception
      */
     public function execute()
     {
@@ -67,11 +69,14 @@ class NextKeyCallbackCommand extends AuthenticatedUserCommand
             return $this->telegram->executeCommand('get');
         }
 
-        // TODO: change data_label to data_label from free work_item
-
-
-        if (!$dataLabel->save()) {
-            // TODO: log error
+        if (!$dataLabel->skip()) {
+            $req_data = [
+                'callback_query_id' => $this->callback_query_id,
+                'text'              => 'Can\'t skip this data. Please, choose label.',
+                'show_alert'        => false,
+                'cache_time'        => 0,
+            ];
+            Request::answerCallbackQuery($req_data);
         }
 
         return $this->telegram->executeCommand('get');

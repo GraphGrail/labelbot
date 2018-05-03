@@ -5,6 +5,7 @@
 
 namespace common\models;
 
+use common\models\behavior\LockEntityBehavior;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 
@@ -37,18 +38,11 @@ class WorkItem extends ActiveRecord
     {
         return [
             TimestampBehavior::class,
+            [
+                'class' => LockEntityBehavior::class,
+                'entity' => $this
+            ]
         ];
-    }
-
-    public function lock(): bool
-    {
-        return Lock::create($this);
-    }
-
-    public function free(): bool
-    {
-        Lock::free($this);
-        return true;
     }
 
     public function getDataLabels()
@@ -63,6 +57,16 @@ class WorkItem extends ActiveRecord
     public function getModerator()
     {
         return $this->hasOne(Moderator::class, ['id' => 'moderator_id']);
+    }
+
+
+    /**
+     * Returns related Task model
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTask()
+    {
+        return $this->hasOne(Task::class, ['id' => 'task_id']);
     }
 
 
@@ -110,6 +114,13 @@ class WorkItem extends ActiveRecord
 
         $this->status = WorkItem::STATUS_DECLINED;
         return $this->save();
+    }
+
+
+    public function getRandomDataLabel() : DataLabel
+    {
+        $dataLabels = $this->dataLabels;
+        return $dataLabels[array_rand($dataLabels)];
     }
 
 }

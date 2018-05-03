@@ -2,15 +2,16 @@
 
 namespace common\models;
 
-use Yii;
+
 
 /**
  * This is the model class for table "data_label".
  *
  * @property int $id
+ * @property int $work_item_id
  * @property int $data_id
  * @property int $label_id
- * @property int $moderator_id
+ * @property int $status
  * @property int $created_at
  * @property int $updated_at
  */
@@ -112,6 +113,44 @@ class DataLabel extends \yii\db\ActiveRecord
         return $this->hasOne(Moderator::class, ['id' => 'moderator_id']);
     }
 
+
+    /**
+     * @return bool
+     * @throws \yii\db\Exception
+     */
+    public function skip() : bool
+    {
+        if ($this->getWorkItem()->one()->status !== WorkItem::STATUS_IN_HAND) return false;
+
+        /** @var WorkItem $freeWorkItem */
+        $freeWorkItem = $this
+            ->getWorkItem()->one()
+            ->getTask()->one()
+            ->getRandomFreeWorkItem();
+
+        if ($freeWorkItem === null) return false;
+
+        /** @var DataLabel $randomDataLabel */
+        $randomDataLabel = $freeWorkItem->getRandomDatalabel();
+
+        $id = $randomDataLabel->work_item_id;
+        $randomDataLabel->work_item_id = $this->work_item_id;
+        $this->work_item_id = $id;
+
+        $transaction = static::getDb()->beginTransaction();
+        try {
+            $this->save();
+            $randomDataLabel->save();
+            $transaction->commit();
+        } catch(\Exception $e) {
+            $transaction->rollBack();
+            $freeWorkItem->unlock();
+            return false;
+        }
+
+        $freeWorkItem->unlock();
+        return true;
+    }
 
 
 }

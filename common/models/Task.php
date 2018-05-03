@@ -195,12 +195,13 @@ class Task extends ActiveRecord
                 return null;
             }
 
+            /** @var WorkItem $newWorkItem */
             $newWorkItem = WorkItem::find()
                 ->where(['task_id' => $this->id])
                 ->andWhere(['status' => WorkItem::STATUS_FREE])
                 ->one();
 
-            if ($newWorkItem === null || !Lock::create($newWorkItem)) {
+            if ($newWorkItem === null || !$newWorkItem->lock()) {
                 return null;
             }
 
@@ -209,7 +210,7 @@ class Task extends ActiveRecord
             $newWorkItem->status = WorkItem::STATUS_IN_HAND;
 
             if ($newWorkItem->save()) {
-                Lock::free($newWorkItem);
+                $newWorkItem->unlock();
                 $currentWorkItem = $newWorkItem;
             }
         }
@@ -354,5 +355,32 @@ class Task extends ActiveRecord
     }
 
 
+    /**
+     * @return WorkItem|null
+     */
+    public function getRandomFreeWorkItem() :?WorkItem
+    {
+        $randomFreeWorkItem = null;
+
+        $freeWorkItems = $this->getWorkItems()
+            ->where(['status'=>WorkItem::STATUS_FREE])
+            ->all();
+
+        while (true) {
+            if ($freeWorkItems === []) return null;
+
+            $key = array_rand($freeWorkItems);
+            /** @var WorkItem $randomFreeWorkItem */
+            $randomFreeWorkItem = $freeWorkItems[$key];
+
+            if (!$randomFreeWorkItem->lock()) {
+                unset($freeWorkItems[$key]);
+                continue;
+            }
+            break;
+        }
+
+        return $randomFreeWorkItem;
+    }
 
 }

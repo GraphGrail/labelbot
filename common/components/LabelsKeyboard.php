@@ -46,9 +46,9 @@ class LabelsKeyboard extends yii\base\BaseObject
         $keyboard = [];
         $labels = Label::findAll(['parent_label_id' => $this->root_label->id]);
 
-/*        if ($this->root_label->parent_label_id === 0) {
+        if ($this->root_label->parent_label_id === 0) {
             array_push($keyboard, [$this->nextKey()]);
-        }*/
+        }
 
         foreach ($labels as $label) {
             array_push($keyboard, [$this->labelKey($label)]);
