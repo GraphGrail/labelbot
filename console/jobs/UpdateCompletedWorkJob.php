@@ -1,11 +1,11 @@
 <?php
 
 namespace console\jobs;
-use common\models\Task;
-use common\models\AssignedLabel;
+
 use common\models\BlockchainCallback;
+use common\models\Task;
+use common\models\WorkItem;
 use common\components\EthereumGateway;
-use Yii;
 
 /**
  * Class UpdateCompletedWorkJob.
@@ -29,6 +29,7 @@ class UpdateCompletedWorkJob extends \yii\base\BaseObject implements \yii\queue\
 
     /**
      * @inheritdoc
+     * @throws \Exception
      */
     public function execute($queue)
     {
@@ -38,20 +39,15 @@ class UpdateCompletedWorkJob extends \yii\base\BaseObject implements \yii\queue\
         $payload = [];
 
         $currentWorks = (new \yii\db\Query)
-            ->select(['moderator_id', 'moderator.eth_addr', 'COUNT(moderator_id) AS count'])
-            ->from(AssignedLabel::tableName())
-            ->join('JOIN', 'moderator', 'moderator.id = moderator_id')
+            ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
+            ->from(WorkItem::tableName())
             ->where(['task_id'=>$this->task->id])
-            ->andWhere(['in', 'status', [AssignedLabel::STATUS_READY, AssignedLabel::STATUS_APPROVED, AssignedLabel::STATUS_DECLINED]])
-            ->groupBy(['moderator_id'])
+            ->andWhere(['in', 'status', [WorkItem::STATUS_READY, WorkItem::STATUS_APPROVED, WorkItem::STATUS_DECLINED]])
+            ->groupBy(['moderator_address'])
             ->all();
 
         foreach ($currentWorks as $work) {
-            $readyWorkItems = (int) $work['count'] / $this->task->work_item_size;
-            // We don't get not completed workItems
-            if ($readyWorkItems === 0) continue;
-
-            $payload[$work['eth_addr']] = $readyWorkItems;
+            $payload[$work['moderator_address']] = (int) $work['count'];
         }
 
         $blockchain = new EthereumGateway;

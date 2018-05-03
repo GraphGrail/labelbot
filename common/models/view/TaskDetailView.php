@@ -85,7 +85,7 @@ class TaskDetailView
                     'declinedItems' => 0,
                 ];
             }
-            $data[$moderatorId]['current'] = sprintf('%s/%s(%s)', $count, $this->task->work_item_size, \Yii::$app->getFormatter()->asPercent($count / $this->task->work_item_size));
+            $data[$moderatorId]['current'] = sprintf('%s/%s (%s)', $count, $this->task->work_item_size, \Yii::$app->getFormatter()->asPercent($count / $this->task->work_item_size));
         }
 
         $json = json_encode($data);

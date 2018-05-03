@@ -103,6 +103,7 @@ class HelpCommand extends UserCommand
      * Get all available User and Admin commands to display in the help list.
      *
      * @return Command[][]
+     * @throws \Longman\TelegramBot\Exception\TelegramException
      */
     protected function getUserAdminCommands()
     {

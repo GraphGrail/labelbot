@@ -5,9 +5,8 @@ namespace common\components;
 use Yii;
 use Longman\TelegramBot\Entities\InlineKeyboard;
 use common\models\Label;
-use common\models\AssignedLabel;
+use common\models\DataLabel;
 use common\models\Moderator;
-use common\components\CallbackData;
 
 /**
  * LabelsKeybords component
@@ -16,33 +15,21 @@ use common\components\CallbackData;
  */
 class LabelsKeyboard extends yii\base\BaseObject
 {
-    /**
-     * @var common\models\Label
-     */
     protected $root_label;
-
-    /**
-     * @var int
-     */
-    protected $assigned_label_id;
-
-    /**
-     * @var common\models\Moderator
-     */
+    protected $data_label_id;
     protected $moderator;
-    
+
     /**
      * Class constructor
-     * 
-     * @param Label $root_label 
-     * @param int $assigned_label_id 
-     * @param Moderator $moderator 
-     * @return type
+     *
+     * @param Label $root_label
+     * @param DataLabel $data_label
+     * @param Moderator $moderator
      */
-    public function __construct(Label $root_label, AssignedLabel $assigned_label, Moderator $moderator)
+    public function __construct(Label $root_label, DataLabel $data_label, Moderator $moderator)
     {
         $this->root_label = $root_label;
-        $this->assigned_label_id = $assigned_label->id;
+        $this->data_label_id = $data_label->id;
         $this->moderator = $moderator;
 
         parent::__construct();
@@ -50,8 +37,9 @@ class LabelsKeyboard extends yii\base\BaseObject
 
     /**
      * Returns telegram InlineKeyboard
-     * 
+     *
      * @return InlineKeyboard
+     * @throws \Longman\TelegramBot\Exception\TelegramException
      */
     public function generate() : InlineKeyboard
     {
@@ -75,15 +63,15 @@ class LabelsKeyboard extends yii\base\BaseObject
 
     /**
      * Returns Label key
-     * 
-     * @param  common\models\Label $label 
+     *
+     * @param Label $label
      * @return array
      */
     private function labelKey(Label $label) : array
     {
         $callback_data = new CallbackData($this->moderator);
         $callback_data->type = CallbackData::LABEL_KEY_PRESSED;
-        $callback_data->data = $this->assigned_label_id .':'. $label->id;
+        $callback_data->data = $this->data_label_id .':'. $label->id;
 
         if (!$label->children) {
             $label->text = '✅ ' . $label->text;
@@ -104,7 +92,7 @@ class LabelsKeyboard extends yii\base\BaseObject
     {
         $callback_data = new CallbackData($this->moderator);
         $callback_data->type = CallbackData::NEXT_KEY_PRESSED;
-        $callback_data->data = $this->assigned_label_id .':'. 0;    
+        $callback_data->data = $this->data_label_id .':'. 0;
 
         return [
             'text' => 'Next data 👉🏻',
@@ -121,7 +109,7 @@ class LabelsKeyboard extends yii\base\BaseObject
     {
         $callback_data = new CallbackData($this->moderator);
         $callback_data->type = CallbackData::BACK_KEY_PRESSED;
-        $callback_data->data = $this->assigned_label_id .':'. $this->root_label->parent_label_id;    
+        $callback_data->data = $this->data_label_id .':'. $this->root_label->parent_label_id;
 
         return [
             'text' => '👈🏻 Back',

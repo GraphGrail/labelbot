@@ -3,8 +3,6 @@
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
-use Longman\TelegramBot\Request;
-use Longman\TelegramBot\Exception\TelegramException;
 use common\components\CallbackData;
 use yii\web\HttpException;
 
@@ -35,7 +33,8 @@ class CallbackqueryCommand extends SystemCommand
     /**
      * Command execute method
      *
-     * @return \Longman\TelegramBot\Entities\ServerResponse
+     * @return void
+     * @throws HttpException
      * @throws \Longman\TelegramBot\Exception\TelegramException
      */
     public function execute()

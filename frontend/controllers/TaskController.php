@@ -3,8 +3,8 @@
 namespace frontend\controllers;
 
 use common\components\EthereumGateway;
-use common\models\AssignedLabel;
 use common\models\Data;
+use common\models\DataLabel;
 use common\models\Dataset;
 use common\models\Label;
 use common\models\LabelGroup;
@@ -16,6 +16,7 @@ use common\models\User;
 use common\models\view\PreviewScoreWorkView;
 use common\models\view\TaskDetailView;
 use common\models\view\TaskScoreWorkView;
+use common\models\WorkItem;
 use console\jobs\SynchronizeTaskStatusJob;
 use frontend\models\SendScoreWorkForm;
 use yii\filters\AccessControl;
@@ -33,7 +34,7 @@ class TaskController extends \yii\web\Controller
     {
         return [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,
@@ -83,8 +84,7 @@ class TaskController extends \yii\web\Controller
                 ->ownedByUser()
                 ->undeleted()
                 ->one();
-            if ($labelGroup === null) $model->total_work_items;
-
+            if ($labelGroup === null) throw new \Exception("Incorrect labelGroup_id");
             // We must save actual workItemSize on the moment of Task creation and use it later 
             // in operations belong to this Task, coz workItemSize in config can be modified.
             $model->work_item_size = Yii::$app->params['workItemSize'];
@@ -199,12 +199,12 @@ class TaskController extends \yii\web\Controller
             ->one();
 
         if ($task === null) {
-            throw new \Exception("Can't find Task");
+            throw new HttpException(404, "Can't find Task");
         }
 
         if ($task->status !== Task::STATUS_CONTRACT_ACTIVE) {
             // TODO: remove that
-            throw new \Exception("Task must be active for pause.");            
+            throw new HttpException(500, "Task must be active for pause.");
         }
 
         // Runs console command blockchain/update-completed-work for this task
@@ -239,7 +239,7 @@ class TaskController extends \yii\web\Controller
 
         if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED) {
             // TODO: remove that
-            throw new \Exception("Task must be paused for activtion.");            
+            throw new \Exception("Task must be paused for activation.");
         }
 
         try {
@@ -253,37 +253,27 @@ class TaskController extends \yii\web\Controller
         $workItemsInDb = [];
 
         $approvedWorks = (new \yii\db\Query)
-            ->select(['moderator_id', 'moderator.eth_addr', 'COUNT(moderator_id) AS count'])
-            ->from(AssignedLabel::tableName())
-            ->join('JOIN', 'moderator', 'moderator.id = moderator_id')
+            ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
+            ->from(WorkItem::tableName())
             ->where(['task_id'=>$task->id])
-            ->andWhere(['status'=>AssignedLabel::STATUS_APPROVED])
-            ->groupBy(['moderator_id'])
+            ->andWhere(['status'=>WorkItem::STATUS_APPROVED])
+            ->groupBy(['moderator_address'])
             ->all();
 
         foreach ($approvedWorks as $work) {
-            $approvedWorkItems = (int) ($work['count']/$task->work_item_size);
-            // We don't get not completed workItems
-            if ($approvedWorkItems === 0) continue;
-
-            $workItemsInDb[$work['eth_addr']]['approvedItems'] = $approvedWorkItems;
+            $workItemsInDb[$work['moderator_address']]['approvedItems'] = (int) $work['count'];
         }
 
         $declinedWorks = (new \yii\db\Query)
-            ->select(['moderator_id', 'moderator.eth_addr', 'COUNT(moderator_id) AS count'])
-            ->from(AssignedLabel::tableName())
-            ->join('JOIN', 'moderator', 'moderator.id = moderator_id')
+            ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
+            ->from(WorkItem::tableName())
             ->where(['task_id'=>$task->id])
-            ->andWhere(['status'=>AssignedLabel::STATUS_DECLINED])
-            ->groupBy(['moderator_id'])
+            ->andWhere(['status'=>WorkItem::STATUS_DECLINED])
+            ->groupBy(['moderator_address'])
             ->all();
 
         foreach ($declinedWorks as $work) {
-            $declinedWorkItems = (int) $work['count'] / $task->work_item_size;
-            // We don't get not completed workItems
-            if ($declinedWorkItems === 0) continue;
-
-            $workItemsInDb[$work['eth_addr']]['declinedItems'] = $declinedWorkItems;
+            $workItemsInDb[$work['moderator_address']]['declinedItems'] = (int) $work['count'];
         }
 
         $approvedWorksToUpdate = [];
@@ -310,13 +300,13 @@ class TaskController extends \yii\web\Controller
 
         foreach ($approvedWorksToUpdate as $address => $num) {
             $moderator = Moderator::findOne(['eth_addr' => $address]);
-            if ($moderator === null) continue;
+            if ($moderator === null) continue; // TODO: Log sync error
             $task->approveWorkItems($moderator, $num);
         }
 
         foreach ($declinedWorksToUpdate as $address => $num) {
             $moderator = Moderator::findOne(['eth_addr' => $address]);
-            if ($moderator === null) continue;
+            if ($moderator === null) continue; // TODO: Log sync error
             $task->declineWorkItems($moderator, $num);
         }
 
@@ -506,7 +496,7 @@ class TaskController extends \yii\web\Controller
      * @return \yii\web\Response
      * @throws NotFoundHttpException
      */
-    public function actionPreviewWork($id, $addr)
+    public function actionPreviewWork($id, $addr, $limit=10)
     {
         /** @var Task $task */
         if (!$task = Task::findOne($id)) {
@@ -518,19 +508,17 @@ class TaskController extends \yii\web\Controller
             throw new NotFoundHttpException(sprintf('Moderator with address `%s` not found', $addr));
         }
 
-        $limit = 10;
-        $list = $task
-            ->getAssignedLabels()
-            ->andWhere('[[status]] = ' . AssignedLabel::STATUS_READY)
+        $currentWorkItem = WorkItem::find()
+            ->where(['task_id' => $task->id])
+            ->andWhere('[[status]] = ' . WorkItem::STATUS_READY)
             ->andWhere('[[moderator_id]] = ' . $moderator->id)
-            ->addOrderBy(['id' => SORT_DESC])
-            ->limit($limit)
-            ->all()
-        ;
+            ->one();
+
+        $list = array_slice($currentWorkItem->dataLabels, 0, 9);
 
         return $this->asJson([
-            'list' => array_map(function (AssignedLabel $assignedLabel) {
-                return (new PreviewScoreWorkView($assignedLabel))->toArray();
+            'list' => array_map(function (DataLabel $dataLabel) {
+                return (new PreviewScoreWorkView($dataLabel))->toArray();
             }, $list),
         ]);
     }
@@ -559,20 +547,17 @@ class TaskController extends \yii\web\Controller
             ->setContractStatus($contractStatus)
             ->setApprovedCount(
                 $task
-                ->getAssignedLabels()
-                ->andWhere('[[status]] = ' . AssignedLabel::STATUS_APPROVED)
-                ->count()
+                    ->getWorkItems()
+                    ->andWhere('[[status]] = ' . WorkItem::STATUS_APPROVED)
+                    ->count()
             )
-            ->setFullCount(
-                Data::find()
-                ->where(['dataset_id' => $task->dataset_id])
-                ->count()
-            )
+            ->setFullCount($task->total_work_items)
         ;
 
-        $moderatorCountAssignedLabels = $this->getModeratorCountAssignedLabels($task);
-        foreach ($moderatorCountAssignedLabels as $moderatorAddr =>  $moderatorCountAssignedLabel) {
-            $view->addModeratorAssignedCount($moderatorAddr, $moderatorCountAssignedLabel);
+        $moderatorCountAssignedLabels = $this->getModeratorCountDataLabels($task);
+
+        foreach ($moderatorCountAssignedLabels as $moderatorAddress =>  $moderatorCountAssignedLabel) {
+            $view->addModeratorAssignedCount($moderatorAddress, $moderatorCountAssignedLabel);
         }
 
         return $this->render('detail', [
@@ -624,28 +609,32 @@ class TaskController extends \yii\web\Controller
     protected function createCsvFile(Task $task)
     {
         try {
-            /** @var AssignedLabel[] $models */
-            $models = $task->getAssignedLabels()
-                ->andWhere(['status' => AssignedLabel::STATUS_APPROVED])
+            $approvedWorkItems = $task->getWorkItems()
+                ->andWhere(['status' => WorkItem::STATUS_APPROVED])
                 ->all();
 
             /** @var \yii2tech\filestorage\local\Storage $fileStorage */
             $bucket = $this->getResultFileBucket();
-
             $resource = $bucket->openFile($this->createTaskResultFileName($task), 'w');
-            foreach ($models as $model) {
-                /** @var Label $label */
-                if (!$label = $model->getLabel()->one()) {
-                    continue;
+
+            foreach ($approvedWorkItems as $workItem) {
+                foreach ($workItem->dataLabels as $dataLabel) {
+
+                    /** @var Label $label */
+                    if (!$label = $dataLabel->getLabel()->one()) {
+                        continue;
+                    }
+                    /** @var Data $data */
+                    if (!$data = $dataLabel->getData()->one()) {
+                        continue;
+                    }
+
+                    $path = $label->buildPath();
+                    array_unshift($path, $data->data);
+                    fputcsv($resource, $path, ',');
                 }
-                /** @var Data $data */
-                if (!$data = $model->getData()->one()) {
-                    continue;
-                }
-                $path = $label->buildPath();
-                array_unshift($path, $data->data);
-                fputcsv($resource, $path, ';');
             }
+
             fclose($resource);
 
             $task->result_file = $this->createTaskResultFileName($task);
@@ -667,21 +656,25 @@ class TaskController extends \yii\web\Controller
      * @param Task $task
      * @return array
      */
-    private function getModeratorCountAssignedLabels(Task $task): array
+    private function getModeratorCountDataLabels(Task $task): array
     {
-        /** @var AssignedLabel[] $assigned */
-        $assigned = $task
-            ->getAssignedLabels()
-            ->andWhere('[[status]] = ' . AssignedLabel::STATUS_READY)
-            ->all()
-        ;
+        $inHands = $task
+            ->getWorkItems()
+            ->where(['IN', 'status', [WorkItem::STATUS_IN_HAND, WorkItem::STATUS_READY]])
+            ->all();
+
         $counts = [];
-        foreach ($assigned as $assignedLabel) {
-            $addr = $assignedLabel->getModerator()->one()->eth_addr;
-            if (!array_key_exists($addr, $counts)) {
-                $counts[$addr] = 0;
+        foreach ($inHands as $workItem) {
+            $address = $workItem->getModerator()->one()->eth_addr;
+            if (!array_key_exists($address, $counts)) {
+                $counts[$address] = 0;
             }
-            $counts[$addr]++;
+
+            $readyNumber = $workItem->getDataLabels()
+                ->where(['status' => DataLabel::STATUS_READY])
+                ->count();
+
+            $counts[$address] += $readyNumber;
         }
         return $counts;
     }
