@@ -4,11 +4,12 @@ namespace console\controllers;
 
 use Yii;
 use yii\console\Controller;
+use yii\console\ExitCode;
 use yii\helpers\Console;
 use Longman\TelegramBot\Telegram;
 use Longman\TelegramBot\Exception\TelegramException;
 
-class TelegramController extends \yii\console\Controller
+class TelegramController extends Controller
 {
     protected $telegram_api_url;
 
@@ -27,7 +28,7 @@ class TelegramController extends \yii\console\Controller
                 . 'You need to specify <domain> param' . PHP_EOL
                 . 'You can use ngrok (https://ngrok.com) as SSL proxy:' . PHP_EOL
                 . 'ngrok http -host-header=<local_domain> 80';
-            return Controller::EXIT_CODE_ERROR;
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $url = $domain . '/webhook/' . Yii::$app->params['telegram_bot_webhook_token'];
@@ -51,7 +52,7 @@ class TelegramController extends \yii\console\Controller
             echo $e->getMessage();
         }
 
-        return Controller::EXIT_CODE_NORMAL;
+        return ExitCode::OK;
     }
 
     public function actionRemoveWebhook()
@@ -69,12 +70,12 @@ class TelegramController extends \yii\console\Controller
             echo $e->getMessage();
         }
 
-        return Controller::EXIT_CODE_NORMAL;
+        return ExitCode::OK;
     }
 
     public function actionGetWebhookInfo()
     {
         echo file_get_contents($this->telegram_api_url . 'getWebhookInfo');
-        return Controller::EXIT_CODE_NORMAL;
+        return ExitCode::OK;
     }
 }

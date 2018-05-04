@@ -3,13 +3,12 @@
 namespace frontend\controllers;
 
 use Yii;
-use yii\web\Controller;
 use yii\filters\AccessControl;
-
 use Longman\TelegramBot\Telegram;
 use Longman\TelegramBot\TelegramLog;
 use Longman\TelegramBot\Exception\TelegramException;
 use Longman\TelegramBot\Exception\TelegramLogException;
+use yii\web\BadRequestHttpException;
 
 
 class WebhookController extends \yii\web\Controller
@@ -23,7 +22,7 @@ class WebhookController extends \yii\web\Controller
     {
         return [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'only' => ['index'],
                 'rules' => [
                     [
@@ -36,22 +35,27 @@ class WebhookController extends \yii\web\Controller
         ];
     }
 
+    /**
+     * @param $token
+     * @throws BadRequestHttpException
+     * @throws \Exception
+     */
     public function actionIndex($token)
     {
         // Check webhook token
         if ($token !== Yii::$app->params['telegram_bot_webhook_token']) {
-            throw new \yii\web\HttpException(403, 'Invalid token');
+            throw new BadRequestHttpException('Invalid token');
         }
 
         // Bot's configuration
         $bot_api_key  = Yii::$app->params['telegram_bot_api_key'];
         $bot_username = Yii::$app->params['telegram_bot_username'];
-        $admin_users  = Yii::$app->params['telegram_bot_admin_users'];
+        // $admin_users  = Yii::$app->params['telegram_bot_admin_users'];
         // Paths for bot's commands
         $commands_paths = [
             Yii::getAlias('@common/botCommands/'),
         ];
-        $mysql_credentials = Yii::$app->params['telegram_bot_mysql_credentials'];
+        // $mysql_credentials = Yii::$app->params['telegram_bot_mysql_credentials'];
 
         try {
             $telegram = new Telegram($bot_api_key, $bot_username);
@@ -78,7 +82,8 @@ class WebhookController extends \yii\web\Controller
             //$telegram->setCommandConfig('date', ['google_api_key' => 'your_google_api_key_here']);
 
             // Botan.io integration
-            Yii::$app->params['telegram_bot_appmetrica_key'] && $telegram->enableBotan(Yii::$app->params['telegram_bot_appmetrica_key']);
+            Yii::$app->params['telegram_bot_appmetrica_key']
+                && $telegram->enableBotan(Yii::$app->params['telegram_bot_appmetrica_key']);
 
             // Requests Limiter (tries to prevent reaching Telegram API limits)
             $telegram->enableLimiter();

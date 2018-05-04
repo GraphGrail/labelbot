@@ -17,6 +17,9 @@ class UpdateCompletedWorkJob extends \yii\base\BaseObject implements \yii\queue\
     /** @var Task */
     protected $task;
 
+    /**
+     * @throws \Exception
+     */
     public function init()
     {
         parent::init();
@@ -25,7 +28,6 @@ class UpdateCompletedWorkJob extends \yii\base\BaseObject implements \yii\queue\
             throw new \Exception('Cant find Task record');
         }
     }
-
 
     /**
      * @inheritdoc

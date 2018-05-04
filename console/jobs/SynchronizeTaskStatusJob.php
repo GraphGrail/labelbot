@@ -5,7 +5,6 @@
 
 namespace console\jobs;
 
-
 use common\components\EthereumGateway;
 use common\models\BlockchainCallback;
 use common\models\Task;
@@ -17,7 +16,6 @@ use yii\queue\Queue;
 
 class SynchronizeTaskStatusJob extends BaseObject implements JobInterface
 {
-
     public const DEPLOYMENT_TIME_LIMIT = 10;
 
     public $taskId;

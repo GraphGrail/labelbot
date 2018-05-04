@@ -5,7 +5,6 @@ namespace frontend\controllers;
 use common\models\Dataset;
 use frontend\models\UploadDatasetForm;
 use yii\filters\AccessControl;
-use yii\helpers\StringHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\UploadedFile;
@@ -20,7 +19,7 @@ class DatasetController extends Controller
     {
         return [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,
@@ -74,8 +73,8 @@ class DatasetController extends Controller
      * @return \yii\web\Response
      * @throws NotFoundHttpException
      * @throws \Exception
-     * @throws \Throwable
      * @throws \yii\db\StaleObjectException
+     * @throws \Throwable
      */
     public function actionDelete($id)
     {

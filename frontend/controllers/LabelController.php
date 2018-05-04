@@ -2,13 +2,13 @@
 
 namespace frontend\controllers;
 
-use common\models\Label;
 use common\models\LabelGroup;
 use common\components\LabelsTree;
-use yii\helpers\StringHelper;
 use yii\filters\AccessControl;
 use Yii;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
+use yii\web\ServerErrorHttpException;
 
 class LabelController extends \yii\web\Controller
 {
@@ -19,7 +19,7 @@ class LabelController extends \yii\web\Controller
     {
         return [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,
@@ -46,6 +46,11 @@ class LabelController extends \yii\web\Controller
         ]);
     }
 
+    /**
+     * @return string
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
+     */
     public function actionNew()
     {
         $model = new LabelGroup();
@@ -55,23 +60,19 @@ class LabelController extends \yii\web\Controller
 
             $model->status = LabelGroup::STATUS_NO_LABELS_TREE;
             if (!$model->save()) {
-                throw new \Exception('LabelGroup Save error');
+                throw new ServerErrorHttpException('LabelGroup Save error');
             }
 
             $labelsTree = new LabelsTree($model);
 
-            // TODO: needs static method or vlidator to make validation before model created
             if (!$labelsTree->validate()) {
-                throw new \Exception('Cant decode labels tree');
+                throw new BadRequestHttpException('Cant decode labels tree');
             }
 
             if (!$labelsTree->create()) {
-                // TODO: updateStatus trait
                 $model->status = LabelGroup::STATUS_LABELS_TREE_ERROR;
                 $model->save();
-
-                // TODO: set error and error message for LabelGroup
-                throw new \Exception('Cant create labels tree');
+                throw new ServerErrorHttpException('Cant create labels tree');
             }
 
             $model->status = LabelGroup::STATUS_OK;
