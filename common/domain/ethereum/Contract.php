@@ -2,7 +2,6 @@
 
 namespace common\domain\ethereum;
 
-use common\domain\ethereum\Address;
 use Yii;
 
 /**

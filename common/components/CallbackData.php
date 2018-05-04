@@ -29,7 +29,7 @@ class CallbackData extends yii\base\BaseObject
 	public $data;
 
 	/**
-	 * @var common\models\Moderator
+	 * @var Moderator
 	 */
 	public $moderator;
 
@@ -48,6 +48,8 @@ class CallbackData extends yii\base\BaseObject
 	 */
 	public function __construct(Moderator $moderator, string $callback_data=null)
 	{
+	    parent::__construct();
+
 		$this->moderator = $moderator;
 
 		if ($callback_data) {
@@ -59,33 +61,36 @@ class CallbackData extends yii\base\BaseObject
 		}
 	}
 
-	/**
-	 * Returns verified data
-	 * @return string
-	 */
+    /**
+     * Returns verified data
+     * @return string
+     * @throws HttpException
+     */
 	public function getVerifiedData() : string
 	{
 	    if (!$this->checkSign()) {
-            throw new HttpException(400, 'Error verifing callback_data sign');
+            throw new HttpException(400, 'Error verifying callback_data sign');
         }
         return $this->data;	
 	}
 
-	/**
-	 * Returns signed CallbackData as string
-	 * 
-	 * @return string
-	 */
+    /**
+     * Returns signed CallbackData as string
+     *
+     * @return string
+     * @throws HttpException
+     */
 	public function toString() : string
 	{
 		return $this->type .':'. $this->sign() .':'. $this->data;
 	}
 
-	/**
-	 * Check, is data sign correct
-	 * 
-	 * @return bool
-	 */
+    /**
+     * Check, is data sign correct
+     *
+     * @return bool
+     * @throws HttpException
+     */
 	public function checkSign() : bool
 	{
 		if ($this->sign === null) {
@@ -98,16 +103,17 @@ class CallbackData extends yii\base\BaseObject
 		return false;
 	}
 
-	/**
-	 * Returns sign of CallbackData
-	 * @return type
-	 */
+    /**
+     * Returns sign of CallbackData
+     *
+     * @return string
+     * @throws HttpException
+     */
 	private function sign() : string
 	{
 		if ($this->type === null || $this->data === null) {
 			throw new HttpException(500, 'Type and data properties must not be null to make sign');
 		}
-
 		return crypt($this->type . $this->data . $this->moderator->id, Yii::$app->params['telegram_bot_callback_secret_key']);
 	}
 
@@ -118,7 +124,7 @@ class CallbackData extends yii\base\BaseObject
 	 */
 	public static function getType(string $callback_data) : int
 	{
-		list($type, $rest) = explode(':', $callback_data, 2);
+        $type = explode(':', $callback_data, 1);
 		return $type;
 	}
 

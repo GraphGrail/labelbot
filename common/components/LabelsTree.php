@@ -37,7 +37,7 @@ class LabelsTree extends yii\base\BaseObject
         $decoded = $this->asArray(); 
         if ($decoded) {
 
-        	/*print_r($decoded); die();*/
+
         	return true;
         }
         return false;

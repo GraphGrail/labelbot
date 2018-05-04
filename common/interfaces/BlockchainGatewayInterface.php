@@ -2,7 +2,6 @@
 
 namespace common\interfaces;
 
-use common\models\Task;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 

@@ -9,7 +9,7 @@ use common\models\DataLabel;
 use common\models\Moderator;
 
 /**
- * LabelsKeybords component
+ * LabelsKeyboards component
  * 
  * Generate InlineKeyboard with labels for Telegram
  */
@@ -40,6 +40,7 @@ class LabelsKeyboard extends yii\base\BaseObject
      *
      * @return InlineKeyboard
      * @throws \Longman\TelegramBot\Exception\TelegramException
+     * @throws \yii\web\HttpException
      */
     public function generate() : InlineKeyboard
     {
@@ -66,6 +67,7 @@ class LabelsKeyboard extends yii\base\BaseObject
      *
      * @param Label $label
      * @return array
+     * @throws \yii\web\HttpException
      */
     private function labelKey(Label $label) : array
     {
@@ -85,8 +87,9 @@ class LabelsKeyboard extends yii\base\BaseObject
 
     /**
      * Returns Next key
-     * 
+     *
      * @return array
+     * @throws \yii\web\HttpException
      */
     private function nextKey() : array
     {
@@ -102,8 +105,9 @@ class LabelsKeyboard extends yii\base\BaseObject
 
     /**
      * Returns Back key
-     * 
+     *
      * @return array
+     * @throws \yii\web\HttpException
      */
     private function backKey() : array
     {

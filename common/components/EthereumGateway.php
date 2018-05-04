@@ -2,7 +2,6 @@
 
 namespace common\components;
 
-use common\models\Task;
 use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use yii\httpclient\Client;
@@ -17,7 +16,10 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
 	protected $httpClient;
 	protected $callbackUrl;
 
-	public function __construct()
+    /**
+     * EthereumGateway constructor.
+     */
+    public function __construct()
 	{
 		$this->callbackUrl = Yii::$app->params['ethGatewayCallbackUrl'];
 
@@ -34,36 +36,72 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
 		parent::__construct();	
 	}
 
+    /**
+     * @return Address
+     * @throws \Exception
+     */
     public function walletAddress() : Address
     {
         return new Address($this->get('wallet-address')->address);
     }
 
+    /**
+     * @param Address $address
+     * @param Address $tokenAddress
+     * @return \stdClass
+     * @throws \Exception
+     */
     public function checkBalances(Address $address, Address $tokenAddress): object
     {
         return $this->get('check-balances', $address, '?tokenAddress='.$tokenAddress);
     }
 
+    /**
+     * @param array $payload
+     * @return string
+     * @throws \Exception
+     */
     public function creditAccount(array $payload) : string
     {
         return $this->post('credit-account', null, $payload);
     }
 
+    /**
+     * @param Contract $contract
+     * @return string
+     * @throws \Exception
+     */
     public function deployContract(Contract $contract) : string
     {
         return $this->post('deploy-contract', null, $contract);       
     }
 
-    public function contractStatus(Address $contractAddress): object
+    /**
+     * @param Address $contractAddress
+     * @return \stdClass
+     * @throws \Exception
+     */
+    public function contractStatus(Address $contractAddress) : object
     {
         return $this->get('contract-status', $contractAddress);
     }
 
+    /**
+     * @param Address $contractAddress
+     * @param array $payload
+     * @return string
+     * @throws \Exception
+     */
     public function updateCompletedWork(Address $contractAddress, array $payload) : string
     {
         return $this->post('update-completed-work', $contractAddress, $payload);         
     }
 
+    /**
+     * @param Address $contractAddress
+     * @return string
+     * @throws \Exception
+     */
     public function forceFinalize(Address $contractAddress) : string
     {
         return $this->post('force-finalize', $contractAddress);
@@ -71,10 +109,12 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
 
     /**
      * Helper method for get requests to eth gateway
-     * 
-     * @param string $api_method 
-     * @param Address|null $address 
-     * @return type
+     *
+     * @param string $api_method
+     * @param Address|null $address
+     * @param string $otherParams
+     * @return \stdClass
+     * @throws \Exception
      */
     private function get(string $api_method, Address $address=null, string $otherParams='') // TODO: refact $otherParams to array
     {
@@ -92,11 +132,12 @@ class EthereumGateway extends yii\base\BaseObject implements \common\interfaces\
 
     /**
      * Helper method for post requests with callback to eth gateway
-     * 
-     * @param string $api_method 
-     * @param Address|null $contractAddress 
-     * @param array|object $payload 
+     *
+     * @param string $api_method
+     * @param Address|null $contractAddress
+     * @param array $payload
      * @return string
+     * @throws \Exception
      */
     private function post(string $api_method, $contractAddress, $payload=null) : string
     {
