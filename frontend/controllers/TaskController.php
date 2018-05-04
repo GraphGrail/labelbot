@@ -3,24 +3,22 @@
 namespace frontend\controllers;
 
 use common\components\EthereumGateway;
-use common\models\Data;
+use common\domain\ethereum\Address;
 use common\models\DataLabel;
 use common\models\Dataset;
-use common\models\Label;
 use common\models\LabelGroup;
-use common\models\Moderator;
 use common\models\Task;
 use common\models\BlockchainCallback;
-use common\domain\ethereum\Address;
 use common\models\User;
 use common\models\view\PreviewScoreWorkView;
 use common\models\view\TaskDetailView;
 use common\models\view\TaskScoreWorkView;
 use common\models\WorkItem;
 use console\jobs\SynchronizeTaskStatusJob;
+use Exception;
 use frontend\models\SendScoreWorkForm;
-use yii\filters\AccessControl;
 use Yii;
+use yii\filters\AccessControl;
 use yii\log\Logger;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -62,6 +60,7 @@ class TaskController extends \yii\web\Controller
 
     /**
      *  Creates New Task
+     * @throws Exception
      */
     public function actionNew()
     {
@@ -77,20 +76,21 @@ class TaskController extends \yii\web\Controller
                 ->ready()
                 ->undeleted()
                 ->one();
-            if ($dataset === null) throw new \Exception("Incorrect dataset_id");
+            if ($dataset === null) throw new HttpException(500, "Incorrect dataset_id");
 
             $labelGroup = LabelGroup::find()
                 ->where(['id' => $model->label_group_id])
                 ->ownedByUser()
                 ->undeleted()
                 ->one();
-            if ($labelGroup === null) throw new \Exception("Incorrect labelGroup_id");
+            if ($labelGroup === null) throw new HttpException(500, "Incorrect labelGroup_id");
+
             // We must save actual workItemSize on the moment of Task creation and use it later 
             // in operations belong to this Task, coz workItemSize in config can be modified.
             $model->work_item_size = Yii::$app->params['workItemSize'];
             $model->total_work_items = (int) ($dataset->dataCount/$model->work_item_size);
-
             $model->status = Task::STATUS_CONTRACT_NOT_DEPLOYED;
+
             if ($model->save()) {
                 $this->redirect($model->id . '/smart-contract');
             }
@@ -120,7 +120,7 @@ class TaskController extends \yii\web\Controller
      * Creation and activation of smart contract for Task
      * @param int $id Task id
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public function actionSmartContract($id)
     {
@@ -128,53 +128,60 @@ class TaskController extends \yii\web\Controller
         $task = Task::findOne($id);
         // Checks is task exists and belongs to user
         if ($task === null || $task->user_id !== Yii::$app->user->identity->id) {
-            throw new \Exception("Can't find Task");
+            throw new NotFoundHttpException("Can't find Task");
         }
 
-        // Contract deployment
-        $contractCanBeDeployed = $task->status === Task::STATUS_CONTRACT_NOT_DEPLOYED 
-                              || $task->status === Task::STATUS_CONTRACT_DEPLOYMENT_ERROR;
+        if (Yii::$app->request->isPost) {
+            // Contract deployment
+            $contractCanBeDeployed = $task->status === Task::STATUS_CONTRACT_NOT_DEPLOYED
+                || $task->status === Task::STATUS_CONTRACT_DEPLOYMENT_ERROR;
 
-        if ($contractCanBeDeployed && Yii::$app->request->isPost) {
-            $clientAddress = new Address(Yii::$app->request->post()['address']);
-            $task->deployContract($blockchain, $clientAddress);
-        }
-
-        // Contract activation payment
-        if ($task->status === Task::STATUS_CONTRACT_NEW_NEED_TOKENS && Yii::$app->request->isPost) {
-            // We need to check that contract tokenBalance really >= requiredInitialTokenBalance
-            $contractStatus = $blockchain->contractStatus($task->contractAddress());
-            if ($contractStatus->tokenBalance >= $contractStatus->requiredInitialTokenBalance) {
-                $task->status = Task::STATUS_CONTRACT_NEW;
-                $task->save();
+            if ($contractCanBeDeployed) {
+                $clientAddress = new Address(Yii::$app->request->post()['address']);
+                $task->deployContract($blockchain, $clientAddress);
             }
-        }
 
-        // Contract activation
-        if ($task->status === Task::STATUS_CONTRACT_NEW && Yii::$app->request->isPost) {
-            // We need to check that contract is active
-            $contractStatus = $blockchain->contractStatus($task->contractAddress());
-            if ($contractStatus->state === 'ACTIVE') {
-                $task->status = Task::STATUS_CONTRACT_ACTIVE;
-                $task->save();
+            // Contract activation payment
+            if ($task->status === Task::STATUS_CONTRACT_NEW_NEED_TOKENS) {
+                // We need to check that contract tokenBalance really >= requiredInitialTokenBalance
+                $contractStatus = $blockchain->contractStatus($task->contractAddress());
+                if ($contractStatus->tokenBalance >= $contractStatus->requiredInitialTokenBalance) {
+                    $task->status = Task::STATUS_CONTRACT_NEW;
+                    $task->save();
+                }
             }
-        }
 
-        // Contract reactivation payment
-        if ($task->status === Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS && Yii::$app->request->isPost) {
-            // We need to check that contract tokenBalance enough for workItemsLeft will be payed
-            $contractStatus = $blockchain->contractStatus($task->contractAddress());
-            if ($contractStatus->workItemsBalance >= $contractStatus->workItemsLeft) {
-                $task->status = Task::STATUS_CONTRACT_ACTIVE;
-                $task->save();
+            // Contract activation
+            if ($task->status === Task::STATUS_CONTRACT_NEW) {
+                // We need to check that contract is active
+                $contractStatus = $blockchain->contractStatus($task->contractAddress());
+                if ($contractStatus->state === 'ACTIVE') {
+                    $task->status = Task::STATUS_CONTRACT_ACTIVE;
+                    $task->save();
+                }
+            }
+
+            // Contract reactivation payment
+            if ($task->status === Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS) {
+                // We need to check that contract tokenBalance enough for workItemsLeft will be payed
+                $contractStatus = $blockchain->contractStatus($task->contractAddress());
+                if ($contractStatus->workItemsBalance >= $contractStatus->workItemsLeft) {
+                    $task->status = Task::STATUS_CONTRACT_ACTIVE;
+                    $task->save();
+                }
             }
         }
 
         // Contract needTokens views
-        if ($task->status === Task::STATUS_CONTRACT_NEW_NEED_TOKENS || $task->status === Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS) {
+        $contractNeedTokens = $task->status === Task::STATUS_CONTRACT_NEW_NEED_TOKENS
+            || $task->status === Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
+        if ($contractNeedTokens) {
             // We need to check that contract tokenBalance enough for workItemsLeft will be payed
             $contractStatus = $blockchain->contractStatus($task->contractAddress());
-            $tokensValue = bcmul(($contractStatus->workItemsLeft - $contractStatus->workItemsBalance), $contractStatus->workItemPrice);
+            $tokensValue = bcmul(
+                ($contractStatus->workItemsLeft - $contractStatus->workItemsBalance),
+                $contractStatus->workItemPrice
+            );
         }       
 
         $views = [
@@ -190,27 +197,28 @@ class TaskController extends \yii\web\Controller
         ]);
     }
 
-
+    /**
+     * @param $id
+     * @throws HttpException
+     * @throws NotFoundHttpException
+     */
     public function actionPause($id)
     {
+        /** @var Task $task */
         $task = Task::find()
             ->where(['id'=>$id])
             ->ownedByUser() // task must belongs to user
             ->one();
 
-        if ($task === null) {
-            throw new HttpException(404, "Can't find Task");
-        }
+        if ($task === null) throw new NotFoundHttpException("Can't find Task");
 
         if ($task->status !== Task::STATUS_CONTRACT_ACTIVE) {
-            // TODO: remove that
-            throw new HttpException(500, "Task must be active for pause.");
+            throw new HttpException(500, "Task must be active for pausing.");
         }
 
-        // Runs console command blockchain/update-completed-work for this task
-        // Task status must be ACTIVE
-        $c = new \console\controllers\BlockchainController(Yii::$app->controller->id, Yii::$app);
-        $c->runAction('update-completed-work', ['taskId'=>$task->id]);
+        if (!$task->updateCompletedWork()) {
+            throw new HttpException(500, "Error: can't update completed work to pause task.");
+        }
 
         $task->status = Task::STATUS_CONTRACT_ACTIVE_WAITING_PAUSE;
         $task->save();
@@ -218,10 +226,9 @@ class TaskController extends \yii\web\Controller
         $this->redirect('score-work');
     }
 
-
     /**
      * @param $id
-     * @throws \Exception
+     * @throws Exception
      */
     public function actionRelease($id)
     {
@@ -233,82 +240,19 @@ class TaskController extends \yii\web\Controller
             ->ownedByUser() // task must belongs to user
             ->one();
 
-        if ($task === null) {
-            throw new \Exception("Can't find Task");
-        }
+        if ($task === null) throw new NotFoundHttpException("Can't find Task");
 
         if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED) {
-            // TODO: remove that
-            throw new \Exception("Task must be paused for activation.");
+            $this->redirect('view');
         }
 
         try {
             $contractStatus = $blockchain->contractStatus($task->contractAddress());
-        } catch (\Exception $e) {
-             throw new \Exception("Cant get Task contract status."); 
+        } catch (Exception $e) {
+             throw new HttpException(500, "Cant get Task contract status.");
         }
 
-
-        $workItemsInBlockchain = json_decode(json_encode($contractStatus->workers), true);
-        $workItemsInDb = [];
-
-        $approvedWorks = (new \yii\db\Query)
-            ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
-            ->from(WorkItem::tableName())
-            ->where(['task_id'=>$task->id])
-            ->andWhere(['status'=>WorkItem::STATUS_APPROVED])
-            ->groupBy(['moderator_address'])
-            ->all();
-
-        foreach ($approvedWorks as $work) {
-            $workItemsInDb[$work['moderator_address']]['approvedItems'] = (int) $work['count'];
-        }
-
-        $declinedWorks = (new \yii\db\Query)
-            ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
-            ->from(WorkItem::tableName())
-            ->where(['task_id'=>$task->id])
-            ->andWhere(['status'=>WorkItem::STATUS_DECLINED])
-            ->groupBy(['moderator_address'])
-            ->all();
-
-        foreach ($declinedWorks as $work) {
-            $workItemsInDb[$work['moderator_address']]['declinedItems'] = (int) $work['count'];
-        }
-
-        $approvedWorksToUpdate = [];
-        $declinedWorksToUpdate = [];
-        // Find number of workItems that we must update in db
-        foreach ($workItemsInBlockchain as $address => $workItems) {
-            if (!array_key_exists($address, $workItemsInDb)) {
-                $workItemsInDb[$address] = [];
-            }
-            $addressInDb = $workItemsInDb[$address];
-            $addressInDb = $this->initResultItemsData($addressInDb);
-            $workItems = $this->initResultItemsData($workItems);
-
-            $numOfApprovedInDb = $addressInDb['approvedItems'];
-            $numOfDeclinedInDb = $addressInDb['declinedItems'];
-
-            if ($numOfApprovedInDb < $workItems['approvedItems']) {
-                $approvedWorksToUpdate[$address] = $workItems['approvedItems'] - $numOfApprovedInDb;
-            }
-            if ($addressInDb['declinedItems'] < $workItems['declinedItems']) {
-                $declinedWorksToUpdate[$address] = $workItems['declinedItems'] - $numOfDeclinedInDb;
-            }
-        }
-
-        foreach ($approvedWorksToUpdate as $address => $num) {
-            $moderator = Moderator::findOne(['eth_addr' => $address]);
-            if ($moderator === null) continue; // TODO: Log sync error
-            $task->approveWorkItems($moderator, $num);
-        }
-
-        foreach ($declinedWorksToUpdate as $address => $num) {
-            $moderator = Moderator::findOne(['eth_addr' => $address]);
-            if ($moderator === null) continue; // TODO: Log sync error
-            $task->declineWorkItems($moderator, $num);
-        }
+        $task->syncScoringWithBlockchain($contractStatus);
 
         $task->status = Task::STATUS_CONTRACT_ACTIVE;
 
@@ -324,12 +268,11 @@ class TaskController extends \yii\web\Controller
         $this->redirect('view');
     }
 
-
     /**
      * Moderators' work scoring
      * @param int $id Task id
      * @return string|\yii\web\Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function actionScoreWork($id)
     {
@@ -342,7 +285,7 @@ class TaskController extends \yii\web\Controller
             ->one();
 
         if ($task === null) {
-            throw new \Exception("Can't find Task");
+            throw new NotFoundHttpException("Can't find Task");
         }
 
         if ($task->status === Task::STATUS_CONTRACT_ACTIVE_PAUSED && Yii::$app->request->isPost) {
@@ -363,13 +306,13 @@ class TaskController extends \yii\web\Controller
             return $this->redirect('/task/' . $task->id);
         }
 
-        if ($task->status !== Task::STATUS_CONTRACT_ACTIVE_PAUSED && $task->status !== Task::STATUS_CONTRACT_ACTIVE_COMPLETED) {
+        if (!in_array($task->status, [Task::STATUS_CONTRACT_ACTIVE_PAUSED, Task::STATUS_CONTRACT_ACTIVE_COMPLETED])) {
             throw new HttpException(500, "Task must be paused or completed for scoring.");
         }
 
         try {
             $contractStatus = $blockchain->contractStatus($task->contractAddress());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $contractStatus = new \StdClass();
             $contractStatus->workers = [];
         }
@@ -385,12 +328,11 @@ class TaskController extends \yii\web\Controller
         ]);
     }
 
-
     /**
      * Credits users
      * @param string $address
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function actionGetCredit($address)
     {
@@ -456,7 +398,7 @@ class TaskController extends \yii\web\Controller
         $callback->params = json_encode($payload);
 
         if (!$callback->save()) {
-            throw new \Exception("Can't save Callback after creditAcount() was called");
+            throw new Exception("Can't save Callback after creditAcount() was called");
         }
 
         $user->updateCounters(['credits'=> -1]);
@@ -469,15 +411,14 @@ class TaskController extends \yii\web\Controller
             'error_text' => null
         ];
     }
-
-
+    
     /**
      * @param $id
      * @return \yii\web\Response
      * @throws NotFoundHttpException
-     * @throws \Exception
-     * @throws \Throwable
+     * @throws Exception
      * @throws \yii\db\StaleObjectException
+     * @throws \Throwable
      */
     public function actionDelete($id)
     {
@@ -493,28 +434,29 @@ class TaskController extends \yii\web\Controller
     /**
      * @param $id
      * @param $addr
+     * @param int $limit
      * @return \yii\web\Response
      * @throws NotFoundHttpException
      */
     public function actionPreviewWork($id, $addr, $limit=10)
     {
-        /** @var Task $task */
+        $moderator_address = $addr;
+
         if (!$task = Task::findOne($id)) {
             throw new NotFoundHttpException(sprintf('Task with id `%s` not found', $id));
         }
 
-        /** @var Moderator $moderator */
-        if (!$moderator = Moderator::find()->where(['eth_addr' => $addr])->one()) {
-            throw new NotFoundHttpException(sprintf('Moderator with address `%s` not found', $addr));
-        }
-
         $currentWorkItem = WorkItem::find()
             ->where(['task_id' => $task->id])
-            ->andWhere('[[status]] = ' . WorkItem::STATUS_READY)
-            ->andWhere('[[moderator_id]] = ' . $moderator->id)
+            ->andWhere(['status' => WorkItem::STATUS_READY])
+            ->andWhere(['moderator_address' => $moderator_address])
             ->one();
 
-        $list = array_slice($currentWorkItem->dataLabels, 0, 9);
+        if ($currentWorkItem === null) {
+            throw new NotFoundHttpException(sprintf('Moderator with address `%s` not found', $moderator_address));
+        }
+
+        $list = array_slice($currentWorkItem->dataLabels, 0, $limit-1);
 
         return $this->asJson([
             'list' => array_map(function (DataLabel $dataLabel) {
@@ -537,7 +479,7 @@ class TaskController extends \yii\web\Controller
         $blockchain  = new EthereumGateway;
         try {
             $contractStatus = $blockchain->contractStatus($task->contractAddress());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $contractStatus = new \StdClass();
             $contractStatus->workers = [];
         }
@@ -551,10 +493,9 @@ class TaskController extends \yii\web\Controller
                     ->andWhere('[[status]] = ' . WorkItem::STATUS_APPROVED)
                     ->count()
             )
-            ->setFullCount($task->total_work_items)
-        ;
+            ->setFullCount($task->total_work_items);
 
-        $moderatorCountAssignedLabels = $this->getModeratorCountDataLabels($task);
+        $moderatorCountAssignedLabels = $task->getModeratorCountDataLabels();
 
         foreach ($moderatorCountAssignedLabels as $moderatorAddress =>  $moderatorCountAssignedLabel) {
             $view->addModeratorAssignedCount($moderatorAddress, $moderatorCountAssignedLabel);
@@ -586,18 +527,24 @@ class TaskController extends \yii\web\Controller
             throw new NotFoundHttpException(sprintf('Task with id `%s` not finalized', $id));
         }
 
-        if (!$name = $task->result_file ?: $this->createCsvFile($task)) {
+        if (!$name = $task->result_file ?: $task->createCsvFile()) {
             Yii::$app->end();
         }
-        $bucket = $this->getResultFileBucket();
+
+        $bucket = $task->getResultFileBucket();
+
         try {
             return Yii::$app->response->sendFile($bucket->getFullFileName($name), $name);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
         }
         Yii::$app->end();
     }
 
+    /**
+     * @param $id
+     * @return \yii\web\Response
+     */
     public function actionSyncStatus($id)
     {
         Yii::$app->queue->push(new SynchronizeTaskStatusJob([
@@ -606,105 +553,7 @@ class TaskController extends \yii\web\Controller
         return $this->asJson(['success' => true]);
     }
 
-    protected function createCsvFile(Task $task)
-    {
-        try {
-            $approvedWorkItems = $task->getWorkItems()
-                ->andWhere(['status' => WorkItem::STATUS_APPROVED])
-                ->all();
 
-            /** @var \yii2tech\filestorage\local\Storage $fileStorage */
-            $bucket = $this->getResultFileBucket();
-            $resource = $bucket->openFile($this->createTaskResultFileName($task), 'w');
 
-            foreach ($approvedWorkItems as $workItem) {
-                foreach ($workItem->dataLabels as $dataLabel) {
-
-                    /** @var Label $label */
-                    if (!$label = $dataLabel->getLabel()->one()) {
-                        continue;
-                    }
-                    /** @var Data $data */
-                    if (!$data = $dataLabel->getData()->one()) {
-                        continue;
-                    }
-
-                    $path = $label->buildPath();
-                    array_unshift($path, $data->data);
-                    fputcsv($resource, $path, ',');
-                }
-            }
-
-            fclose($resource);
-
-            $task->result_file = $this->createTaskResultFileName($task);
-            $task->save(false, ['result_file']);
-
-            return $task->result_file;
-        } catch (\Exception $e) {
-            Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
-        }
-        return false;
-    }
-
-    private function createTaskResultFileName(Task $task)
-    {
-        return sprintf('%s_task_result.csv', $task->id);
-    }
-
-    /**
-     * @param Task $task
-     * @return array
-     */
-    private function getModeratorCountDataLabels(Task $task): array
-    {
-        $inHands = $task
-            ->getWorkItems()
-            ->where(['IN', 'status', [WorkItem::STATUS_IN_HAND, WorkItem::STATUS_READY]])
-            ->all();
-
-        $counts = [];
-        foreach ($inHands as $workItem) {
-            $address = $workItem->getModerator()->one()->eth_addr;
-            if (!array_key_exists($address, $counts)) {
-                $counts[$address] = 0;
-            }
-
-            $readyNumber = $workItem->getDataLabels()
-                ->where(['status' => DataLabel::STATUS_READY])
-                ->count();
-
-            $counts[$address] += $readyNumber;
-        }
-        return $counts;
-    }
-
-    /**
-     * @return \yii2tech\filestorage\local\Bucket
-     */
-    protected function getResultFileBucket(): \yii2tech\filestorage\local\Bucket
-    {
-        /** @var \yii2tech\filestorage\local\Storage $fileStorage */
-        $fileStorage = Yii::$app->fileStorage;
-        return $fileStorage->getBucket('result');
-    }
-
-    /**
-     * @param $array
-     * @return mixed
-     */
-    protected function initResultItemsData($array)
-    {
-        if (!array_key_exists('approvedItems', $array)) {
-            $array['approvedItems'] = 0;
-        }
-        if (!array_key_exists('declinedItems', $array)) {
-            $array['declinedItems'] = 0;
-        }
-        if (!array_key_exists('totalItems', $array)) {
-            $array['totalItems'] = 0;
-        }
-        return $array;
-    }
 
 }

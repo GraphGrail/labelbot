@@ -7,6 +7,8 @@ use common\domain\ethereum\Address;
 use common\domain\ethereum\Contract;
 use common\interfaces\BlockchainGatewayInterface;
 use Yii;
+use yii\log\Logger;
+use yii\web\HttpException;
 
 /**
  * This is the model class for table "task".
@@ -87,7 +89,7 @@ class Task extends ActiveRecord
                 'typecastAfterFind' => true,
             ],
             'deletedAttribute' => [
-                'class' => \common\models\behavior\DeletedAttributeBehavior::class,
+                'class' => behavior\DeletedAttributeBehavior::class,
             ],
         ];
     }
@@ -138,6 +140,11 @@ class Task extends ActiveRecord
         return $this->hasMany(WorkItem::class, ['task_id' => 'id']);
     }
 
+    /**
+     * @param BlockchainGatewayInterface $blockchain
+     * @param Address $clientAddress
+     * @throws \Exception
+     */
     public function deployContract(BlockchainGatewayInterface $blockchain, Address $clientAddress)
     {
         $contract    = new Contract($clientAddress, $this->total_work_items);
@@ -153,14 +160,14 @@ class Task extends ActiveRecord
         $callback->params = json_encode($callback_params);
 
         if (!$callback->save()) {
-            throw new \Exception("Can't save Callback after deployContract() was called");
+            throw new HttpException(500, "Can't save Callback after deployContract() was called");
         }
 
         $this->contract = json_encode($contract);
 
         $this->status = Task::STATUS_CONTRACT_DEPLOYMENT_PROCESS;
         if (!$this->save()) {
-            throw new \Exception("Can't update Task");
+            throw new HttpException(500, "Can't update Task");
         }
     }
 
@@ -170,6 +177,10 @@ class Task extends ActiveRecord
     }
 
 
+    /**
+     * @param Moderator $moderator
+     * @return DataLabel|null
+     */
     public function getDataForLabelAssignment(Moderator $moderator) : ?DataLabel
     {
         $currentWorkItem = WorkItem::find()
@@ -290,11 +301,121 @@ class Task extends ActiveRecord
         return $this;
     }
 
-    public function readyWorkItemsNumber(Moderator $moderator) : int
+
+    /**
+     * Runs console command blockchain/update-completed-work for this task.
+     */
+    public function updateCompletedWork() : bool
+    {
+        // Task status must be ACTIVE
+        if ($this->status !== Task::STATUS_CONTRACT_ACTIVE) return false;
+
+        try {
+            $c = new \console\controllers\BlockchainController(Yii::$app->controller->id, Yii::$app);
+            $c->runAction('update-completed-work', ['taskId' => $this->id]);
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    /**
+     * @param $contractStatus
+     */
+    public function syncScoringWithBlockchain($contractStatus)
+    {
+        $workItemsInBlockchain = json_decode(json_encode($contractStatus->workers), true);
+        $workItemsInDb = [];
+
+        $approvedWorks = (new \yii\db\Query)
+            ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
+            ->from(WorkItem::tableName())
+            ->where(['task_id'=>$this->id])
+            ->andWhere(['status'=>WorkItem::STATUS_APPROVED])
+            ->groupBy(['moderator_address'])
+            ->all();
+
+        foreach ($approvedWorks as $work) {
+            $workItemsInDb[$work['moderator_address']]['approvedItems'] = (int) $work['count'];
+        }
+
+        $declinedWorks = (new \yii\db\Query)
+            ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
+            ->from(WorkItem::tableName())
+            ->where(['task_id'=>$this->id])
+            ->andWhere(['status'=>WorkItem::STATUS_DECLINED])
+            ->groupBy(['moderator_address'])
+            ->all();
+
+        foreach ($declinedWorks as $work) {
+            $workItemsInDb[$work['moderator_address']]['declinedItems'] = (int) $work['count'];
+        }
+
+        $approvedWorksToUpdate = [];
+        $declinedWorksToUpdate = [];
+
+        // Find number of workItems that we must update in db
+        foreach ($workItemsInBlockchain as $address => $workItems) {
+            if (!array_key_exists($address, $workItemsInDb)) {
+                $workItemsInDb[$address] = [];
+            }
+            $addressInDb = $workItemsInDb[$address];
+            $addressInDb = $this->initResultItemsData($addressInDb);
+            $workItems = $this->initResultItemsData($workItems);
+
+            $numOfApprovedInDb = $addressInDb['approvedItems'];
+            $numOfDeclinedInDb = $addressInDb['declinedItems'];
+
+            if ($numOfApprovedInDb < $workItems['approvedItems']) {
+                $approvedWorksToUpdate[$address] = $workItems['approvedItems'] - $numOfApprovedInDb;
+            }
+            if ($addressInDb['declinedItems'] < $workItems['declinedItems']) {
+                $declinedWorksToUpdate[$address] = $workItems['declinedItems'] - $numOfDeclinedInDb;
+            }
+        }
+
+        foreach ($approvedWorksToUpdate as $address => $num) {
+            $moderator_address = new Address($address);
+            $this->approveWorkItems($moderator_address, $num);
+        }
+
+        foreach ($declinedWorksToUpdate as $address => $num) {
+            $moderator_address = new Address($address);
+            $this->declineWorkItems($moderator_address, $num);
+        }
+    }
+
+
+    /**
+     * @param $array
+     * @return mixed
+     */
+    protected function initResultItemsData($array)
+    {
+        if (!array_key_exists('approvedItems', $array)) {
+            $array['approvedItems'] = 0;
+        }
+        if (!array_key_exists('declinedItems', $array)) {
+            $array['declinedItems'] = 0;
+        }
+        if (!array_key_exists('totalItems', $array)) {
+            $array['totalItems'] = 0;
+        }
+        return $array;
+    }
+
+
+    /**
+     * @param Address $moderator_address
+     * @return int
+     */
+    public function readyWorkItemsNumber(Address $moderator_address) : int
     {
         $readyCount = WorkItem::find()
             ->where(['task_id' => $this->id])
-            ->andWhere(['moderator_id'=>$moderator->id])
+            ->andWhere(['moderator_address'=>$moderator_address])
             ->andWhere(['status' => WorkItem::STATUS_READY])
             ->count();
 
@@ -302,15 +423,15 @@ class Task extends ActiveRecord
     }
 
     /**
-     * @param Moderator $moderator
+     * @param Address $moderator_address
      * @param int $num
      * @return WorkItem[]
      */
-    public function readyWorkItems(Moderator $moderator, int $num)
+    public function readyWorkItems(Address $moderator_address, int $num)
     {
         $readWorkItems= WorkItem::find()
             ->where(['task_id' => $this->id])
-            ->andWhere(['moderator_id'=>$moderator->id])
+            ->andWhere(['moderator_address' => $moderator_address])
             ->andWhere(['status' => WorkItem::STATUS_READY])
             ->limit($num)
             ->orderBy('updated_at')
@@ -319,12 +440,17 @@ class Task extends ActiveRecord
         return $readWorkItems;
     }
 
-    public function approveWorkItems(Moderator $moderator, int $num=1) : bool
+    /**
+     * @param Address $moderator_address
+     * @param int $num
+     * @return bool
+     */
+    public function approveWorkItems(Address $moderator_address, int $num=1) : bool
     {
-        $readyWorkItemsNumber = $this->readyWorkItemsNumber($moderator);
+        $readyWorkItemsNumber = $this->readyWorkItemsNumber($moderator_address);
         if ($readyWorkItemsNumber < $num) return false;
 
-        $readyWorkItems = $this->readyWorkItems($moderator, $num=1);
+        $readyWorkItems = $this->readyWorkItems($moderator_address, $num=1);
 
         foreach ($readyWorkItems as $readyWorkItem) {
             $readyWorkItem->approve();
@@ -333,12 +459,12 @@ class Task extends ActiveRecord
         return true;
     }
 
-    public function declineWorkItems(Moderator $moderator, int $num=1) : bool
+    public function declineWorkItems(Address $address, int $num=1) : bool
     {
-        $readyWorkItemsNumber = $this->readyWorkItemsNumber($moderator);
+        $readyWorkItemsNumber = $this->readyWorkItemsNumber($address);
         if ($readyWorkItemsNumber < $num) return false;
 
-        $readyWorkItems = $this->readyWorkItems($moderator, $num=1);
+        $readyWorkItems = $this->readyWorkItems($address, $num=1);
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
@@ -347,7 +473,11 @@ class Task extends ActiveRecord
             }
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollBack();
+            try {
+                $transaction->rollBack();
+            } catch (\Exception $e) {
+                return false;
+            }
             return false;
         }
 
@@ -381,6 +511,97 @@ class Task extends ActiveRecord
         }
 
         return $randomFreeWorkItem;
+    }
+
+
+    /**
+     * @return bool|string
+     */
+    public function createCsvFile()
+    {
+        try {
+            $approvedWorkItems = $this->getWorkItems()
+                ->andWhere(['status' => WorkItem::STATUS_APPROVED])
+                ->all();
+
+            /** @var \yii2tech\filestorage\local\Storage $fileStorage */
+            $bucket = $this->getResultFileBucket();
+            $resource = $bucket->openFile($this->createTaskResultFileName(), 'w');
+
+            foreach ($approvedWorkItems as $workItem) {
+                /** @var DataLabel $dataLabel */
+                foreach ($workItem->dataLabels as $dataLabel) {
+
+                    /** @var Label $label */
+                    if (!$label = $dataLabel->getLabel()->one()) {
+                        continue;
+                    }
+                    /** @var Data $data */
+                    if (!$data = $dataLabel->getData()->one()) {
+                        continue;
+                    }
+
+                    $path = $label->buildPath();
+                    array_unshift($path, $data->data);
+                    fputcsv($resource, $path, ',');
+                }
+            }
+
+            fclose($resource);
+
+            $this->result_file = $this->createTaskResultFileName();
+            $this->save(false, ['result_file']);
+
+            return $this->result_file;
+        } catch (\Exception $e) {
+            Yii::getLogger()->log($e->getMessage(), Logger::LEVEL_ERROR);
+        }
+        return false;
+    }
+
+    /**
+     * @return \yii2tech\filestorage\local\Bucket
+     */
+    public function getResultFileBucket() : \yii2tech\filestorage\local\Bucket
+    {
+        /** @var \yii2tech\filestorage\local\Storage $fileStorage */
+        $fileStorage = Yii::$app->fileStorage;
+        return $fileStorage->getBucket('result');
+    }
+
+    /**
+     * @return string
+     */
+    private function createTaskResultFileName() : string
+    {
+        return sprintf('%s_task_result.csv', $this->id);
+    }
+
+    /**
+     * @return array
+     */
+    public function getModeratorCountDataLabels(): array
+    {
+        /** @var WorkItem[] $inHands */
+        $inHands = $this
+            ->getWorkItems()
+            ->where(['IN', 'status', [WorkItem::STATUS_IN_HAND, WorkItem::STATUS_READY]])
+            ->all();
+
+        $counts = [];
+        foreach ($inHands as $workItem) {
+            $address = $workItem->moderator_address;
+            if (!array_key_exists($address, $counts)) {
+                $counts[$address] = 0;
+            }
+
+            $readyNumber = $workItem->getDataLabels()
+                ->where(['status' => DataLabel::STATUS_READY])
+                ->count();
+
+            $counts[$address] += $readyNumber;
+        }
+        return $counts;
     }
 
 }
