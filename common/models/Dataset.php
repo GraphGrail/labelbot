@@ -59,18 +59,18 @@ class Dataset extends ActiveRecord
     public function behaviors()
     {
         return [
-            \yii\behaviors\TimestampBehavior::className(),
+            \yii\behaviors\TimestampBehavior::class,
             [
-                'class' => \yii\behaviors\BlameableBehavior::className(),
+                'class' => \yii\behaviors\BlameableBehavior::class,
                 'createdByAttribute' => 'user_id',
                 'updatedByAttribute' => null,
             ],
             'typecast' => [
-                'class' => AttributeTypecastBehavior::className(),
+                'class' => AttributeTypecastBehavior::class,
                 'typecastAfterFind' => true,
             ],
             'deletedAttribute' => [
-                'class' => DeletedAttributeBehavior::className(),
+                'class' => DeletedAttributeBehavior::class,
             ],
         ];
     }
@@ -91,32 +91,42 @@ class Dataset extends ActiveRecord
         ];
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getData()
     {
-        return $this->hasMany(Data::className(), ['dataset_id' => 'id']);
+        return $this->hasMany(Data::class, ['dataset_id' => 'id']);
     }
 
+    /**
+     * @return int|string
+     */
     public function getDataCount()
     {
-        return $this->hasMany(Data::className(), ['dataset_id' => 'id'])->count();
+        return $this->hasMany(Data::class, ['dataset_id' => 'id'])->count();
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getUser()
     {
-        return $this->hasOne(User::className(), ['id' => 'user_id']);
+        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getTasks()
     {
-        return $this->hasMany(Task::className(), ['dataset_id' => 'id']);
+        return $this->hasMany(Task::class, ['dataset_id' => 'id']);
     }
 
-/*    public function getLabelGroups()
-    {
-        return $this->hasMany(LabelGroup::className(), ['id' => 'label_group_id'])
-            ->viaTable('label_group_to_dataset', ['dataset_id' => 'id']);    
-    }*/
-
+    /**
+     * @param int $status
+     * @return bool
+     */
     public function updateStatus(int $status) : bool
     {
         $this->status = $status;
@@ -124,9 +134,9 @@ class Dataset extends ActiveRecord
     }
 
     /**
-     * @return object
+     * @return \stdClass
      */
-    public function status(): object
+    public function status() : \stdClass
     {
         $status = [];
         switch ($this->status) {
@@ -168,7 +178,7 @@ class Dataset extends ActiveRecord
                 ];
                 break;
         }
-        return (object)$status;
+        return (object) $status;
     }
 
     public static function find()

@@ -5,7 +5,6 @@
 
 namespace common\models\query;
 
-
 use common\models\User;
 use yii\db\ActiveQuery;
 

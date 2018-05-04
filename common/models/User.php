@@ -42,7 +42,7 @@ class User extends ActiveRecord implements IdentityInterface
     public function behaviors()
     {
         return [
-            \yii\behaviors\TimestampBehavior::className(),
+            \yii\behaviors\TimestampBehavior::class,
         ];
     }
 
@@ -88,7 +88,7 @@ class User extends ActiveRecord implements IdentityInterface
     /**
      * Finds user by email
      *
-     * @param string $username
+     * @param $email
      * @return static|null
      */
     public static function findByEmail($email)

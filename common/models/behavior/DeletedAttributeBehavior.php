@@ -5,7 +5,6 @@
 
 namespace common\models\behavior;
 
-
 use yii\base\Behavior;
 use yii\base\ModelEvent;
 use yii\db\ActiveRecord;

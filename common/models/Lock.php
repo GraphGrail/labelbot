@@ -5,7 +5,6 @@
 
 namespace common\models;
 
-
 use yii\behaviors\TimestampBehavior;
 
 /**
@@ -19,7 +18,6 @@ use yii\behaviors\TimestampBehavior;
  */
 class Lock extends ActiveRecord
 {
-
     public static function tableName()
     {
         return 'lock_entity';
@@ -68,8 +66,11 @@ class Lock extends ActiveRecord
         ];
     }
 
-    public function findLock(object $object): ?Lock {
-        return self::find()->where($this->createParams($object))->one();
+    public function findLock(object $object): ?Lock
+    {
+        /** @var Lock $lock */
+        $lock =  Lock::find()->where($this->createParams($object))->one();
+        return $lock;
     }
 
 }

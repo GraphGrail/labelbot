@@ -45,6 +45,7 @@ class Alert extends \yii\bootstrap\Widget
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     public function run()
     {

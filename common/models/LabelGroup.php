@@ -3,8 +3,6 @@
 namespace common\models;
 
 use common\models\behavior\DeletedAttributeBehavior;
-use \common\models\Label;
-use Yii;
 use yii\behaviors\AttributeTypecastBehavior;
 
 /**
@@ -54,18 +52,18 @@ class LabelGroup extends ActiveRecord
     public function behaviors()
     {
         return [
-            \yii\behaviors\TimestampBehavior::className(),
+            \yii\behaviors\TimestampBehavior::class,
             [
-                'class' => \yii\behaviors\BlameableBehavior::className(),
+                'class' => \yii\behaviors\BlameableBehavior::class,
                 'createdByAttribute' => 'user_id',
                 'updatedByAttribute' => null,
             ],
             'typecast' => [
-                  'class' => AttributeTypecastBehavior::className(),
+                  'class' => AttributeTypecastBehavior::class,
                   'typecastAfterFind' => true,
             ],
             'deletedAttribute' => [
-                'class' => DeletedAttributeBehavior::className(),
+                'class' => DeletedAttributeBehavior::class,
             ],
         ];
     }
@@ -87,27 +85,33 @@ class LabelGroup extends ActiveRecord
         ];
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getUser()
     {
-        return $this->hasOne(User::className(), ['id' => 'user_id']);
+        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getLabels()
     {
-        return $this->hasMany(Label::className(), ['label_group_id' => 'id']);
+        return $this->hasMany(Label::class, ['label_group_id' => 'id']);
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getTasks()
     {
-        return $this->hasMany(Task::className(), ['label_group_id' => 'id']);
+        return $this->hasMany(Task::class, ['label_group_id' => 'id']);
     }
 
-/*    public function getDatasets()
-    {
-        return $this->hasMany(Dataset::className(), ['id' => 'dataset_id'])
-            ->viaTable('label_group_to_dataset', ['label_group_id' => 'id']);    
-    }*/
-
+    /**
+     * @return LabelGroupQuery|\yii\db\ActiveQuery
+     */
     public static function find()
     {
         return new LabelGroupQuery(get_called_class());

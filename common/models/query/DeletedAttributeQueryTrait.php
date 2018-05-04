@@ -5,7 +5,6 @@
 
 namespace common\models\query;
 
-
 use yii\db\ActiveQuery;
 
 trait DeletedAttributeQueryTrait

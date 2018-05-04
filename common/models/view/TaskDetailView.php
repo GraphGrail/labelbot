@@ -5,7 +5,6 @@
 
 namespace common\models\view;
 
-
 use common\models\Task;
 use Yii;
 use yii\helpers\Url;

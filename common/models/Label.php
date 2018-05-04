@@ -2,7 +2,6 @@
 
 namespace common\models;
 
-use Yii;
 
 /**
  * This is the model class for table "label".
@@ -43,7 +42,7 @@ class Label extends \yii\db\ActiveRecord
     public function behaviors()
     {
         return [
-            \yii\behaviors\TimestampBehavior::className(),
+            \yii\behaviors\TimestampBehavior::class,
         ];
     }
 
@@ -63,15 +62,24 @@ class Label extends \yii\db\ActiveRecord
         ];
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getLabelGroup()
     {
-        return $this->hasOne(LabelGroup::className(), ['id' => 'label_group_id']);
+        return $this->hasOne(LabelGroup::class, ['id' => 'label_group_id']);
     }
 
+    /**
+     * @return Label[]
+     */
     public function getChildren() {
         return self::findAll(['parent_label_id' => $this->id]);
     }
 
+    /**
+     * @return Label|null
+     */
     public function getParent(): ?Label
     {
         if (!$this->parent_label_id) {

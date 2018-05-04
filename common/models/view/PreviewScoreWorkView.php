@@ -6,6 +6,7 @@
 namespace common\models\view;
 
 
+use common\models\Data;
 use common\models\DataLabel;
 use common\models\Label;
 
@@ -23,12 +24,19 @@ class PreviewScoreWorkView
      */
     public function getLabel()
     {
-        return $this->label->getLabel()->one();
+        /** @var Label $label */
+        $label = $this->label->getLabel()->one();
+        return $label;
     }
 
-    public function getText()
+    /**
+     * @return string
+     */
+    public function getText() : string
     {
-        return $this->label->getData()->one()->data;
+        /** @var Data $data */
+        $data = $this->label->getData()->one();
+        return $data->data;
     }
 
     public function __toString()

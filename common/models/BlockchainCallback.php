@@ -8,6 +8,8 @@ use Yii;
  * This is the model class for table "blockchain_callback".
  *
  * @property int $id
+ * @property int $type
+ * @property string $params
  * @property string $callback_id
  * @property int $received
  * @property int $success
@@ -55,7 +57,7 @@ class BlockchainCallback extends \yii\db\ActiveRecord
     public function behaviors()
     {
         return [
-            \yii\behaviors\TimestampBehavior::className(),
+            \yii\behaviors\TimestampBehavior::class,
         ];
     }
 

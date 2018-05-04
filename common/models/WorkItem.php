@@ -9,14 +9,16 @@ use common\models\behavior\LockEntityBehavior;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 
-
 /**
  * Class WorkItem
+ *
  * @package common\models
  * @property integer id
  * @property integer task_id
  * @property integer moderator_id
+ * @property integer moderator_address
  * @property integer items
+ * @property integer status
  * @property integer created_at
  * @property integer updated_at
  */
@@ -45,6 +47,9 @@ class WorkItem extends ActiveRecord
         ];
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getDataLabels()
     {
         return $this->hasMany(DataLabel::class, ['work_item_id' => 'id']);
@@ -59,7 +64,6 @@ class WorkItem extends ActiveRecord
         return $this->hasOne(Moderator::class, ['id' => 'moderator_id']);
     }
 
-
     /**
      * Returns related Task model
      * @return \yii\db\ActiveQuery
@@ -69,7 +73,9 @@ class WorkItem extends ActiveRecord
         return $this->hasOne(Task::class, ['id' => 'task_id']);
     }
 
-
+    /**
+     * @return DataLabel|null
+     */
     public function getNewDataLabel() : ?DataLabel
     {
         return DataLabel::findOne([
@@ -78,14 +84,19 @@ class WorkItem extends ActiveRecord
         ]);
     }
 
-
+    /**
+     * @return bool
+     */
     public function approve()
     {
         $this->status = WorkItem::STATUS_APPROVED;
         return $this->save();
     }
 
-
+    /**
+     * @return bool
+     * @throws \yii\db\Exception
+     */
     public function decline()
     {
         $newWorkItem = new WorkItem;
@@ -116,7 +127,9 @@ class WorkItem extends ActiveRecord
         return $this->save();
     }
 
-
+    /**
+     * @return DataLabel
+     */
     public function getRandomDataLabel() : DataLabel
     {
         $dataLabels = $this->dataLabels;
