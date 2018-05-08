@@ -124,7 +124,7 @@ class CallbackData extends yii\base\BaseObject
 	 */
 	public static function getType(string $callback_data) : int
 	{
-        $type = explode(':', $callback_data, 1);
+        list($type, $other) = explode(':', $callback_data, 1);
 		return $type;
 	}
 
