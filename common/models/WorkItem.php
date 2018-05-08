@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Juriy Panasevich <u.panasevich@graphgrail.com>
- */
 
 namespace common\models;
 
@@ -24,18 +21,24 @@ use yii\behaviors\TimestampBehavior;
  */
 class WorkItem extends ActiveRecord
 {
-    const STATUS_FREE     = 10;
-    const STATUS_IN_HAND  = 20;
-    const STATUS_READY    = 40;
+    const STATUS_FREE = 10;
+    const STATUS_IN_HAND = 20;
+    const STATUS_READY = 40;
     const STATUS_APPROVED = 50;
     const STATUS_DECLINED = 60;
+    const STATUS_NOT_FINISHED = 70;
 
-
+    /**
+     * @inheritdoc
+     */
     public static function tableName()
     {
         return 'work_item';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function behaviors()
     {
         return [
@@ -76,11 +79,11 @@ class WorkItem extends ActiveRecord
     /**
      * @return DataLabel|null
      */
-    public function getNewDataLabel() : ?DataLabel
+    public function getNewDataLabel(): ?DataLabel
     {
         return DataLabel::findOne([
-           'work_item_id' => $this->id,
-           'status' => DataLabel::STATUS_NEW
+            'work_item_id' => $this->id,
+            'status' => DataLabel::STATUS_NEW
         ]);
     }
 
@@ -95,21 +98,46 @@ class WorkItem extends ActiveRecord
 
     /**
      * @return bool
-     * @throws \yii\db\Exception
      */
     public function decline()
     {
+        try {
+            return $this->reset(WorkItem::STATUS_DECLINED);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function notFinished()
+    {
+        try {
+            return $this->reset(WorkItem::STATUS_NOT_FINISHED);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * @param $status
+     * @return bool
+     * @throws \yii\db\Exception
+     */
+    protected function reset($status)
+    {
         $newWorkItem = new WorkItem;
         $newWorkItem->task_id = $this->task_id;
-        $newWorkItem->items   = $this->items;
-        $newWorkItem->status  = WorkItem::STATUS_FREE;
+        $newWorkItem->items = $this->items;
+        $newWorkItem->status = WorkItem::STATUS_FREE;
         $newWorkItem->save();
 
         $timestamp = time();
         $dataToInsert = [];
 
         foreach ($this->dataLabels as $declinedLabel) {
-            $dataToInsert []= [
+            $dataToInsert [] = [
                 $newWorkItem->id,
                 $declinedLabel['data_id'],
                 DataLabel::STATUS_NEW,
@@ -117,20 +145,21 @@ class WorkItem extends ActiveRecord
                 $timestamp
             ];
         }
+
         Yii::$app->db->createCommand()->batchInsert(
             DataLabel::tableName(),
             ['work_item_id', 'data_id', 'status', 'created_at', 'updated_at'],
             $dataToInsert
         )->execute();
 
-        $this->status = WorkItem::STATUS_DECLINED;
+        $this->status = $status;
         return $this->save();
     }
 
     /**
      * @return DataLabel
      */
-    public function getRandomDataLabel() : DataLabel
+    public function getRandomDataLabel(): DataLabel
     {
         $dataLabels = $this->dataLabels;
         return $dataLabels[array_rand($dataLabels)];

@@ -100,7 +100,7 @@ class BlockchainCallbackController extends \yii\web\Controller
 
             $task->status = Task::STATUS_CONTRACT_DEPLOYMENT_ERROR;
             if (!$task->save()) {
-                throw new ServerErrorHttpException(500, "Can't save Task");
+                throw new ServerErrorHttpException("Can't save Task");
             }
 
             Yii::$app->end();
@@ -165,6 +165,7 @@ class BlockchainCallbackController extends \yii\web\Controller
         // Here we do nothing for now.
         Yii::$app->end();
     }
+
 
 
 }

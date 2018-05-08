@@ -3,6 +3,7 @@
 namespace Longman\TelegramBot\Commands;
 
 use common\models\Moderator;
+use Longman\TelegramBot\Request;
 
 /**
  * Authenticated User Command
@@ -52,5 +53,14 @@ abstract class AuthenticatedUserCommand extends UserCommand
         return parent::preExecute();
     }
 
-
+    public function answerCallback($text)
+    {
+        $req_data = [
+            'callback_query_id' => $this->callback_query_id,
+            'text'              => $text,
+            'show_alert'        => false,
+            'cache_time'        => 0,
+        ];
+        Request::answerCallbackQuery($req_data);
+    }
 }

@@ -35,18 +35,18 @@ class Task extends ActiveRecord
     /**
      * Statuses
      */
-    const STATUS_CONTRACT_NOT_DEPLOYED         = 10;
-    const STATUS_CONTRACT_DEPLOYMENT_PROCESS   = 20;
-    const STATUS_CONTRACT_DEPLOYMENT_ERROR     = 30;
-    const STATUS_CONTRACT_NEW_NEED_TOKENS      = 40;
-    const STATUS_CONTRACT_NEW                  = 50;
-    const STATUS_CONTRACT_ACTIVE               = 60;
-    const STATUS_CONTRACT_ACTIVE_NEED_TOKENS   = 70;
+    const STATUS_CONTRACT_NOT_DEPLOYED = 10;
+    const STATUS_CONTRACT_DEPLOYMENT_PROCESS = 20;
+    const STATUS_CONTRACT_DEPLOYMENT_ERROR = 30;
+    const STATUS_CONTRACT_NEW_NEED_TOKENS = 40;
+    const STATUS_CONTRACT_NEW = 50;
+    const STATUS_CONTRACT_ACTIVE = 60;
+    const STATUS_CONTRACT_ACTIVE_NEED_TOKENS = 70;
     const STATUS_CONTRACT_ACTIVE_WAITING_PAUSE = 80;
-    const STATUS_CONTRACT_ACTIVE_PAUSED        = 90;
-    const STATUS_CONTRACT_ACTIVE_COMPLETED     = 100;
-    const STATUS_CONTRACT_FORCE_FINALIZING     = 110;
-    const STATUS_CONTRACT_FINALIZED            = 120;
+    const STATUS_CONTRACT_ACTIVE_PAUSED = 90;
+    const STATUS_CONTRACT_ACTIVE_COMPLETED = 100;
+    const STATUS_CONTRACT_FORCE_FINALIZING = 110;
+    const STATUS_CONTRACT_FINALIZED = 120;
 
     /**
      * @inheritdoc
@@ -62,12 +62,12 @@ class Task extends ActiveRecord
     public function rules()
     {
         return [
-            [['dataset_id', 'label_group_id', 'total_work_items', 'status','name'], 'required'],
+            [['dataset_id', 'label_group_id', 'total_work_items', 'status', 'name'], 'required'],
             [['dataset_id', 'label_group_id', 'total_work_items', 'status'], 'integer'],
             [['description', 'contract'], 'string'],
             [['name', 'delivering_job_id'], 'string', 'max' => 255],
             [['contract_address'], 'string', 'max' => 42],
-            [['total_work_items'], 'integer', 'min' => 1,  'tooSmall' => 'Very few data in dataset to create Task.'],
+            [['total_work_items'], 'integer', 'min' => 1, 'tooSmall' => 'Very few data in dataset to create Task.'],
             [['deleted'], 'boolean'],
         ];
     }
@@ -125,16 +125,25 @@ class Task extends ActiveRecord
         return new TaskQuery(get_called_class());
     }
 
+    /**
+     * @return array|null|\yii\db\ActiveRecord
+     */
     public function getDataset()
     {
         return $this->hasOne(Dataset::class, ['id' => 'dataset_id'])->one();
     }
 
+    /**
+     * @return array|null|\yii\db\ActiveRecord
+     */
     public function getLabelGroup()
     {
         return $this->hasOne(LabelGroup::class, ['id' => 'label_group_id'])->one();
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getWorkItems()
     {
         return $this->hasMany(WorkItem::class, ['task_id' => 'id']);
@@ -147,7 +156,7 @@ class Task extends ActiveRecord
      */
     public function deployContract(BlockchainGatewayInterface $blockchain, Address $clientAddress)
     {
-        $contract    = new Contract($clientAddress, $this->total_work_items);
+        $contract = new Contract($clientAddress, $this->total_work_items);
         $callback_id = $blockchain->deployContract($contract);
 
         $callback_params = [
@@ -171,7 +180,7 @@ class Task extends ActiveRecord
         }
     }
 
-    public function contractAddress() : ?Address
+    public function contractAddress(): ?Address
     {
         return $this->contract_address ? new Address($this->contract_address) : null;
     }
@@ -181,7 +190,7 @@ class Task extends ActiveRecord
      * @param Moderator $moderator
      * @return DataLabel|null
      */
-    public function getDataForLabelAssignment(Moderator $moderator) : ?DataLabel
+    public function getDataForLabelAssignment(Moderator $moderator): ?DataLabel
     {
         $currentWorkItem = WorkItem::find()
             ->where(['task_id' => $this->id])
@@ -190,11 +199,12 @@ class Task extends ActiveRecord
             ->one();
 
         if ($currentWorkItem === null) {
-            $blockchain      = new EthereumGateway;
+
+            $blockchain = new EthereumGateway;
             $contractAddress = new Address($this->contract_address);
 
             try {
-                $contractStatus  = $blockchain->contractStatus($contractAddress);
+                $contractStatus = $blockchain->contractStatus($contractAddress);
             } catch (\Exception $e) {
                 return null;
             }
@@ -236,18 +246,46 @@ class Task extends ActiveRecord
         return $dataLabel;
     }
 
+    /**
+     * @param int|null $time
+     */
+    public function removeNotFinishedInTimeWorkItems($time = null)
+    {
+        if ($time === null) {
+            $time = Yii::$app->params['timeToCompleteWorkItem'];
+        }
+        $notFinishedWorkItems = WorkItem::find()
+            ->where(['task_id' => $this->id])
+            ->andWhere(['status' => WorkItem::STATUS_IN_HAND])
+            ->andWhere('updated_at < ' . (string)(time() - $time))
+            ->all();
 
+        foreach ($notFinishedWorkItems as $workItem) {
+            /** @var WorkItem $workItem */
+            $workItem->notFinished();
+        }
+    }
 
+    /**
+     * @return bool
+     */
     public function isContractNew()
     {
         return $this->status == self::STATUS_CONTRACT_NEW;
     }
 
+    /**
+     * @return bool
+     */
     public function isContractActive()
     {
         return $this->status == self::STATUS_CONTRACT_ACTIVE;
     }
 
+    /**
+     * @param bool $save
+     * @return $this
+     */
     public function setContractActive($save = true)
     {
         $this->status = self::STATUS_CONTRACT_ACTIVE;
@@ -255,11 +293,18 @@ class Task extends ActiveRecord
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isContractDeploying()
     {
         return $this->status == self::STATUS_CONTRACT_DEPLOYMENT_PROCESS;
     }
 
+    /**
+     * @param bool $save
+     * @return $this
+     */
     public function setContractDeploymentError($save = true)
     {
         $this->status = self::STATUS_CONTRACT_DEPLOYMENT_ERROR;
@@ -267,21 +312,34 @@ class Task extends ActiveRecord
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isPaused()
     {
         return $this->status == self::STATUS_CONTRACT_ACTIVE_PAUSED;
     }
 
+    /**
+     * @return bool
+     */
     public function isCompleted()
     {
         return $this->status == self::STATUS_CONTRACT_ACTIVE_COMPLETED;
     }
 
+    /**
+     * @return bool
+     */
     public function isFinalized()
     {
         return $this->status == self::STATUS_CONTRACT_FINALIZED;
     }
 
+    /**
+     * @param bool $save
+     * @return $this
+     */
     public function setFinalized($save = true)
     {
         $this->status = self::STATUS_CONTRACT_FINALIZED;
@@ -289,11 +347,18 @@ class Task extends ActiveRecord
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isForceFinalizing()
     {
         return $this->status == self::STATUS_CONTRACT_FORCE_FINALIZING;
     }
 
+    /**
+     * @param bool $save
+     * @return $this
+     */
     public function setForceFinalizing($save = true)
     {
         $this->status = self::STATUS_CONTRACT_FORCE_FINALIZING;
@@ -301,11 +366,10 @@ class Task extends ActiveRecord
         return $this;
     }
 
-
     /**
      * Runs console command blockchain/update-completed-work for this task.
      */
-    public function updateCompletedWork() : bool
+    public function updateCompletedWork(): bool
     {
         // Task status must be ACTIVE
         if ($this->status !== Task::STATUS_CONTRACT_ACTIVE) return false;
@@ -332,25 +396,25 @@ class Task extends ActiveRecord
         $approvedWorks = (new \yii\db\Query)
             ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
             ->from(WorkItem::tableName())
-            ->where(['task_id'=>$this->id])
-            ->andWhere(['status'=>WorkItem::STATUS_APPROVED])
+            ->where(['task_id' => $this->id])
+            ->andWhere(['status' => WorkItem::STATUS_APPROVED])
             ->groupBy(['moderator_address'])
             ->all();
 
         foreach ($approvedWorks as $work) {
-            $workItemsInDb[$work['moderator_address']]['approvedItems'] = (int) $work['count'];
+            $workItemsInDb[$work['moderator_address']]['approvedItems'] = (int)$work['count'];
         }
 
         $declinedWorks = (new \yii\db\Query)
             ->select(['moderator_address', 'COUNT(moderator_address) AS count'])
             ->from(WorkItem::tableName())
-            ->where(['task_id'=>$this->id])
-            ->andWhere(['status'=>WorkItem::STATUS_DECLINED])
+            ->where(['task_id' => $this->id])
+            ->andWhere(['status' => WorkItem::STATUS_DECLINED])
             ->groupBy(['moderator_address'])
             ->all();
 
         foreach ($declinedWorks as $work) {
-            $workItemsInDb[$work['moderator_address']]['declinedItems'] = (int) $work['count'];
+            $workItemsInDb[$work['moderator_address']]['declinedItems'] = (int)$work['count'];
         }
 
         $approvedWorksToUpdate = [];
@@ -411,15 +475,15 @@ class Task extends ActiveRecord
      * @param Address $moderator_address
      * @return int
      */
-    public function readyWorkItemsNumber(Address $moderator_address) : int
+    public function readyWorkItemsNumber(Address $moderator_address): int
     {
         $readyCount = WorkItem::find()
             ->where(['task_id' => $this->id])
-            ->andWhere(['moderator_address'=>$moderator_address])
+            ->andWhere(['moderator_address' => $moderator_address])
             ->andWhere(['status' => WorkItem::STATUS_READY])
             ->count();
 
-        return (int) $readyCount;
+        return (int)$readyCount;
     }
 
     /**
@@ -429,7 +493,7 @@ class Task extends ActiveRecord
      */
     public function readyWorkItems(Address $moderator_address, int $num)
     {
-        $readWorkItems= WorkItem::find()
+        $readWorkItems = WorkItem::find()
             ->where(['task_id' => $this->id])
             ->andWhere(['moderator_address' => $moderator_address])
             ->andWhere(['status' => WorkItem::STATUS_READY])
@@ -445,12 +509,12 @@ class Task extends ActiveRecord
      * @param int $num
      * @return bool
      */
-    public function approveWorkItems(Address $moderator_address, int $num=1) : bool
+    public function approveWorkItems(Address $moderator_address, int $num = 1): bool
     {
         $readyWorkItemsNumber = $this->readyWorkItemsNumber($moderator_address);
         if ($readyWorkItemsNumber < $num) return false;
 
-        $readyWorkItems = $this->readyWorkItems($moderator_address, $num=1);
+        $readyWorkItems = $this->readyWorkItems($moderator_address, $num = 1);
 
         foreach ($readyWorkItems as $readyWorkItem) {
             $readyWorkItem->approve();
@@ -459,12 +523,17 @@ class Task extends ActiveRecord
         return true;
     }
 
-    public function declineWorkItems(Address $address, int $num=1) : bool
+    /**
+     * @param Address $address
+     * @param int $num
+     * @return bool
+     */
+    public function declineWorkItems(Address $address, int $num = 1): bool
     {
         $readyWorkItemsNumber = $this->readyWorkItemsNumber($address);
         if ($readyWorkItemsNumber < $num) return false;
 
-        $readyWorkItems = $this->readyWorkItems($address, $num=1);
+        $readyWorkItems = $this->readyWorkItems($address, $num = 1);
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
@@ -484,16 +553,15 @@ class Task extends ActiveRecord
         return true;
     }
 
-
     /**
      * @return WorkItem|null
      */
-    public function getRandomFreeWorkItem() :?WorkItem
+    public function getRandomFreeWorkItem(): ?WorkItem
     {
         $randomFreeWorkItem = null;
 
         $freeWorkItems = $this->getWorkItems()
-            ->where(['status'=>WorkItem::STATUS_FREE])
+            ->where(['status' => WorkItem::STATUS_FREE])
             ->all();
 
         while (true) {
@@ -512,7 +580,6 @@ class Task extends ActiveRecord
 
         return $randomFreeWorkItem;
     }
-
 
     /**
      * @return bool|string
@@ -562,7 +629,7 @@ class Task extends ActiveRecord
     /**
      * @return \yii2tech\filestorage\local\Bucket
      */
-    public function getResultFileBucket() : \yii2tech\filestorage\local\Bucket
+    public function getResultFileBucket(): \yii2tech\filestorage\local\Bucket
     {
         /** @var \yii2tech\filestorage\local\Storage $fileStorage */
         $fileStorage = Yii::$app->fileStorage;
@@ -572,7 +639,7 @@ class Task extends ActiveRecord
     /**
      * @return string
      */
-    private function createTaskResultFileName() : string
+    protected function createTaskResultFileName(): string
     {
         return sprintf('%s_task_result.csv', $this->id);
     }

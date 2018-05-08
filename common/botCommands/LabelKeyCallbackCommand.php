@@ -4,6 +4,7 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 
 require_once 'AuthenticatedUserCommand.php';
 
+use common\models\WorkItem;
 use Longman\TelegramBot\Commands\AuthenticatedUserCommand;
 use Longman\TelegramBot\Request;
 use common\components\CallbackData;
@@ -72,15 +73,19 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
         list($data_label_id, $this->label_id) = explode(':', $verified_callback_data);
         
         $this->data_label = DataLabel::findOne($data_label_id);
+
         if ($this->data_label === null || $this->data_label->status !== DataLabel::STATUS_NEW) {
-            $req_data = [
-                'callback_query_id' => $this->callback_query_id,
-                'text'              => 'Error: label was not confirmed',
-                'show_alert'        => false,
-                'cache_time'        => 0,
-            ];
-            Request::answerCallbackQuery($req_data);
+            $this->answerCallback('Error: label was not confirmed');
             return $this->telegram->executeCommand('get');
+        }
+
+        if ($this->data_label->workItem->status === WorkItem::STATUS_NOT_FINISHED) {
+            $req_data = [
+                'chat_id'      => $this->chat_id,
+                'message_id'   => $this->message_id,
+                'text'         => 'Outdated job. Please select another job using /get command.',
+            ];
+            return Request::editMessageText($req_data);
         }
 
         if ($this->labelHasChildrenLabels() || $this->labelWasAssignedEarlier()) return;
@@ -100,6 +105,7 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
      *
      * @return bool
      * @throws \Longman\TelegramBot\Exception\TelegramException
+     * @throws \yii\web\HttpException
      */
     private function labelHasChildrenLabels() : bool
     {
@@ -113,7 +119,6 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
                 'text'         => $this->message->getText(),
                 'reply_markup' => $inline_keyboard->generate(),
             ];
-
             Request::editMessageText($req_data);
             return true;
         }
@@ -129,13 +134,7 @@ class LabelKeyCallbackCommand extends AuthenticatedUserCommand
     private function labelWasAssignedEarlier()
     {
         if ($this->data_label->status === DataLabel::STATUS_READY) {
-            $req_data = [
-                'callback_query_id' => $this->callback_query_id,
-                'text'              => 'This data was labeled already',
-                'show_alert'        => false,
-                'cache_time'        => 0,
-            ];
-            Request::answerCallbackQuery($req_data);
+            $this->answerCallback('This data was labeled already');
             $this->telegram->executeCommand('get');
             return true;
         }

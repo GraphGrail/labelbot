@@ -23,7 +23,7 @@ return [
     ],
 
     /**
-     * Datasets Uploadings
+     * Datasets Uploading
      */
     'datasetsUploadDir'     => 'datasets',
     'datasetFileMaxSize'    => 40*1024*1024,
@@ -54,4 +54,6 @@ return [
     'creditTokenValue' => getenv('CREDIT_TOKEN_VALUE') ?: '1000000000000000000',
     'creditNumber'     => getenv('CREDIT_NUMBER') ?: 100,
     'creditOnceAt'     => getenv('CREDIT_ONCE_AT') ?: 60*60*24,
+
+    'timeToCompleteWorkItem' => 60, //*60*24,
 ];

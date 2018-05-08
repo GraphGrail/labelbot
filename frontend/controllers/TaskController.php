@@ -133,9 +133,10 @@ class TaskController extends \yii\web\Controller
 
         if (Yii::$app->request->isPost) {
             // Contract deployment
-            $contractCanBeDeployed = $task->status === Task::STATUS_CONTRACT_NOT_DEPLOYED
-                || $task->status === Task::STATUS_CONTRACT_DEPLOYMENT_ERROR;
-
+            $contractCanBeDeployed = in_array(
+                $task->status,
+                [Task::STATUS_CONTRACT_NOT_DEPLOYED, Task::STATUS_CONTRACT_DEPLOYMENT_ERROR]
+            );
             if ($contractCanBeDeployed) {
                 $clientAddress = new Address(Yii::$app->request->post()['address']);
                 $task->deployContract($blockchain, $clientAddress);
@@ -173,8 +174,10 @@ class TaskController extends \yii\web\Controller
         }
 
         // Contract needTokens views
-        $contractNeedTokens = $task->status === Task::STATUS_CONTRACT_NEW_NEED_TOKENS
-            || $task->status === Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS;
+        $contractNeedTokens = in_array(
+            $task->status,
+            [Task::STATUS_CONTRACT_NEW_NEED_TOKENS, Task::STATUS_CONTRACT_ACTIVE_NEED_TOKENS]
+        );
         if ($contractNeedTokens) {
             // We need to check that contract tokenBalance enough for workItemsLeft will be payed
             $contractStatus = $blockchain->contractStatus($task->contractAddress());
@@ -552,7 +555,6 @@ class TaskController extends \yii\web\Controller
         ]));
         return $this->asJson(['success' => true]);
     }
-
 
 
 
